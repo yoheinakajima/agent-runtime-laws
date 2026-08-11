@@ -1,0 +1,31 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  laws:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.423
+      - name: Restore
+        run: dotnet restore AgentRuntimeLaws.sln
+      - name: Build
+        run: dotnet build AgentRuntimeLaws.sln --no-restore
+      - name: Laws
+        run: dotnet test tests/AgentRuntimeLaws.Properties/AgentRuntimeLaws.Properties.fsproj --no-build --no-restore
+      - name: Counterexample demo
+        run: dotnet run --project apps/AgentRuntimeLaws.Cli --no-build -- demo
+      - name: Conformance vectors
+        run: dotnet run --project apps/AgentRuntimeLaws.Cli --no-build -- conformance conformance/vectors/v1.json
+      - name: Evidence manifest
+        run: dotnet run --project apps/AgentRuntimeLaws.Cli --no-build -- manifest evidence/manifest.json

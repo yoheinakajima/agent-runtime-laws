@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FsCheck.Xunit" Version="2.16.6" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/AgentRuntimeLaws/AgentRuntimeLaws.fsproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Generators.fs" />
+    <Compile Include="KernelProperties.fs" />
+    <Compile Include="ForkProperties.fs" />
+    <Compile Include="GradeProperties.fs" />
+    <Compile Include="FixtureTests.fs" />
+    <Compile Include="ConformanceTests.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None
+      Include="../../conformance/vectors/v1.json"
+      Link="conformance/vectors/v1.json"
+      CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="../fixtures/counterexamples.json"
+      Link="tests/fixtures/counterexamples.json"
+      CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="../../evidence/manifest.json"
+      Link="evidence/manifest.json"
+      CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="../../evidence/fixtures/*.jsonl"
+      Link="evidence/fixtures/%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

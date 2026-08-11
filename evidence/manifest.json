@@ -1,0 +1,27 @@
+{
+  "SchemaVersion": 1,
+  "Entries": [
+    {
+      "Path": "fixtures/bridge-sanitized.jsonl",
+      "Sha256": "c20030f1ac9f1593b2735f9b315a23a5516c358928c40c563323e95b8ad2f080",
+      "Profile": "bridge",
+      "FixtureKind": "synthetic",
+      "SourceRepository": "yoheinakajima/agent-runtime-laws",
+      "SourceRevision": "schema-v1",
+      "SourcePath": "authored-fixture",
+      "Transformation": "none; contains no production data",
+      "PublicOrSanitized": true
+    },
+    {
+      "Path": "fixtures/activegraph-sanitized.jsonl",
+      "Sha256": "308d5fbfbda2f88db8015098cb8d14e94860777ee8ba5fdec16248b40d74b391",
+      "Profile": "activegraph",
+      "FixtureKind": "synthetic",
+      "SourceRepository": "yoheinakajima/agent-runtime-laws",
+      "SourceRevision": "schema-v1",
+      "SourcePath": "authored-fixture",
+      "Transformation": "none; contains no production data",
+      "PublicOrSanitized": true
+    }
+  ]
+}

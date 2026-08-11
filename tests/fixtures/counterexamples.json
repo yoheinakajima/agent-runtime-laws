@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "writeConflict": {
+    "canonicalWinner": 2,
+    "reverseWinner": 1,
+    "restoringCondition": "pairwise-disjoint declared writes"
+  },
+  "cycle": {
+    "expectedOutcome": "step-bound-reached",
+    "mustNotBeReportedAs": "quiescent"
+  },
+  "discardedOneShot": {
+    "findingCode": "discarded-one-shot-still-happened"
+  }
+}

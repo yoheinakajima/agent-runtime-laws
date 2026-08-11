@@ -1,0 +1,10 @@
+bin/
+obj/
+.dotnet/
+.idea/
+.vscode/
+TestResults/
+artifacts/
+*.user
+*.suo
+*.log

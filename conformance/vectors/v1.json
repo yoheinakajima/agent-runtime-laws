@@ -1,0 +1,273 @@
+{
+  "SchemaVersion": 1,
+  "Cases": [
+    {
+      "Name": "projection-last-write-wins",
+      "Events": [
+        {
+          "Kind": "fact.set",
+          "Key": "answer",
+          "Value": 1,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": ""
+        },
+        {
+          "Kind": "fact.set",
+          "Key": "answer",
+          "Value": 42,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": ""
+        }
+      ],
+      "Cut": 2,
+      "Property": "projection",
+      "ExpectedVerdict": "sound",
+      "ExpectedGrade": "observed",
+      "ExpectedFacts": [
+        { "Key": "answer", "Value": 42 }
+      ]
+    },
+    {
+      "Name": "discarded-one-shot-is-not-counterfactual",
+      "Events": [
+        {
+          "Kind": "effect.requested",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "publish-1",
+          "Name": "publish",
+          "Footprint": "one-shot",
+          "ReplaySource": "recorded",
+          "RequestHash": "sha256:request",
+          "ResponseHash": "",
+          "Evidence": ""
+        },
+        {
+          "Kind": "effect.committed",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "publish-1",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "sha256:response",
+          "Evidence": ""
+        }
+      ],
+      "Cut": 0,
+      "Property": "counterfactual-world",
+      "ExpectedVerdict": "unsound",
+      "ExpectedGrade": "observed",
+      "ExpectedFacts": []
+    },
+    {
+      "Name": "recorded-effect-strict-replay",
+      "Events": [
+        {
+          "Kind": "effect.requested",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "model-1",
+          "Name": "call-model",
+          "Footprint": "idempotent",
+          "ReplaySource": "recorded",
+          "RequestHash": "sha256:prompt",
+          "ResponseHash": "",
+          "Evidence": ""
+        },
+        {
+          "Kind": "effect.committed",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "model-1",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "sha256:completion",
+          "Evidence": ""
+        }
+      ],
+      "Cut": 2,
+      "Property": "strict-replay",
+      "ExpectedVerdict": "sound",
+      "ExpectedGrade": "observed",
+      "ExpectedFacts": []
+    },
+    {
+      "Name": "boundary-grade",
+      "Events": [
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "envelope-captured"
+        },
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "invocation-completed"
+        },
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "boundary-mediated"
+        },
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "clean-reconstruction"
+        },
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "verification-passed"
+        }
+      ],
+      "Cut": 5,
+      "Property": "",
+      "ExpectedVerdict": "",
+      "ExpectedGrade": "boundary",
+      "ExpectedFacts": []
+    },
+    {
+      "Name": "native-grade",
+      "Events": [
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "envelope-captured"
+        },
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "invocation-completed"
+        },
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "boundary-mediated"
+        },
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "clean-reconstruction"
+        },
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "checkpoint-recorded"
+        },
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "native-runtime"
+        },
+        {
+          "Kind": "evidence",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "",
+          "Evidence": "verification-passed"
+        }
+      ],
+      "Cut": 7,
+      "Property": "",
+      "ExpectedVerdict": "",
+      "ExpectedGrade": "native",
+      "ExpectedFacts": []
+    }
+  ]
+}
