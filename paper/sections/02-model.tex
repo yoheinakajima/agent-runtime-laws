@@ -1,0 +1,121 @@
+\section{Executable Runtime Model}
+\label{sec:model}
+
+The model is intentionally small, but it is not a claim of expressive
+minimality.  Its purpose is to make replay, scheduling, and effects observable
+enough to falsify laws.
+
+\subsection{Events, projection, and identity}
+
+An event envelope is a tuple
+
+\begin{equation}
+ e = (id, run, seq, kind, cause, emitter).
+\end{equation}
+
+The event kind is a closed sum containing domain facts, signals, effect
+lifecycle events, and evidence facts.  A log
+$L = \langle e_1,\ldots,e_n\rangle$ is ordered and append-only.  The pure
+reducer $\mathsf{evolve}:S\times E\rightarrow S$ yields
+
+\begin{equation}
+ \project(L) = \mathsf{fold}(\mathsf{evolve}, S_0, L).
+ \label{eq:project}
+\end{equation}
+
+Event identity is idempotent at the reducer boundary: if an event identifier
+has already been applied, a repeated envelope does not mutate state again.  A
+duplicate identifier remains an integrity fault for fork assessment, because
+idempotent reduction must not silently certify a malformed trace.
+
+State contains domain facts and signals, projected effect descriptors,
+evidence facts, integrity faults, and the set of applied event identifiers.
+When comparing projected domain state, the implementation excludes the
+bookkeeping set of applied identifiers.  This prevents a replay that merely
+renames envelopes from being declared semantically different while still
+allowing exact-trace equality to detect the change.
+
+\begin{proposition}[Closed-log projection determinism]
+For a fixed ordered event log and a pure reducer, repeated evaluation of
+Equation~\ref{eq:project} returns the same state.  Oracle calls are not an
+exception: their \emph{recorded results}, when present, are events in the fixed
+log.
+\end{proposition}
+
+This proposition is the trivial base case.  It says nothing about how the log
+was produced, whether the event order was unique, whether missing oracle
+results can be recovered, or whether effects may be executed again.
+
+\subsection{Behaviors and actions}
+
+A behavior is a tuple
+
+\begin{equation}
+ b=(id_b, trigger_b, fire_b, W_b)
+\end{equation}
+
+where $trigger_b:S\times E\rightarrow\mathbb{B}$ decides whether an event
+enables the behavior, $fire_b:S\times E\rightarrow A^*$ returns actions, and
+$W_b$ is a declared write set used only as a diagnostic.  Actions can emit a
+domain fact or signal, or request an external effect.  Behaviors cannot emit an
+effect outcome or evidence attestation directly; those facts must cross the
+interpreter or validation boundary.  This prevents a reducer from minting its
+own proof that an external action succeeded or that a run was verified.
+
+The kernel does not execute actions.  Emissions become pending events.  Effect
+requests become pending request events and later block until an interpreter
+injects a committed, failed, or unknown outcome.  Ordinary .NET tasks, network
+clients, mutable caches, and database adapters may exist outside the boundary;
+none are reachable from $trigger$ or $fire$.
+
+\subsection{Configurations and scheduling}
+
+A configuration contains projected state, pending events, enabled activations,
+outstanding effects, the retained trace, the behavior firing trace, and the next
+sequence and generated-identity counters.  A scheduler has two explicit
+selectors: one chooses a pending event, and the other chooses an enabled
+activation.  Four policies are included: canonical, reverse-event,
+reverse-activation, and both reversed.
+
+Processing a pending event first applies it to state and then computes enabled
+behaviors from the updated state.  Enabled behaviors fire sequentially.  A
+later activation handling the same triggering event therefore observes state
+changes produced by earlier activations.  This choice mirrors the ordering seam
+found in ActiveGraph and makes interference visible.
+
+Let $C\rightarrow_\sigma C'$ denote one legal event-processing or
+activation-firing step under scheduler $\sigma$.  Settlement repeatedly steps
+until one of three outcomes is reached:
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Quiescent}: no pending events, enabled activations, or
+  outstanding effects;
+  \item \textbf{BlockedAwaitingEffect}: no internal work remains, but at least
+  one request has no terminal outcome;
+  \item \textbf{Diverged}: a caller-supplied step bound is reached before either
+  terminal outcome.
+\end{itemize}
+
+The step bound is checked only after testing for a terminal configuration.  A
+run that becomes quiescent on the exact final step is therefore not
+misclassified as divergence.  Conversely, reaching the bound does not prove a
+cycle; the kernel reports \code{StepBoundReached} and makes no stronger claim.
+
+\subsection{Observations and equivalence}
+
+Confluence and fork laws are meaningless without specifying what is observed.
+The artifact implements three equivalences:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{ExactTrace}: envelope and event lists are structurally equal;
+  \item \textbf{ProjectedState}: domain projection is equal after excluding
+  applied-event bookkeeping and envelope metadata;
+  \item \textbf{FactsOnly}$(K)$: the selected fact keys agree.
+\end{enumerate}
+
+The validation additionally reports byte equality when a source artifact
+provides it, decision equality when the study records decisions, and structural
+prefix equality modulo explicitly excluded lineage fields.  These relations
+must not be substituted for one another.  In particular, equal decisions do
+not imply equal paths, and equal projected state does not imply an unchanged
+external world.

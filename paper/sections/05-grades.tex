@@ -1,0 +1,88 @@
+\section{Replayability Grades as Evidence Licenses}
+\label{sec:grades}
+
+The activegraph-bridge project introduced five replayability levels from
+observed through native.  The names arose from implementation failure modes.
+We make their meaning explicit by assigning each grade a set of licensed
+questions (Table~\ref{tab:grades}).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.32\textwidth}Y@{}}
+\toprule
+Grade & Required evidence & Licensed use \\
+\midrule
+Observed & Some inspectable trace or result & Inspection and available lineage only \\
+Envelope & Faithful invocation envelope and completion, no lossy-envelope fact & Recorded-output playback; fork before invocation \\
+Boundary & Envelope; mediated effects; clean reconstruction; complete known effect boundaries; no blockers & Re-execution using recorded effects; forks at effect boundaries \\
+Checkpointed & Boundary plus recorded checkpoint & Resume from a restorable snapshot \\
+Native & Checkpointed plus native-runtime evidence & Native replay, fork, and structural diff \\
+\bottomrule
+\end{tabularx}
+\caption{Replay grades and their licenses.}
+\label{tab:grades}
+\end{table}
+
+Let $Q(g)$ be the set of questions licensed by grade $g$.  The current taxonomy
+is defined so that
+
+\begin{equation}
+ Q(Observed) \subset Q(Envelope) \subset Q(Boundary)
+ \subset Q(Checkpointed) \subset Q(Native).
+\end{equation}
+
+Set inclusion supplies meet and join, so the five grades form a finite chain and
+therefore a lattice.  The implementation checks idempotence, commutativity,
+absorption, and lower/upper-bound laws over every pair of grades.  This result
+is definitional rather than a discovery about all possible taxonomies.  A
+future capability taxonomy could contain incomparable evidence sets; the code's
+comparison function refuses incomparable grades rather than inventing an
+order.
+
+\subsection{Computation from the log}
+
+The grade is computed from projected evidence and effect completeness.  It is
+not accepted as a source label.  In particular, a \code{NativeRuntime} marker
+alone does not grant Native: the log must also satisfy checkpoint, boundary,
+and envelope prerequisites.  Unknown footprint, uncaptured results, incomplete
+or unknown lifecycles, integrity faults, lossy envelopes, unmediated effects,
+and explicit hazards are blockers.
+
+The adapter follows the same fail-closed rule.  It grants evidence only for
+exact recognized source event types.  An event whose name merely contains
+\code{verification} remains an unclassified domain signal.  A verification
+event must contain an explicit Boolean verdict.  The bridge-specific Boundary
+derivation additionally requires an effects-served count and an explicit null
+divergence.  These requirements prevent an event-name coincidence from raising
+the grade.
+
+\subsection{Grades are not monotone in time}
+
+It is natural to view grades as achievements that only rise.  That view is
+incorrect for evidence predicates.
+
+\begin{counterexample}[Hazard downgrade]
+A prefix records a faithful envelope, completion, mediated boundary, clean
+reconstruction, and successful verification.  It grades Boundary.  Appending a
+hazard event adds a blocker, so the extended log grades Envelope.
+\end{counterexample}
+
+The grade of a \emph{fixed log or prefix} licenses questions about that evidence.
+It need not be monotone under extension.  This matters for forks: the grade of
+the shared prefix can be higher or lower than the grade of the completed source
+run, and a later hazard must not retroactively be ignored.
+
+\subsection{Connection to fork safety}
+
+The grade is a compact mechanism for checking some fork preconditions, but it
+does not replace property-relative assessment.  Boundary evidence suggests
+that effect results and reconstruction are available, licensing forks at known
+effect boundaries.  A specific cut can still split a request from its outcome.
+Likewise, a Boundary run can contain a committed OneShot effect that makes a
+CounterfactualWorld claim conditional or unsound.
+
+The validation therefore reports both the run-level grade and all cut-level
+verdicts.  A grade answers ``what kinds of questions may this evidence support
+in principle?''  A fork assessment answers ``does this particular cut satisfy
+the conditions for property $P$?''

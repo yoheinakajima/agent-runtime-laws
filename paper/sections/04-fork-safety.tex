@@ -1,0 +1,165 @@
+\section{Property-Relative Fork Safety}
+\label{sec:fork}
+
+A trace fork at cut $k$ retains $L_{<k}$ and gives subsequent events a child
+run identity.  For a list representation,
+
+\begin{equation}
+  \fork(L,k) = \prefix(L,k).
+\end{equation}
+
+That definition makes prefix equality cheap, but it does not by itself make
+re-execution or external-world claims sound.  We first describe effects, then
+define the properties a fork may be asked to preserve.
+
+\subsection{Effects along three dimensions}
+
+The initial research brief proposed a flat partition into Pure, Idempotent,
+Cached, and OneShot.  Real traces show that the categories answer different
+questions.  A cached model response describes where replay material comes from;
+it does not describe whether the original call had external cost.  We therefore
+use three orthogonal dimensions (Table~\ref{tab:dimensions}).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.18\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}Y@{}}
+\toprule
+Dimension & Values & Question \\
+\midrule
+External footprint & Pure, Idempotent, Compensatable, OneShot, Unknown & What did execution do to the external world, and can that footprint be reconciled? \\
+Replay source & Deterministic, Recorded, Uncaptured & Can replay reproduce or serve the result without consulting the live oracle? \\
+Lifecycle & Requested, Committed, Failed, Unknown & Is the request/outcome boundary complete and trustworthy at this cut? \\
+\bottomrule
+\end{tabularx}
+\caption{Orthogonal effect dimensions.}
+\label{tab:dimensions}
+\end{table}
+
+Pure effects are internal descriptions with no external interaction.
+Idempotent effects can be repeated or overwritten under an explicit key.
+Compensatable effects require a separately verified compensation.  OneShot
+effects are irreversible or conservatively treated as non-repeatable.  Unknown
+fails closed.  In the validation adapter, model calls are conservatively
+OneShot with respect to cost and oracle interaction.  Their outputs may
+simultaneously be Recorded, allowing result replay without another call.
+
+Lifecycle is projected from events.  A request must precede exactly one
+terminal outcome.  Duplicate requests, conflicting descriptors, an outcome
+without a request, or a second outcome after terminal state are integrity
+faults.  The first valid request and first valid terminal outcome remain the
+projected authority; malformed later events do not overwrite them.
+
+\subsection{Four fork properties}
+
+\begin{definition}[ProjectionReplay]
+The child reconstructs the same domain projection as an independently folded
+copy of the retained, well-formed, ordered prefix.  No execution occurs.
+\end{definition}
+
+\begin{definition}[StrictExecutionReplay]
+Every retained effect result needed by execution is deterministic or recorded,
+and the cut does not retain a Requested or Unknown lifecycle.  Replaying the
+prefix causes zero live oracle or tool calls.
+\end{definition}
+
+\begin{definition}[ExternalContinuation]
+The target environment is assumed to represent the retained prefix.  The child
+may continue after strict replay, provided inherited committed OneShot effects
+are served from the record and never executed again, and no inherited
+footprint is unknown.  This property deliberately does not assert that a
+retrospectively discarded source suffix left the original world unchanged.
+\end{definition}
+
+\begin{definition}[CounterfactualWorld]
+In addition to ExternalContinuation, the actual external world is equivalent
+to one in which the discarded suffix did not occur.  Discarded committed
+OneShot or unknown effects block the claim; discarded idempotent or
+compensatable effects make it conditional on reconciliation or successful
+compensation.
+\end{definition}
+
+These definitions make ``sound'' property-indexed.  The same cut may be Sound
+for ProjectionReplay, Conditional for ExternalContinuation, and Unsound for
+CounterfactualWorld.  Table~\ref{tab:forkconditions} summarizes the executable
+assessment.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}p{0.22\textwidth}Y Y@{}}
+\toprule
+Property & Retained-prefix conditions & Discarded-suffix conditions \\
+\midrule
+ProjectionReplay & Whole source log is structurally well formed; ordering authority is fixed & None for projected prefix equality \\
+StrictExecutionReplay & No open/unknown lifecycle; every needed result is deterministic or recorded & None \\
+ExternalContinuation & Strict replay; known footprint; retained committed OneShot effects are not re-executed & Target environment is defined to represent the prefix \\
+CounterfactualWorld & ExternalContinuation conditions & No unreconciled external footprint; OneShot or unknown blocks \\
+\bottomrule
+\end{tabularx}
+\caption{Property-relative fork conditions.}
+\label{tab:forkconditions}
+\end{table}
+
+\subsection{Fork laws}
+
+The executable suite checks the following trace laws over generated logs.
+
+\begin{proposition}[Identity fork]
+$\fork(L,|L|)$ retains the full trace.  Under ExactTrace, the shared prefix is
+equal to $L$; child lineage is stored outside that shared list.
+\end{proposition}
+
+\begin{proposition}[Nested prefix collapse]
+For $j\leq i\leq |L|$, retaining $i$ events and then $j$ events has the same
+shared prefix as retaining $j$ events directly.  The nested branch still records
+the outer child as its parent, so raw branch records are not identical.
+\end{proposition}
+
+\begin{proposition}[Projection commutation]
+For a well-formed ordered log,
+\begin{equation}
+ \project(\fork(L,k)) = \project(\prefix(L,k)).
+\end{equation}
+This is a trace/projection statement, not an external-world theorem.
+\end{proposition}
+
+\begin{proposition}[Suffix irrelevance is property-relative]
+The discarded suffix is irrelevant to ProjectionReplay of the retained prefix.
+It is not generally irrelevant to CounterfactualWorld.
+\end{proposition}
+
+The last proposition corrects an over-broad formulation of cheap forking.  A
+committed OneShot event in the discarded suffix is a concrete witness: the
+forked log excludes it and projects correctly, but the action remains true in
+the world.  Likewise, a discarded request without a trustworthy terminal
+outcome is Unsound because the external system may have executed it even though
+the log never learned the result.
+
+\subsection{Cuts through effects}
+
+For each log, the validator constructs every prefix state in one forward scan
+and every environmental suffix finding in one reverse scan.  It then assesses
+all $|L|+1$ cuts.  Three boundary cases are especially important.
+
+\paragraph{Before a request.}
+The retained prefix does not inherit the effect.  Projection replay is sound.
+If the source later committed a OneShot effect, CounterfactualWorld is unsound
+for a retrospective fork because that discarded action already occurred.
+
+\paragraph{Between request and outcome.}
+The prefix contains a Requested lifecycle.  StrictExecutionReplay and
+ExternalContinuation are unsound: the effect may be running, may have committed
+without acknowledgement, or may have failed.  A step bound or missing response
+must not be treated as a safe cancellation.
+
+\paragraph{After a committed OneShot.}
+The response may be Recorded, making strict replay possible with zero external
+calls.  ExternalContinuation is Conditional: the interpreter must serve the
+recorded result and enforce zero re-executions.  This is a semantic obligation,
+not merely an optimization.
+
+These cases expose why a Decider that returns only domain events cannot express
+the full agent-runtime question.  The log needs request/outcome boundaries,
+footprint evidence, and replay-source evidence before it can license execution
+or world-level claims.

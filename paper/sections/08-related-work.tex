@@ -1,0 +1,82 @@
+\section{Related Work and Novelty Boundary}
+\label{sec:related}
+
+\paragraph{Reducer architectures.}
+Mealy machines produce output and a next state from a current state and input
+\cite{mealy1955method}.  Elm's update loop maps a message and model to a new
+model and command \cite{elmarchitecture}.  Chassaing's functional event-sourcing
+Decider separates decision and evolution and demonstrates composition in F\#
+\cite{chassaing2021decider}.  These precedents invalidate a novelty claim for
+the reducer shape.  Our contribution begins where the runtime distinguishes
+replayable facts from externally executed effect requests and asks about
+specific fork cuts.
+
+The title ``Agent Algebra'' was also abandoned because Burch, Passerone, and
+Sangiovanni-Vincentelli already use Agent Algebra for a general framework of
+concurrent models, refinement, composition, and conformance
+\cite{burch2003agent}.  The present project is consequently named for the laws
+it checks rather than an algebra it does not originate.
+
+\paragraph{Agent calculi and mechanized semantics.}
+$\lambda_A$ gives a typed lambda calculus for agent composition with oracle
+calls, bounded fixpoints, probabilistic choice, and mutable environments.  It
+proves type safety and bounded termination in 1,519 lines of Coq with 42
+theorems \cite{liu2026lambdaa}.  Its properties are primarily about
+composition-time well-formedness and bounded constructs.  We do not duplicate
+that contribution; we study runtime event logs, schedule-sensitive settlement,
+and effect-boundary forks.
+
+LLMbda models agent conversations, fork and clear operations, code generation,
+and labeled information flow.  Its central result is a machine-checked
+termination-insensitive probabilistic noninterference theorem
+\cite{garby2026llmbda}.  Our work does not claim noninterference or prompt-
+injection safety.  Its use of conversation forks is related operationally, but
+our property of interest is whether an event-log cut licenses replay and an
+external-world claim.
+
+Schlapbach formalizes Schema-Guided Dialogue and the Model Context Protocol in
+a process calculus and studies structural bisimilarity and expressiveness
+\cite{schlapbach2026protocols}.  That is a protocol-level relation.  We treat
+model and tool interactions as effect boundaries inside a runtime trace and do
+not compare protocol expressiveness.
+
+\paragraph{Runtime substrates and governance.}
+Agent libOS supplies a capability-controlled runtime with process identity,
+memory, skills, JIT tools, checkpoints, restore, fork, and commit
+\cite{zhang2026libos}.  It demonstrates operational mechanisms and a safety
+benchmark.  We do not contribute a capability system.  Our narrower question
+is which algebraic and evidentiary conditions make a particular event-log fork
+sound for a named observation.
+
+McCann's Effect-Transparent Governance formalizes handler-mediated effect
+governance in Rocq and proves semantic preservation, expressive minimality, and
+decidability boundaries \cite{mccann2026governance}.  This directly motivates
+our decision to concede minimality.  We use an effect-transparent boundary as
+an executable assumption, then investigate replay-source, lifecycle, and
+external-footprint evidence rather than proving governance expressivity.
+
+AgentSpec lets users state runtime rules as triggers, predicates, and
+enforcement mechanisms and evaluates safety across code, embodied, and driving
+domains \cite{wang2026agentspec}.  Its contribution is customizable runtime
+enforcement.  Our laws do not enforce domain policy; they decide which replay
+or fork statements are licensed by a retained trace.
+
+\paragraph{ActiveGraph.}
+ActiveGraph makes the event log authoritative and presents deterministic
+replay, cheap forks, and lineage as architectural properties
+\cite{nakajima2026log}.  This paper is explicitly a follow-on.  It preserves
+the fixed-log replay result, shows that reactive settlement needs separate
+termination and confluence conditions, and reframes cheap forking as a semantic
+claim indexed by projection, execution, continuation, or external-world
+equivalence.  The public ActiveGraph implementation and its downstream
+artifacts supply the validation substrate unavailable to purely formal work.
+
+\paragraph{What remains distinct.}
+We are not aware, within the cited agent-calculus and runtime work, of an
+executable study that jointly (i) permutes runtime firing order, (ii) preserves
+negative confluence witnesses, (iii) partitions effect evidence along
+footprint/source/lifecycle dimensions, (iv) assesses every cut under multiple
+fork properties, and (v) checks those laws against an existing event-sourced
+runtime's archived traces and observed forks.  This is the bounded novelty claim
+for the draft; it should be revisited with a broader systematic search before
+submission.
