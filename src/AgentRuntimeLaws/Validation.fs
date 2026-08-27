@@ -3,6 +3,7 @@ namespace AgentRuntimeLaws
 open System
 open System.IO
 open System.Security.Cryptography
+open System.Text
 open System.Text.Json
 
 type SourceProfile =
@@ -24,6 +25,18 @@ type ValidationSummary =
       ExternalContinuationCuts: VerdictCounts
       CounterfactualCuts: VerdictCounts
       CounterfactualUnsoundCuts: int list
+      UnclassifiedTypes: string list }
+
+type BatchValidationSummary =
+    { Runs: int
+      InputEvents: int
+      NormalizedEvents: int
+      GradeDistribution: Map<ReplayGrade, int>
+      VerifiedRuns: int
+      ProjectionCuts: VerdictCounts
+      ExternalContinuationCuts: VerdictCounts
+      CounterfactualCuts: VerdictCounts
+      RunsWithCounterfactualUnsoundCuts: int
       UnclassifiedTypes: string list }
 
 [<CLIMutable>]
@@ -89,6 +102,27 @@ module Validation =
             else
                 None)
 
+    let private intProperty
+        (name: string)
+        (element: JsonElement)
+        =
+        property name element
+        |> Option.bind (fun value ->
+            if value.ValueKind = JsonValueKind.Number then
+                match value.TryGetInt32() with
+                | true, number -> Some number
+                | false, _ -> None
+            else
+                None)
+
+    let private nullProperty
+        (name: string)
+        (element: JsonElement)
+        =
+        property name element
+        |> Option.exists (fun value ->
+            value.ValueKind = JsonValueKind.Null)
+
     let private parseLine
         (index: int)
         (line: string)
@@ -131,10 +165,22 @@ module Validation =
     let private isRequest
         (eventType: string)
         : bool =
-        eventType.EndsWith(
-            ".requested",
-            StringComparison.Ordinal
-        )
+        [ "effect.requested"
+          "model.requested"
+          "tool.requested"
+          "llm.requested"
+          "embedding.requested"
+          "retrieval.requested"
+          "external.requested" ]
+        |> List.contains (eventType.ToLowerInvariant())
+
+    let private hashText (value: string) =
+        value
+        |> Encoding.UTF8.GetBytes
+        |> SHA256.HashData
+        |> Convert.ToHexString
+        |> _.ToLowerInvariant()
+        |> sprintf "derived-sha256:%s"
 
     let private responseHash
         (raw: RawEvent)
@@ -142,6 +188,12 @@ module Validation =
         stringProperty "response_hash" raw.Payload
         |> Option.orElseWith (fun () ->
             stringProperty "output_hash" raw.Payload)
+        |> Option.orElseWith (fun () ->
+            stringProperty "raw_text" raw.Payload
+            |> Option.filter (
+                String.IsNullOrWhiteSpace >> not
+            )
+            |> Option.map hashText)
         |> Option.filter (
             String.IsNullOrWhiteSpace >> not
         )
@@ -149,15 +201,15 @@ module Validation =
     let private isResponse
         (raw: RawEvent)
         : bool =
-        raw.Type.EndsWith(
-            ".responded",
-            StringComparison.Ordinal
-        )
-        || String.Equals(
-            raw.Type,
-            "effect.completed",
-            StringComparison.Ordinal
-        )
+        [ "effect.responded"
+          "model.responded"
+          "tool.responded"
+          "llm.responded"
+          "embedding.responded"
+          "retrieval.responded"
+          "external.responded"
+          "effect.completed" ]
+        |> List.contains (raw.Type.ToLowerInvariant())
 
     let private requestName
         (raw: RawEvent)
@@ -188,6 +240,12 @@ module Validation =
         | Some "compensatable", _ -> Compensatable
         | Some "one-shot", _ -> OneShot
         | Some "write", false -> OneShot
+        | None, _
+            when [ "llm.requested"
+                   "model.requested"
+                   "embedding.requested" ]
+                 |> List.contains (raw.Type.ToLowerInvariant()) ->
+            OneShot
         | _ -> UnknownFootprint
 
     let private requestHash
@@ -209,50 +267,79 @@ module Validation =
             .ToLowerInvariant()
 
     let private evidenceFor
-        (_profile: SourceProfile)
+        (profile: SourceProfile)
         (raw: RawEvent)
-        : EvidenceFact option =
+        : EvidenceFact list =
         let value = normalizedType raw
 
-        if
-            value.Contains("run_started")
-            || value.Contains("invocation_started")
-            || value.Contains("envelope_captured")
-        then
-            Some EnvelopeCaptured
-        elif value.Contains("invocation_completed") then
-            Some InvocationCompleted
-        elif value.Contains("boundary_mediated") then
-            Some BoundaryMediated
-        elif value.Contains("clean_reconstruction") then
-            Some CleanReconstructionAvailable
-        elif value.Contains("checkpoint") then
-            Some CheckpointRecorded
-        elif value.Contains("native_runtime") then
-            Some NativeRuntime
-        elif value.Contains("verification") then
-            match boolProperty "ok" raw.Payload with
-            | Some true -> Some VerificationPassed
-            | Some false ->
-                Some(
-                    HazardDetected(
-                        sprintf
-                            "verification failed: %s"
-                            raw.Type
-                    )
-                )
-            | None ->
-                Some(
-                    HazardDetected(
-                        sprintf
-                            "verification missing ok: %s"
-                            raw.Type
-                    )
-                )
-        elif value.Contains("hazard") then
-            Some(HazardDetected raw.Type)
-        else
-            None
+        let common =
+            match value with
+            | "run_started"
+            | "bridge_run_started"
+            | "invocation_started"
+            | "bridge_invocation_started"
+            | "runtime_invocation_started"
+            | "envelope_captured"
+            | "runtime_envelope_captured" ->
+                [ EnvelopeCaptured ]
+            | "invocation_completed"
+            | "bridge_invocation_completed"
+            | "runtime_invocation_completed" ->
+                [ InvocationCompleted ]
+            | "boundary_mediated"
+            | "bridge_boundary_mediated"
+            | "runtime_boundary_mediated" ->
+                [ BoundaryMediated ]
+            | "clean_reconstruction"
+            | "bridge_clean_reconstruction"
+            | "runtime_clean_reconstruction" ->
+                [ CleanReconstructionAvailable ]
+            | "checkpoint_recorded"
+            | "bridge_checkpoint_recorded"
+            | "runtime_checkpoint_recorded" ->
+                [ CheckpointRecorded ]
+            | "native_runtime"
+            | "runtime_native_runtime" ->
+                [ NativeRuntime ]
+            | "verification"
+            | "bridge_verification"
+            | "runtime_verification" ->
+                match boolProperty "ok" raw.Payload with
+                | Some true -> [ VerificationPassed ]
+                | Some false ->
+                    [ HazardDetected(
+                          sprintf
+                              "verification failed: %s"
+                              raw.Type
+                      ) ]
+                | None ->
+                    [ HazardDetected(
+                          sprintf
+                              "verification missing ok: %s"
+                              raw.Type
+                      ) ]
+            | "hazard_detected"
+            | "bridge_hazard_detected"
+            | "runtime_hazard_detected" ->
+                [ HazardDetected raw.Type ]
+            | _ ->
+                []
+
+        let bridgeDerived =
+            match profile, value with
+            | ActiveGraphBridge, "bridge_run_started"
+                when stringProperty "reconstruction" raw.Payload
+                        = Some "fresh_factory" ->
+                [ CleanReconstructionAvailable ]
+            | ActiveGraphBridge, "bridge_verification"
+                when boolProperty "ok" raw.Payload = Some true
+                     && (intProperty "effects_served" raw.Payload
+                         |> Option.isSome)
+                     && nullProperty "divergence" raw.Payload ->
+                [ BoundaryMediated ]
+            | _ -> []
+
+        common @ bridgeDerived |> List.distinct
 
     let private normalizeRaw
         (profile: SourceProfile)
@@ -274,10 +361,10 @@ module Validation =
         let runId = RunId "normalized-source"
         let unclassified = ResizeArray<string>()
 
-        let events =
+        let classified =
             raw
-            |> List.mapi (fun index item ->
-                let eventKind =
+            |> List.collect (fun item ->
+                let eventKinds =
                     if isRequest item.Type then
                         let replaySource =
                             if
@@ -289,36 +376,53 @@ module Validation =
                             else
                                 Uncaptured
 
-                        EffectRequested
-                            { Id = EffectId item.Id
-                              Name = requestName item
-                              Footprint = footprint item
-                              ReplaySource = replaySource
-                              Lifecycle = Requested
-                              RequestHash = requestHash item
-                              ResponseHash = None }
+                        [ EffectRequested
+                              { Id = EffectId item.Id
+                                Name = requestName item
+                                Footprint = footprint item
+                                ReplaySource = replaySource
+                                Lifecycle = Requested
+                                RequestHash = requestHash item
+                                ResponseHash = None } ]
                     elif
                         isResponse item
                         && item.CausedBy.IsSome
                     then
-                        EffectCommitted(
-                            EffectId item.CausedBy.Value,
-                            responseHash item
-                            |> Option.defaultValue ""
-                        )
+                        [ EffectCommitted(
+                              EffectId item.CausedBy.Value,
+                              responseHash item
+                              |> Option.defaultValue ""
+                          ) ]
                     else
                         match evidenceFor profile item with
-                        | Some evidence ->
-                            EvidenceRecorded evidence
-                        | None ->
+                        | [] ->
                             unclassified.Add item.Type
-                            SignalRaised(
-                                sprintf
-                                    "source:%s"
-                                    item.Type
-                            )
+                            [ SignalRaised(
+                                  sprintf
+                                      "source:%s"
+                                      item.Type
+                              ) ]
+                        | evidence ->
+                            evidence
+                            |> List.map EvidenceRecorded
 
-                { Id = EventId item.Id
+                eventKinds
+                |> List.mapi (fun derivedIndex kind ->
+                    item, derivedIndex, kind))
+
+        let events =
+            classified
+            |> List.mapi (fun index (item, derivedIndex, eventKind) ->
+                let eventId =
+                    if derivedIndex = 0 then
+                        item.Id
+                    else
+                        sprintf
+                            "%s:derived:%02d"
+                            item.Id
+                            derivedIndex
+
+                { Id = EventId eventId
                   RunId = runId
                   Sequence = int64 (index + 1)
                   Kind = eventKind
@@ -364,12 +468,8 @@ module Validation =
         : ValidationSummary =
         let raw = readRaw path
         let log, unclassified = normalizeRaw profile raw
-        let cuts = [ 0 .. log.Length ]
-
         let assessments property =
-            cuts
-            |> List.map (fun cut ->
-                Forks.assess property cut log)
+            Forks.assessAll property log
 
         let projection =
             assessments ProjectionReplay
@@ -400,6 +500,59 @@ module Validation =
           CounterfactualUnsoundCuts =
             counterfactualUnsound
           UnclassifiedTypes = unclassified }
+
+    let summarizeMany
+        (profile: SourceProfile)
+        (paths: string list)
+        : BatchValidationSummary =
+        let summaries =
+            paths
+            |> List.sort
+            |> List.map (summarize profile)
+
+        let sumVerdicts selector =
+            summaries
+            |> List.map selector
+            |> List.fold
+                (fun total counts ->
+                    { Sound = total.Sound + counts.Sound
+                      Conditional =
+                        total.Conditional
+                        + counts.Conditional
+                      Unsound = total.Unsound + counts.Unsound })
+                { Sound = 0
+                  Conditional = 0
+                  Unsound = 0 }
+
+        { Runs = summaries.Length
+          InputEvents = summaries |> List.sumBy _.InputEvents
+          NormalizedEvents =
+            summaries |> List.sumBy _.NormalizedEvents
+          GradeDistribution =
+            summaries
+            |> List.countBy (fun summary ->
+                summary.Grade.Grade)
+            |> Map.ofList
+          VerifiedRuns =
+            summaries
+            |> List.filter (fun summary ->
+                summary.Grade.Verified)
+            |> List.length
+          ProjectionCuts = sumVerdicts _.ProjectionCuts
+          ExternalContinuationCuts =
+            sumVerdicts _.ExternalContinuationCuts
+          CounterfactualCuts =
+            sumVerdicts _.CounterfactualCuts
+          RunsWithCounterfactualUnsoundCuts =
+            summaries
+            |> List.filter (fun summary ->
+                not summary.CounterfactualUnsoundCuts.IsEmpty)
+            |> List.length
+          UnclassifiedTypes =
+            summaries
+            |> List.collect _.UnclassifiedTypes
+            |> List.distinct
+            |> List.sort }
 
     let parseProfile
         (value: string)

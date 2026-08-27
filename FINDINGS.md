@@ -7,7 +7,8 @@ Status labels:
 
 - observed — witnessed by an executable fixture
 - checked — exercised by FsCheck over the stated generator family
-- pending — requires real-log validation or a stronger generator
+- pending — requires a stronger generator, production behavior inventory, or
+  an owner-supplied artifact
 
 ## A0 — Closed-log projection determinism
 
@@ -29,9 +30,9 @@ This is the trivial base case, not the paper’s primary claim.
 Status: falsified, observed.
 
 Counterexample: a behavior triggered by signal “loop” emits the same signal.
-The scheduler never reaches quiescence. The kernel reports CycleDetected rather
-than Quiescent. A separate step-bound result remains available for cycles that
-do not repeat a finite fingerprint.
+The scheduler never reaches quiescence. The kernel reports StepBoundReached
+rather than Quiescent. It intentionally does not infer a proved cycle from a
+finite configuration fingerprint.
 
 Restoring condition: pending. Candidate contracts include a well-founded
 ranking over emitted events or an acyclic trigger relation. Neither is claimed
@@ -47,13 +48,18 @@ Counterexample: alpha and beta are enabled by the same event and both write the
 fact “winner.” Canonical activation order yields winner = 2; reversed activation
 order yields winner = 1.
 
-Restoring condition checked so far: pairwise-disjoint declared writes for a
-restricted generated family of single-trigger, single-write behaviors. This
-condition is sufficient for that family only. Behaviors that read another
-behavior’s region, emit cross-triggering events, or under-declare writes require
-a stronger interference contract.
+Restoring condition checked so far: isolated, pairwise-disjoint writers converge
+for the restricted generated family under all four schedulers. Declared writes
+alone are not a sufficient general condition. A second preserved counterexample
+has three behaviors with no declared write conflict: two emit distinct signals,
+and an observer triggered by the first reads whether the second has arrived.
+Reversing event order changes the observed value from 0 to 1.
 
-Fixture: tests/fixtures/counterexamples.json, key writeConflict.
+The general restoring condition must constrain reads, writes, emitted triggers,
+and activation eligibility. A minimal condition has not been established.
+
+Fixture: tests/fixtures/counterexamples.json, keys writeConflict and
+readTriggerInterference.
 
 ## B1 — Identity fork
 
@@ -127,10 +133,51 @@ to Envelope.
 Interpretation: a grade certifies the evidence available for a particular log
 or prefix. It is not an achievement badge that can only increase.
 
-## Production validation
+## V1 — Replay grades over deployed-runtime traces
 
-Status: pending.
+Status: observed.
 
-No production distribution or production conformance result is claimed in this
-file until EVIDENCE.md records a source path or immutable artifact identity,
-profile, count, hash where publishable, command, and result.
+The public Synthetic Players capsule contains 5,540 run logs and 311,756 events.
+All 5,540 grade Observed from the run log alone even though the capsule-level
+verifier independently passes byte-exact checks. The verification attestation
+is outside each run log, so a log-alone grading function must not infer a higher
+grade.
+
+The local activegraph-bridge study contains 24 explicitly verified offline mock
+runs. All 24 grade Boundary because the run logs themselves record fresh
+reconstruction and a successful mediated-boundary verification with no
+divergence.
+
+Finding: replay grade is a property of retained evidence, not a property of an
+external claim about the artifact.
+
+## V2 — Actual forks in the public Synthetic Players capsule
+
+Status: observed.
+
+The store contains 121 forks from 41 distinct parents. Across 16,625 retained
+parent-prefix events there are zero structural mismatches after excluding child
+run identity and the store's global sequence number. Every observed cut is at
+round.played, and every retained prefix contains zero classified external
+requests. The actual forks therefore satisfy the current external-continuation
+precondition, but only for this domain-only cut family.
+
+The all-cuts counterfactual is much stricter: 4,923 of 5,540 runs contain at
+least one cut assessed Unsound because an oracle call in the discarded suffix
+already occurred.
+
+## V3 — ActiveGraph production order
+
+Status: source-audited; behavior-set conformance pending.
+
+ActiveGraph v1.10.0 uses a FIFO queue, behavior registration order, and
+sequential dispatch. This supplies one reproducible ProductionOrder but does
+not establish schedule independence. Relation enumeration also lacks a
+documented canonical tie-break. The executable tests therefore bypass the
+production order and permute event and activation order.
+
+No complete inventory of deployed behavior read/write/trigger dependencies was
+available, so production satisfaction of a restoring non-interference condition
+is not claimed.
+
+Exact revisions, hashes, commands, counts, and limitations are in EVIDENCE.md.

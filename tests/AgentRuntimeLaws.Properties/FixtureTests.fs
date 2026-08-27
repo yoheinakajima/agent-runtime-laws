@@ -68,6 +68,58 @@ module FixtureTests =
         Assert.NotEqual(canonical, reverse)
 
     [<Fact>]
+    let disjoint_declared_writes_do_not_prevent_read_trigger_interference () =
+        let starts _ event =
+            match event.Kind with
+            | SignalRaised "start" -> true
+            | _ -> false
+
+        let signal name emitted =
+            { Id = BehaviorId name
+              Trigger = starts
+              Fire = fun _ _ -> [ Emit(RaiseSignal emitted) ]
+              Writes = Set.empty }
+
+        let observer =
+            { Id = BehaviorId "observer"
+              Trigger =
+                fun _ event ->
+                    match event.Kind with
+                    | SignalRaised "left-ready" -> true
+                    | _ -> false
+              Fire =
+                fun state _ ->
+                    let value =
+                        if Set.contains "right-ready" state.Signals then 1 else 0
+
+                    [ Emit(SetFact("observed-right", value)) ]
+              Writes = Set.singleton "observed-right" }
+
+        let behaviors =
+            [ signal "left" "left-ready"
+              signal "right" "right-ready"
+              observer ]
+
+        let result scheduler =
+            Kernel.initialize
+                (RunId "read-trigger-interference")
+                [ SignalRaised "start" ]
+            |> Kernel.settle 50 behaviors scheduler
+            |> TestData.outcomeConfiguration
+            |> _.State.Facts
+            |> Map.find "observed-right"
+
+        let root = readFixture "counterexamples.json"
+        let expected = property "readTriggerInterference" root
+        let canonical = result Scheduler.canonical
+        let reversed = result Scheduler.eventReverse
+
+        Assert.Empty(Kernel.declaredWriteConflicts behaviors)
+        Assert.Equal((property "canonicalValue" expected).GetInt32(), canonical)
+        Assert.Equal((property "eventReverseValue" expected).GetInt32(), reversed)
+        Assert.NotEqual(canonical, reversed)
+
+    [<Fact>]
     let preserved_cycle_is_reported_as_divergence_not_quiescence () =
         let root = readFixture "counterexamples.json"
         let expected =
@@ -133,3 +185,49 @@ module FixtureTests =
                 Assert.Equal(summary.InputEvents, summary.NormalizedEvents)
                 Assert.True(summary.ProjectionCuts.Sound > 0)
         )
+
+    [<Fact>]
+    let normalization_fails_closed_when_source_evidence_is_missing () =
+        let fixturePath = path [ "tests"; "fixtures"; "fail-closed.jsonl" ]
+        let log, unclassified = Validation.normalize ActiveGraph fixturePath
+        let state = Kernel.project log
+        let effect = state.Effects[EffectId "unknown-effect"]
+        let report = Grades.grade log
+
+        Assert.Equal(UnknownFootprint, effect.Footprint)
+        Assert.Equal(Uncaptured, effect.ReplaySource)
+        Assert.Contains("runtime.mystery", unclassified)
+        Assert.Contains("runtime.verification.shadow", unclassified)
+        Assert.DoesNotContain(NativeRuntime, state.Evidence)
+        Assert.DoesNotContain(VerificationPassed, state.Evidence)
+
+        Assert.Contains(
+            state.Evidence,
+            fun fact ->
+                match fact with
+                | HazardDetected detail -> detail.Contains("missing ok")
+                | _ -> false
+        )
+
+        Assert.Equal(Observed, report.Grade)
+        Assert.Contains(report.Blockers, fun item -> item.Contains("unknown footprint"))
+        Assert.Contains(report.Blockers, fun item -> item.Contains("uncaptured effect"))
+
+    [<Fact>]
+    let activegraph_oracle_output_is_recorded_without_misclassifying_domain_requests () =
+        let fixturePath =
+            path [ "tests"; "fixtures"; "activegraph-recorded.jsonl" ]
+
+        let log, unclassified = Validation.normalize ActiveGraph fixturePath
+        let state = Kernel.project log
+        let effect = state.Effects[EffectId "llm-request"]
+        let assessment =
+            Forks.assess ExternalContinuation log.Length log
+
+        Assert.Equal(1, state.Effects.Count)
+        Assert.Equal(OneShot, effect.Footprint)
+        Assert.Equal(Recorded, effect.ReplaySource)
+        Assert.Equal(Committed, effect.Lifecycle)
+        Assert.StartsWith("derived-sha256:", effect.ResponseHash.Value)
+        Assert.Contains("round.requested", unclassified)
+        Assert.Equal(Conditional, assessment.Verdict)

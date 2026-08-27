@@ -1,0 +1,5 @@
+{"id":"unknown-effect","type":"tool.requested","payload":{"name":"mystery-tool"}}
+{"id":"unknown-effect-response","type":"tool.responded","caused_by":"unknown-effect","payload":{}}
+{"id":"verification-without-verdict","type":"runtime.verification","payload":{}}
+{"id":"unknown-runtime-event","type":"runtime.mystery","payload":{}}
+{"id":"forged-verification","type":"runtime.verification.shadow","payload":{"ok":true,"effects_served":99,"divergence":null}}

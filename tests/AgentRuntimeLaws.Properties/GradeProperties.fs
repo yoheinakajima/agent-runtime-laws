@@ -71,6 +71,43 @@ module GradeProperties =
         Assert.Equal(Envelope, (Grades.grade hazardous).Grade)
 
     [<Fact>]
+    let native_marker_alone_does_not_bypass_lower_grade_prerequisites () =
+        let report =
+            evidenceLog [ NativeRuntime; VerificationPassed ]
+            |> Grades.grade
+
+        Assert.Equal(Observed, report.Grade)
+        Assert.DoesNotContain(NativeReplayForkAndDiff, report.Licenses)
+
+    [<Fact>]
+    let unknown_effect_footprint_blocks_boundary_grade () =
+        let evidence =
+            evidenceLog
+                [ EnvelopeCaptured
+                  InvocationCompleted
+                  BoundaryMediated
+                  CleanReconstructionAvailable ]
+
+        let offset = evidence.Length
+        let descriptor = TestData.descriptor "unknown" UnknownFootprint Recorded
+
+        let log =
+            evidence
+            @ [ TestData.event
+                    "grade"
+                    (offset + 1)
+                    (EffectRequested descriptor)
+                TestData.event
+                    "grade"
+                    (offset + 2)
+                    (EffectCommitted(descriptor.Id, "response")) ]
+
+        let report = Grades.grade log
+
+        Assert.Equal(Envelope, report.Grade)
+        Assert.Contains(report.Blockers, fun item -> item.Contains("unknown footprint"))
+
+    [<Fact>]
     let grade_taxonomy_is_a_five_element_chain () =
         Assert.True(Grades.formsChain allGrades)
         Assert.Equal(Observed, Grades.meet Observed Native)

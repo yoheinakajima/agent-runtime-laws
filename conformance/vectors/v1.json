@@ -106,6 +106,62 @@
       "ExpectedFacts": []
     },
     {
+      "Name": "unknown-footprint-blocks-external-continuation",
+      "Events": [
+        {
+          "Kind": "effect.requested",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "unknown-1",
+          "Name": "unknown-operation",
+          "Footprint": "unknown",
+          "ReplaySource": "recorded",
+          "RequestHash": "sha256:request",
+          "ResponseHash": "",
+          "Evidence": ""
+        },
+        {
+          "Kind": "effect.committed",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "unknown-1",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "sha256:response",
+          "Evidence": ""
+        }
+      ],
+      "Cut": 2,
+      "Property": "external-continuation",
+      "ExpectedVerdict": "unsound",
+      "ExpectedGrade": "observed",
+      "ExpectedFacts": []
+    },
+    {
+      "Name": "outcome-without-request-is-malformed",
+      "Events": [
+        {
+          "Kind": "effect.committed",
+          "Key": "",
+          "Value": 0,
+          "EffectId": "missing-request",
+          "Name": "",
+          "Footprint": "",
+          "ReplaySource": "",
+          "RequestHash": "",
+          "ResponseHash": "sha256:response",
+          "Evidence": ""
+        }
+      ],
+      "Cut": 1,
+      "Property": "projection",
+      "ExpectedVerdict": "unsound",
+      "ExpectedGrade": "observed",
+      "ExpectedFacts": []
+    },
+    {
       "Name": "boundary-grade",
       "Events": [
         {

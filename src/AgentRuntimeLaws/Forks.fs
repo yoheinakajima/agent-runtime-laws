@@ -227,9 +227,9 @@ module Forks =
         (Kernel.project events).Effects
 
     let private openCutFindings
-        (retained: Event list)
+        (effects: Map<EffectId, EffectDescriptor>)
         : SafetyFinding list =
-        effectsAt retained
+        effects
         |> Map.toList
         |> List.choose (fun (effectId, effect) ->
             match effect.Lifecycle with
@@ -253,9 +253,9 @@ module Forks =
             | Failed -> None)
 
     let private strictReplayFindings
-        (retained: Event list)
+        (effects: Map<EffectId, EffectDescriptor>)
         : SafetyFinding list =
-        effectsAt retained
+        effects
         |> Map.toList
         |> List.choose (fun (effectId, effect) ->
             if effect.ReplaySource = Uncaptured then
@@ -270,9 +270,9 @@ module Forks =
                 None)
 
     let private noReexecutionConditions
-        (retained: Event list)
+        (effects: Map<EffectId, EffectDescriptor>)
         : SafetyFinding list =
-        effectsAt retained
+        effects
         |> Map.toList
         |> List.choose (fun (effectId, effect) ->
             match effect.Lifecycle, effect.Footprint with
@@ -364,32 +364,28 @@ module Forks =
                 )
         | Committed -> None
 
-    let private suffixWorldFindings
-        (discarded: Event list)
-        (fullLog: Event list)
-        : SafetyFinding list =
-        let fullEffects = effectsAt fullLog
-
-        discarded
-        |> List.choose (fun event ->
-            match event.Kind with
-            | EffectRequested descriptor ->
-                fullEffects
-                |> Map.tryFind descriptor.Id
-                |> Option.bind (unresolvedDiscardedFinding descriptor.Id)
-            | EffectCommitted(effectId, _) ->
-                fullEffects
-                |> Map.tryFind effectId
-                |> Option.bind (committedWorldFinding effectId)
-            | EffectBecameUnknown effectId ->
-                Some(
-                    finding
-                        Blocker
-                        "discarded-unknown-world-effect"
-                        (Some effectId)
-                        "the discarded suffix has an ambiguous external result"
-                )
-            | _ -> None)
+    let private worldFindingForEvent
+        (fullEffects: Map<EffectId, EffectDescriptor>)
+        (event: Event)
+        : SafetyFinding option =
+        match event.Kind with
+        | EffectRequested descriptor ->
+            fullEffects
+            |> Map.tryFind descriptor.Id
+            |> Option.bind (unresolvedDiscardedFinding descriptor.Id)
+        | EffectCommitted(effectId, _) ->
+            fullEffects
+            |> Map.tryFind effectId
+            |> Option.bind (committedWorldFinding effectId)
+        | EffectBecameUnknown effectId ->
+            Some(
+                finding
+                    Blocker
+                    "discarded-unknown-world-effect"
+                    (Some effectId)
+                    "the discarded suffix has an ambiguous external result"
+            )
+        | _ -> None
 
     let private verdict
         (findings: SafetyFinding list)
@@ -405,37 +401,73 @@ module Forks =
         else
             Conditional
 
+    let private suffixFindingTable
+        (fullEffects: Map<EffectId, EffectDescriptor>)
+        (log: Event list)
+        : SafetyFinding list list =
+        let rec loop events =
+            match events with
+            | [] -> [ [] ]
+            | event :: rest ->
+                let suffixes = loop rest
+                let tail = suffixes.Head
+
+                let current =
+                    match worldFindingForEvent fullEffects event with
+                    | Some item -> item :: tail
+                    | None -> tail
+
+                current :: suffixes
+
+        loop log
+
+    let assessAll
+        (property: ForkProperty)
+        (log: Event list)
+        : ForkAssessment list =
+        let malformed = malformedFindings log
+        let prefixStates = List.scan Kernel.evolve State.empty log
+        let fullEffects = (List.last prefixStates).Effects
+        let suffixFindings = suffixFindingTable fullEffects log
+
+        List.zip prefixStates suffixFindings
+        |> List.mapi (fun cut (state, discardedFindings) ->
+            let effects = state.Effects
+
+            let propertyFindings =
+                match property with
+                | ProjectionReplay -> []
+                | StrictExecutionReplay ->
+                    openCutFindings effects
+                    @ strictReplayFindings effects
+                | ExternalContinuation ->
+                    openCutFindings effects
+                    @ strictReplayFindings effects
+                    @ noReexecutionConditions effects
+                | CounterfactualWorld ->
+                    openCutFindings effects
+                    @ strictReplayFindings effects
+                    @ noReexecutionConditions effects
+                    @ discardedFindings
+
+            let findings = malformed @ propertyFindings
+
+            { Property = property
+              Cut = cut
+              Verdict = verdict findings
+              Findings = findings })
+
     let assess
         (property: ForkProperty)
         (cut: int)
         (log: Event list)
         : ForkAssessment =
-        let retained = prefix cut log
-        let discarded = suffix cut log
-        let malformed = malformedFindings log
+        if cut < 0 || cut > log.Length then
+            invalidArg
+                (nameof cut)
+                "cut must be between zero and the log length"
 
-        let propertyFindings =
-            match property with
-            | ProjectionReplay -> []
-            | StrictExecutionReplay ->
-                openCutFindings retained
-                @ strictReplayFindings retained
-            | ExternalContinuation ->
-                openCutFindings retained
-                @ strictReplayFindings retained
-                @ noReexecutionConditions retained
-            | CounterfactualWorld ->
-                openCutFindings retained
-                @ strictReplayFindings retained
-                @ noReexecutionConditions retained
-                @ suffixWorldFindings discarded log
-
-        let findings = malformed @ propertyFindings
-
-        { Property = property
-          Cut = cut
-          Verdict = verdict findings
-          Findings = findings }
+        assessAll property log |> List.item cut
 
     let equivalent
         (observation: Observation)

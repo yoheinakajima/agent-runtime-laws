@@ -35,6 +35,14 @@
       Link="tests/fixtures/counterexamples.json"
       CopyToOutputDirectory="PreserveNewest" />
     <None
+      Include="../fixtures/fail-closed.jsonl"
+      Link="tests/fixtures/fail-closed.jsonl"
+      CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="../fixtures/activegraph-recorded.jsonl"
+      Link="tests/fixtures/activegraph-recorded.jsonl"
+      CopyToOutputDirectory="PreserveNewest" />
+    <None
       Include="../../evidence/manifest.json"
       Link="evidence/manifest.json"
       CopyToOutputDirectory="PreserveNewest" />

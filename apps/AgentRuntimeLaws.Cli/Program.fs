@@ -1,4 +1,5 @@
 open System
+open System.IO
 open AgentRuntimeLaws
 
 let configuration = function
@@ -67,6 +68,35 @@ let validate profile path =
     printfn "unclassified source types: %A" summary.UnclassifiedTypes
     0
 
+let validateDirectory profile path =
+    let paths =
+        Directory.GetFiles(path, "*.jsonl")
+        |> Array.sort
+        |> Array.toList
+
+    if paths.IsEmpty then
+        invalidArg
+            (nameof path)
+            "directory contains no JSONL logs"
+
+    let summary =
+        Validation.summarizeMany
+            (Validation.parseProfile profile)
+            paths
+
+    printfn "runs: %d" summary.Runs
+    printfn "events: %d -> %d" summary.InputEvents summary.NormalizedEvents
+    printfn "grade distribution: %A" summary.GradeDistribution
+    printfn "verified runs: %d" summary.VerifiedRuns
+    printfn "projection cuts: %A" summary.ProjectionCuts
+    printfn "external-continuation cuts: %A" summary.ExternalContinuationCuts
+    printfn "counterfactual cuts: %A" summary.CounterfactualCuts
+    printfn
+        "runs with counterfactual-unsound cuts: %d"
+        summary.RunsWithCounterfactualUnsoundCuts
+    printfn "unclassified source types: %A" summary.UnclassifiedTypes
+    0
+
 let manifest path =
     let summaries = Validation.validateManifest path
 
@@ -87,12 +117,15 @@ let main argv =
         | [ "demo" ] -> demo ()
         | [ "conformance"; path ] -> conformance path
         | [ "validate"; profile; path ] -> validate profile path
+        | [ "validate-directory"; profile; path ] ->
+            validateDirectory profile path
         | [ "manifest"; path ] -> manifest path
         | _ ->
             eprintfn "usage:"
             eprintfn "  dotnet run --project apps/AgentRuntimeLaws.Cli -- demo"
             eprintfn "  dotnet run --project apps/AgentRuntimeLaws.Cli -- conformance FILE"
             eprintfn "  dotnet run --project apps/AgentRuntimeLaws.Cli -- validate activegraph|bridge|generic FILE"
+            eprintfn "  dotnet run --project apps/AgentRuntimeLaws.Cli -- validate-directory activegraph|bridge|generic DIR"
             eprintfn "  dotnet run --project apps/AgentRuntimeLaws.Cli -- manifest FILE"
             2
     with ex ->

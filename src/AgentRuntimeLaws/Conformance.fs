@@ -48,6 +48,7 @@ module Conformance =
         | "idempotent" -> Idempotent
         | "compensatable" -> Compensatable
         | "one-shot" -> OneShot
+        | "unknown" -> UnknownFootprint
         | value -> invalidArg "footprint" (sprintf "unknown footprint %s" value)
 
     let private parseReplaySource (value: string) =

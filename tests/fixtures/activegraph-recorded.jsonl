@@ -1,0 +1,4 @@
+{"id":"llm-request","type":"llm.requested","payload":{"prompt_hash":"sha256:prompt"}}
+{"id":"llm-response","type":"llm.responded","caused_by":"llm-request","payload":{"raw_text":"ANSWER"}}
+{"id":"round-domain-event","type":"round.requested","payload":{"roundNumber":1}}
+{"id":"run-complete","type":"run.completed","payload":{}}
