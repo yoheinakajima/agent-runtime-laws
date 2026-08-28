@@ -1,13 +1,14 @@
 \section{Validation Against Runtime Artifacts}
 \label{sec:validation}
 
-We evaluate the laws against two independent trace corpora.  The first is a
-public, sealed Synthetic Players capsule containing an ActiveGraph SQLite
-store.  The second is a local activegraph-bridge synthetic executive study with
-explicit boundary verification.  Both contain synthetic experimental content;
-``real'' here means that we analyze the actual runtime artifacts and their
-recorded failure modes rather than invented shape fixtures.  We do not claim
-human behavioral validity or real-model performance for the bridge study.
+We evaluate the contracts against one public trace corpus and retain one local
+instrumented study as illustrative evidence.  The public, sealed Synthetic
+Players capsule contains an ActiveGraph SQLite store.  The local
+activegraph-bridge executive study records explicit boundary verification but
+has no public source remote.  Both contain synthetic experimental content;
+``real'' here means actual runtime artifacts rather than invented shape
+fixtures.  Neither corpus is independent of the ActiveGraph family, and we do
+not claim human behavioral validity or real-model performance.
 
 \subsection{Synthetic Players capsule}
 
@@ -26,6 +27,12 @@ The decompressed database contains 5,540 runs and 311,756 events.  Event types
 include 36,251 \code{llm.requested}, 36,227 \code{llm.responded}, and 30,397
 \code{decision.parsed} records.  The difference between request and response
 counts is reflected rather than repaired by the adapter.
+
+The two run counts have different denominators.  The store contains 5,505
+completed and 35 incomplete runs.  The public verifier covers 4,916
+confirmatory Phase 3--5 runs plus three completed legacy diagnostics.  The
+remaining 586 completed runs are outside that replay contract; the 35
+incomplete runs are also outside it.  Thus $4{,}919+586+35=5{,}540$.
 
 \subsubsection{Replay grades}
 
@@ -60,17 +67,23 @@ CounterfactualWorld & 150,230 & 24,172 & 142,894 \\
 
 Every projection cut is sound under the specified domain-projection
 observation.  The 36,251 ExternalContinuation-unsound cuts equal the number of
-open/cut-through LLM requests.  Conditional continuation cuts retain a
-committed OneShot oracle interaction and require serving the recorded result
-without another call.  CounterfactualWorld is stricter: 4,923 runs have at
-least one Unsound cut because a discarded oracle interaction already occurred
-or a boundary is ambiguous.
+open/cut-through LLM requests.  Direct sequence audit explains the equality:
+36,227 requests are immediately followed by their linked response, so each
+creates exactly one cut between request and response; the remaining 24 requests
+are the final event of failed runs, so each also creates exactly one open cut.
+Conditional continuation cuts retain a committed OneShot oracle interaction
+and require serving the recorded result without another call.
+CounterfactualWorld is stricter: 4,923 runs have at least one Unsound cut
+because a discarded oracle interaction already occurred or a boundary is
+ambiguous.
 
 The validator leaves domain and infrastructure types unclassified, including
 \code{behavior.started} and \code{decision.parsed}.  It likewise leaves
 \code{infra.*}, \code{round.requested}, and \code{run.completed} unclassified.  In particular,
 \code{round.requested} is not misclassified as an external request merely
-because its name ends in \code{requested}.
+because its name ends in \code{requested}.  Continuation verdicts are therefore
+relative to the audited profile declaration that these reported types are
+domain or infrastructure signals rather than hidden external effects.
 
 \subsubsection{Observed forks}
 
@@ -88,7 +101,7 @@ is strong evidence for cheap structural branching where the runtime actually
 forked.  It is not evidence for an effect-boundary fork: the observed sample
 does not contain one.
 
-\subsection{activegraph-bridge executive study}
+\subsection{Illustrative local activegraph-bridge executive study}
 
 The second artifact contains 12 synthetic vendor due-diligence cases evaluated
 under two deterministic offline mock strategies, for 24 runs and 2,592 source
@@ -99,11 +112,13 @@ reconstruction and enables boundary verification.
 The artifact files are hash-bound.  Hash prefixes for the run store, manifest,
 metrics, and paired results are \code{7a38a1e8}, \code{da1cbc3b},
 \code{9f9242e1}, and \code{f4d95dbb}, respectively; the evidence ledger records
-the complete hashes.  However,
-the containing migration-lab directory has no Git
-commit or configured remote and all source files are untracked.  The local
-result is content-addressed but not externally source-reproducible.  We retain
-the finding and state this provenance defect plainly.
+the complete hashes.  Review exposed that the containing migration-lab had no
+commit or remote.  We repaired the local half of that defect: source revision
+\code{54dfde4d7379} and release-bundle revision \code{201efa7} bind a redacted
+manifest, metrics, pairs, report, compressed run store, and verifier.  The
+repository still has no configured remote.  This result remains illustrative,
+is excluded from the abstract, and is not externally source-reproducible until
+those revisions are published.
 
 \subsubsection{Decision and path equivalence}
 
@@ -147,9 +162,7 @@ again.  The result demonstrates why Boundary grade licenses effect-boundary
 operations but cannot promise a world in which discarded actions never
 happened.
 
-\subsection{Answers to the validation questions}
-
-The research brief posed three concrete validation tasks.
+\subsection{Validation status}
 
 \paragraph{V1: compute grade distributions.}
 Completed.  The public capsule yields Observed for 5,540 logs because

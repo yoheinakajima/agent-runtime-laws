@@ -8,7 +8,7 @@ declared writes do not exclude schedule-sensitive reads or trigger
 interference.  A fork can preserve its trace prefix while failing to reproduce
 execution or the external world.
 
-The executable specification makes those distinctions checkable.  Effect
+The executable contract makes those distinctions checkable.  Effect
 footprint, replay source, and lifecycle answer separate questions.  Fork safety
 is indexed by an observation: projection, strict execution replay, continuation
 in a prefix-reconstructed environment, or counterfactual-world equivalence.
@@ -21,8 +21,10 @@ under the stated projection observation.  Across 121 observed forks, 16,625
 shared-prefix events show zero structural mismatches modulo expected lineage
 fields, and the real cuts avoid external requests.  Yet 36,251 hypothetical
 cuts split model requests and are unsound for continuation, while thousands of
-discarded oracle interactions prevent an unchanged-world claim.  In a second
-study, 66.7\% decision agreement coexists with 0\% path agreement.
+discarded oracle interactions prevent an unchanged-world claim.  A local bridge
+study further illustrates that decision and path equivalence can separate, but
+it remains outside the public headline evidence until its commit-bound bundle
+is published.
 
 The practical conclusion is concise: replay is a family of assertions, and a
 fork is sound only relative to one of them.  Event-sourced agent runtimes should

@@ -2,11 +2,10 @@
 \label{sec:limitations}
 
 \paragraph{No mechanized proof.}
-The propositions are encoded as executable laws and checked over finite
+The propositions and contracts are encoded as executable properties and checked over finite
 generators and artifacts.  A passing FsCheck property is not a proof over all
-behaviors, schedulers, or logs.  This is a conscious genre choice, but it limits
-the strength of words such as ``law.''  Future work may mechanize selected
-definitions after the operational contracts stabilize.
+behaviors, schedulers, or logs.  Future work may mechanize selected definitions
+after the operational contracts stabilize.
 
 \paragraph{No minimal confluence condition.}
 We falsify general confluence and declared-write disjointness.  We check a
@@ -19,7 +18,8 @@ would overstate the result.
 The executable suite uses four deterministic scheduler extremes.  They expose
 the preserved counterexamples but do not enumerate every interleaving for an
 arbitrary behavior set.  Relation ordering is discussed from source audit but
-not modeled as a separate production activation dimension.
+not modeled as a separate production activation dimension.  Seeded randomized
+and bounded exhaustive interleaving exploration remain future checks.
 
 \paragraph{Adapter assumptions.}
 Real-log classification relies on explicit event names and payload fields.  The
@@ -29,11 +29,17 @@ classify a read-only deterministic local model differently.  A derived content
 hash proves captured bytes, not provider authenticity, commitment, or
 idempotence.
 
+Unknown footprint fails closed only after the adapter recognizes an event as an
+effect.  Unclassified source events remain reported signals.  The all-cut Sound
+counts therefore depend on an audited profile declaration that those event
+types do not hide external interactions.  A newly introduced effect type can
+make an old verdict false until the adapter is updated.
+
 \paragraph{Whole-log malformedness policy.}
 The current assessor treats structural malformedness anywhere in the source log
 as a blocker for every cut, including projection.  This is fail-closed and
 appropriate for the evidence study, but it is stricter than a theorem about an
-independently authenticated well-formed prefix.  The projection suffix law is
+independently authenticated well-formed prefix.  The projection suffix identity is
 therefore stated only for well-formed ordered logs.
 
 \paragraph{Synthetic content.}
@@ -51,11 +57,12 @@ boundary.  The difficult cases are exercised by all-cut analysis and fixtures,
 not by an actual public fork with a no-reexecution receipt.
 
 \paragraph{Bridge provenance.}
-The bridge artifact is locally content-addressed but lives in an unborn Git
-repository with no remote.  A fresh external reviewer cannot reconstruct the
-source revision.  The result should remain a draft finding until the artifact
-and generator are committed or published.  This limitation is particularly
-important because provenance is part of the paper's thesis.
+The bridge artifact is locally content-addressed and now bound to local source
+and release-bundle commits with a standalone verifier.  The repository still
+has no public remote, so a fresh external reviewer cannot fetch those revisions.
+The result remains illustrative and excluded from the abstract until the
+bundle is published.  This limitation is particularly important because
+provenance is part of the paper's thesis.
 
 \paragraph{Production behavior inventory.}
 The ActiveGraph source establishes FIFO and registration-order scheduling, but
@@ -63,6 +70,13 @@ we did not recover a complete deployed behavior dependency inventory.  We
 therefore cannot say whether production behaviors satisfy a future
 non-interference condition.  Static source inspection of the scheduler is not
 production confluence validation.
+
+\paragraph{No external runtime corpus.}
+The public corpus, observed forks, bridge implementation, and local executive
+study all descend from ActiveGraph.  The language-neutral vectors support other
+implementations, but no LangGraph, Temporal, or other independent runtime trace
+has yet been normalized.  Generalization beyond the source family is therefore
+conceptual rather than empirically demonstrated.
 
 \paragraph{No authorization or information-flow result.}
 Effect descriptors classify replay and environmental conditions; they do not
@@ -75,10 +89,3 @@ The all-cut implementation is efficient enough for the reported corpora, but
 we make no throughput, storage, or latency claim.  ``Cheap'' in this paper is
 analyzed semantically.  A separate benchmark would be needed for production
 performance.
-
-\paragraph{Size target.}
-The core-law implementation is 1,393 lines rather than the desired roughly
-1,000.  The transition/settlement boundary remains 594 lines.  The additional
-fork and grade diagnostics improved fail-closed behavior, but the overage may
-still reduce readability.  Refactoring should preserve named findings and law
-coverage rather than optimizing only for a line count.

@@ -32,51 +32,109 @@ model call.  The forked trace can omit the effect, but the world cannot be
 assumed to be one in which the effect never happened.  A correct fork contract
 must say which property it preserves.
 
-The initial version of this project asked whether
+Figure~\ref{fig:replay-family} names seven assertions commonly compressed into
+the word ``replay.''  They are ordered here from artifact identity toward
+claims about execution and the external world, but they do not form a simple
+implication chain.  A system can preserve a decision while changing its path,
+or reproduce bytes while retaining too little in-log evidence to execute.
+
+\begin{figure}[ht]
+\centering
+\small
+\begin{tabularx}{0.96\textwidth}{@{}>{\bfseries}p{0.22\textwidth}Y@{}}
+\toprule
+Assertion & Question answered \\
+\midrule
+Byte & Is the serialized artifact identical under its verifier? \\
+Trace & Are the same ordered semantic events retained? \\
+Projection & Does folding those events yield equivalent selected state? \\
+Path & Is the model, tool, and action sequence the same? \\
+Decision & Is the task-level conclusion equivalent? \\
+Execution & Can code re-execute with zero live calls by serving recorded results? \\
+Environment & Does the observed external world match the world claimed by the prefix? \\
+\bottomrule
+\end{tabularx}
+\caption{Replay is a family of assertions.  Each row requires its own
+observation and evidence contract.}
+\label{fig:replay-family}
+\end{figure}
+
+The familiar reducer shape
 
 \begin{equation}
   A : S \times E \rightarrow S \times F^*
 \end{equation}
 
-was the irreducible agent primitive.  That framing is not novel.  The shape is
-a Mealy-style transition system \cite{mealy1955method}, closely resembles the
-Elm update architecture \cite{elmarchitecture}, and appears in functional
-event sourcing through the Decider pattern \cite{chassaing2021decider}.  We
-concede the minimality lane and instead exploit the effects/events seam that
-becomes visible when agents interact with irreversible external systems.
+is not the contribution.  It is a Mealy-style transition system
+\cite{mealy1955method}, resembles the Elm update architecture
+\cite{elmarchitecture}, and appears in functional event sourcing through the
+Decider pattern \cite{chassaing2021decider}.  The operational seam needed here
+is a scheduled step over configurations plus an interpreter outcome tied back
+to a request identity:
+
+\begin{equation}
+  \mathsf{step}:C\times\Sigma\rightarrow C,
+  \qquad
+  \mathsf{interpret}:R\rightarrow
+  \{\mathsf{Committed},\mathsf{Failed},\mathsf{Unknown}\}.
+\end{equation}
+
+The second function is outside the pure kernel.  Evidence links its result to
+the request in the log.  This makes scheduling, incomplete boundaries, and
+already-realized external effects explicit without claiming a new minimal
+agent calculus.
+
+Table~\ref{tab:prior-claims} states the relationship to the predecessor paper
+directly.  The earlier architecture remains useful; the present paper supplies
+the contract under which its claims are licensed.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}P{0.18\textwidth}P{0.20\textwidth}Y@{}}
+\toprule
+Claim in \cite{nakajima2026log} & Status here & Qualification \\
+\midrule
+Deterministic replay & Upheld, qualified & A fixed ordered log projects deterministically.  Schedule-independent log production and zero-call execution require separate conditions (Sections~\ref{sec:model}--\ref{sec:fork}). \\
+Cheap forking & Upheld, qualified & Prefix copying is structurally cheap; continuation and external-world claims are property-relative (Sections~\ref{sec:fork} and~\ref{sec:validation}). \\
+End-to-end lineage & Upheld in the observed scope & The 121 observed children preserve compared prefix fields.  Stronger replay licenses require request/outcome and provenance evidence (Sections~\ref{sec:grades} and~\ref{sec:validation}). \\
+\bottomrule
+\end{tabularx}
+\caption{Claim status relative to \emph{The Log is the Agent}.}
+\label{tab:prior-claims}
+\end{table}
 
 \paragraph{Contributions.}
 This draft makes four contributions.
 
 \begin{enumerate}[leftmargin=*]
-  \item It gives an executable operational model in which scheduler order is
-  explicit.  The model separates termination, blocking on an external effect,
-  and bounded divergence.
+  \item It defines property-relative fork assessment for projection, strict
+  execution replay, external continuation, and a declared external-world
+  observation.
 
-  \item It preserves counterexamples showing that general settlement is neither
-  terminating nor confluent.  It further shows that pairwise-disjoint
-  \emph{declared writes} are insufficient when behavior reads and emitted
-  triggers interfere.  A restricted isolated-writer family does converge, but
-  we do not claim a minimal general condition.
+  \item It separates effect evidence along external footprint, replay source,
+  and lifecycle, allowing a recorded result and an irreversible footprint to
+  coexist in one descriptor.
 
-  \item It defines property-relative fork assessment over three orthogonal
-  effect dimensions: footprint, replay source, and lifecycle.  This separates
-  exact retained-prefix projection from execution replay, continuation, and a
-  counterfactual-world claim.
+  \item It gives an executable scheduler and preserves counterexamples showing
+  that settlement need not terminate or converge.  Disjoint declared writes
+  remain insufficient when reads and emitted triggers interfere.
 
-  \item It checks the laws against 5,564 runtime logs, 314,348 source events,
-  every possible cut in each log, and 121 observed forks.  The validation finds
-  both a strong positive result---zero structural mismatches in the observed
-  shared prefixes---and sharp limitations on which hypothetical cuts license
-  continuation or counterfactual claims.
+  \item It checks the contracts against 5,540 public runtime logs, every cut in
+  those logs, and 121 observed forks.  A separate 24-run local bridge study is
+  retained as illustrative evidence but excluded from the headline claim until
+  its repository is public.
 \end{enumerate}
 
 \paragraph{Genre.}
-This is not a mechanized-proof paper.  Laws are stated as propositions, checked
-over generated families with FsCheck, and evaluated exhaustively over the cuts
-of the available logs.  A failed law produces a minimized, named regression
-fixture.  Passing checks are finite evidence over the specified generators and
-artifacts, not universal proofs.  This choice is intentional: calculi with
+This is not a mechanized-proof paper.  Model identities are stated as
+propositions; empirical claims are encoded as properties, checked over
+generated families with FsCheck, and evaluated exhaustively over the cuts of
+the available logs.  We call these executable contracts or checked properties
+in the running text.  A failed property produces a minimized, named
+regression fixture.  Passing checks are finite evidence over the specified
+generators and artifacts, not universal proofs.  This choice is intentional:
+calculi with
 machine-checked composition, termination, and information-flow results already
 exist \cite{liu2026lambdaa,garby2026llmbda}.  Our comparative advantage is an
 executable runtime contract connected to real runtime artifacts.

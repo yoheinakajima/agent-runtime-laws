@@ -11,6 +11,7 @@
 \usepackage[hidelinks]{hyperref}
 
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{definition}{Definition}
@@ -26,9 +27,10 @@
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\artifact}{Agent Runtime Laws}
 
-\title{Confluence and Fork-Safety in Event-Sourced Agent Runtimes}
-\author{Yohei Nakajima}
-\date{Research draft --- August 2026}
+\title{Replay Is a Family of Assertions:\\
+Fork-Safety in Event-Sourced Agent Runtimes}
+\author{Yohei Nakajima\\Untapped Capital / activegraph.ai}
+\date{Revised research draft, August 2026}
 
 \begin{document}
 
@@ -36,44 +38,33 @@
 
 \begin{abstract}
 Event-sourced agent runtimes commonly claim deterministic replay, cheap
-forking, and end-to-end lineage.  These claims are attractive but incomplete.
-A pure reducer is deterministic only after the event sequence is fixed; a
-reactive runtime may admit multiple firing orders; an oracle result must be
-captured before it can be replayed; and an event-log fork cannot undo an email,
-charge, publication, or model-call cost that already occurred.  This paper asks
-when replay and fork claims are sound, rather than proposing another minimal
-agent primitive.
+forking, and lineage.  These are families of assertions, not one guarantee.  A
+fixed-log fold may be deterministic while reactive settlement remains
+schedule-sensitive; a recorded oracle result can enable zero-call replay while
+the original interaction still changed cost or world state; and a prefix copy
+cannot undo an action in a discarded suffix.
 
-We present an executable F\# specification that separates replayable facts from
-requested effects, exposes scheduler order as a parameter, and assesses fork
-safety relative to four distinct properties: retained-prefix projection,
-strict execution replay, continuation in a prefix-reconstructed environment,
-and equivalence to a counterfactual external world.  Effects are described by
-three orthogonal dimensions: external footprint, replay source, and lifecycle.
-FsCheck laws and preserved counterexamples show that settlement is neither
-terminating nor confluent in general.  Overlapping writers yield different
-normal forms, while a second counterexample shows that disjoint declared writes
-remain insufficient when behavior reads and emitted triggers interfere.
-
-We validate the conditions against two runtime artifacts comprising 5,564 run
-logs and 314,348 source events.  In a public Synthetic Players capsule, all
-317,296 projection cuts are sound under the stated projection observation, but
-36,251 cuts split an outstanding model request and are unsound for external
-continuation.  The store contains 121 observed forks; their 16,625 shared-prefix
-events have zero structural mismatches modulo child run identity and global
-database sequence, and all observed cuts avoid external requests.  A separate
-24-run offline bridge study has 66.7\% decision agreement but 0\% ordered-path
-agreement, illustrating that replay, path, projection, and decision equivalence
-are different assertions.  The results turn ``cheap fork'' from a performance
-slogan into a property-indexed semantic claim with checkable preconditions.
+We present an executable F\# contract that separates facts from effect
+requests, makes scheduling explicit, and assesses a cut relative to projection,
+strict execution replay, external continuation, or a declared
+counterfactual-world observation.  Preserved counterexamples show that general
+settlement is neither terminating nor confluent and that disjoint declared
+writes do not prevent read/trigger interference.  Against 5,540 public runtime
+logs, all 317,296 projection cuts satisfy the stated observation, while 36,251
+cuts split a model request and do not license continuation.  In 121 observed
+forks, 16,625 retained-prefix events have zero structural mismatches, but none
+crosses an external-effect boundary.  The result reframes cheap forking as a
+property-indexed semantic contract with explicit evidence and environment
+preconditions.
 \end{abstract}
 
 \noindent\textbf{Artifact status.}
-The code, law suite, conformance vectors, and evidence ledger accompany this
-draft.  The public capsule is revision- and hash-pinned.  The bridge artifact is
-locally hash-bound but its containing source directory has no commit or remote;
-we therefore treat it as non-reproducible outside the local environment until
-published.
+The code, checked-property suite, conformance vectors, and evidence ledger
+accompany this draft.  The public capsule is revision- and hash-pinned.  The separate bridge
+study now has local source and release-bundle commits, but no public remote.  Its
+quantitative result is therefore retained only as an illustrative local
+finding and is excluded from the abstract until publication supplies external
+source provenance.
 
 \input{sections/01-introduction}
 \input{sections/02-model}

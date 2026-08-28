@@ -3,30 +3,14 @@
 
 \subsection{``The log replayed'' is not one assertion}
 
-The empirical results expose a hierarchy of claims that are often collapsed in
-agent-runtime descriptions.
-
-\begin{enumerate}[leftmargin=*]
-  \item \textbf{Byte replay}: a serialized artifact is identical under a
-  verifier.
-  \item \textbf{Trace replay}: the same ordered semantic events are retained.
-  \item \textbf{Projection replay}: folding the events yields an equivalent
-  state under a chosen observation.
-  \item \textbf{Path replay}: the same model/tool/action sequence occurs.
-  \item \textbf{Decision equivalence}: a task-level conclusion agrees.
-  \item \textbf{Execution replay}: the run can be reproduced with zero live
-  calls by serving deterministic or recorded effect results.
-  \item \textbf{Environmental equivalence}: the external world matches the
-  world described by the retained prefix.
-\end{enumerate}
-
-None of these relations automatically implies all the others.  The bridge
-study has equal decisions in two thirds of pairs and equal ordered paths in
-none.  The Synthetic Players capsule passes an external byte-exact verifier but
-its individual logs contain no verification attestation, so they remain
-Observed under a log-alone grade.  Every prefix projects, but cuts through
-requests fail execution continuation.  These are not contradictions; they are
-different predicates.
+Figure~\ref{fig:replay-family} states the hierarchy early because it is the
+paper's organizing claim.  None of its relations automatically implies all the
+others.  The local bridge study has equal decisions in two thirds of pairs and
+equal ordered paths in none.  The Synthetic Players capsule passes an external
+byte-exact verifier but its individual logs contain no verification
+attestation, so they remain Observed under a log-alone grade.  Every prefix
+projects, but cuts through requests fail execution continuation.  These are not
+contradictions; they are different predicates.
 
 \subsection{Cheap fork is semantic before it is fast}
 
@@ -50,6 +34,20 @@ Without these clauses, ``cheap'' describes storage cost while leaving semantic
 cost undefined.  With them, the implementation can refuse unsafe cuts, require
 an idempotency key, request compensation, select a snapshot, or downgrade the
 claim to ProjectionReplay.
+
+A copyable API contract is:
+
+\begin{equation}
+\mathsf{fork}(L,k,P) \rightarrow
+\mathsf{Ok}(child,receipt)\;|\;
+\mathsf{Refuse}(reason)\;|\;
+\mathsf{Conditional}(obligation).
+\end{equation}
+
+The receipt binds the parent, cut, observation $P$, prefix hash, environment
+premise, inherited effect identities, and zero-reexecution obligations.  In
+particular, a cut through Requested is refused unless an explicit recovery
+policy changes the requested property.
 
 \subsection{Deterministic ordering can conceal non-confluence}
 
@@ -85,10 +83,8 @@ make grade computation portable across implementations.
 
 \subsection{The graph may be a projection, but the scheduler remains real}
 
-The original minimality experiment asked whether an agent graph is fundamental
-or merely a projection over event-producing reducers.  The present findings
-support part of that intuition: replayed domain state can indeed be treated as
-a projection.  They also reveal what the reduction omits.  Once multiple
+Replayed domain state can be treated as a projection.  That reduction still
+omits two operational facts.  Once multiple
 behaviors react, event and activation order become part of the operational
 semantics unless a confluence condition removes them.  Once effects leave the
 process, the external world becomes a second state that the event projection
@@ -114,7 +110,8 @@ The results suggest concrete contracts for event-sourced agent runtimes:
   Refuse a cut through Requested or Unknown without an owner-selected recovery
   policy.
   \item Give every fork API a property parameter or an equivalently explicit
-  mode.  Do not return a single unqualified \code{safe} Boolean.
+  mode.  Return a receipt, refusal, or conditional obligation rather than a
+  single unqualified \code{safe} Boolean.
   \item Preserve verification and reconstruction evidence inside a portable,
   hash-bound run capsule.
   \item Distinguish actual observed forks from every-cut counterfactual tests.

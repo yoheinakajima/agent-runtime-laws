@@ -25,20 +25,18 @@ Native & Checkpointed plus native-runtime evidence & Native replay, fork, and st
 \end{table}
 
 Let $Q(g)$ be the set of questions licensed by grade $g$.  The current taxonomy
-is defined so that
+is defined as the chain
 
 \begin{equation}
  Q(Observed) \subset Q(Envelope) \subset Q(Boundary)
  \subset Q(Checkpointed) \subset Q(Native).
 \end{equation}
 
-Set inclusion supplies meet and join, so the five grades form a finite chain and
-therefore a lattice.  The implementation checks idempotence, commutativity,
-absorption, and lower/upper-bound laws over every pair of grades.  This result
-is definitional rather than a discovery about all possible taxonomies.  A
-future capability taxonomy could contain incomparable evidence sets; the code's
-comparison function refuses incomparable grades rather than inventing an
-order.
+This chain is a definitional summary, not a substantive theorem.  The artifact
+checks its ordering mechanics, but the paper's claim is narrower: a grade
+summarizes the questions supported by retained evidence, while a cut-level
+assessment decides one proposed fork.  A richer taxonomy could contain
+incomparable evidence sets.
 
 \subsection{Computation from the log}
 

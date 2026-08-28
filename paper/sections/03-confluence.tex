@@ -26,7 +26,10 @@ then $C_1\simeq_P C_2$.
 
 This is Church--Rosser-shaped, but the current artifact does not prove a
 Church--Rosser theorem.  It searches scheduler policies, generates restricted
-families, and preserves witnesses when the proposition fails.
+families, and preserves witnesses when the proposition fails.  Newman's lemma
+connects termination plus local confluence to confluence in an abstract
+rewriting system \cite{newman1942}; our first counterexample removes the
+termination premise before the second examines uniqueness of quiescent forms.
 
 \subsection{A1: general termination is false}
 
@@ -90,6 +93,24 @@ selection, trigger eligibility, and a state read.  Any useful general restoring
 condition must constrain at least behavior reads, behavior writes, emitted
 event kinds, and the trigger relation.  Under-declared dependencies must either
 be rejected or made observable by instrumentation.
+
+\begin{figure}[ht]
+\centering
+\small
+\begin{tabularx}{0.96\textwidth}{@{}p{0.18\textwidth}Y Y@{}}
+\toprule
+Surface & Canonical event order & Reversed event order \\
+\midrule
+Emission & \code{left-ready}, then \code{right-ready} & \code{right-ready}, then \code{left-ready} \\
+Trigger & Observer becomes eligible before right is projected & Observer becomes eligible after right is projected \\
+Read & \code{right-ready} absent & \code{right-ready} present \\
+Write & \code{observed-right}=0 & \code{observed-right}=1 \\
+\bottomrule
+\end{tabularx}
+\caption{Counterexample 3 crosses emission, event selection, trigger
+eligibility, and a state read despite disjoint declared write sets.}
+\label{fig:read-trigger-interference}
+\end{figure}
 
 \subsection{Production ordering masks the question}
 

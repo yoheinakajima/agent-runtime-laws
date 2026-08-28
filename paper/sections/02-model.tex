@@ -3,7 +3,7 @@
 
 The model is intentionally small, but it is not a claim of expressive
 minimality.  Its purpose is to make replay, scheduling, and effects observable
-enough to falsify laws.
+enough to falsify claimed properties.
 
 \subsection{Events, projection, and identity}
 
@@ -77,6 +77,47 @@ selectors: one chooses a pending event, and the other chooses an enabled
 activation.  Four policies are included: canonical, reverse-event,
 reverse-activation, and both reversed.
 
+Writing a configuration as $\langle s,Q,A,O,L,T\rangle$, the two load-bearing
+transition rules are shown in Figure~\ref{fig:small-step}.  The helper
+$\mathsf{materialize}$ turns a behavior's pure action descriptions into pending
+fact/signal events or effect-request events.  It never produces an interpreter
+outcome.
+
+\begin{figure}[ht]
+\centering
+\small
+\begin{minipage}{0.96\textwidth}
+\[
+\frac{
+ e=\mathsf{selectEvent}_{\sigma}(Q)\quad
+ s'=\mathsf{evolve}(s,e)\quad
+ A'=A\mathbin{+}\{(b,e)\mid \mathsf{trigger}_b(s',e)\}
+}{
+ \langle s,Q,A,O,L,T\rangle
+ \rightarrow_{\sigma}
+ \langle s',Q\setminus e,A',O,L\mathbin{+}e,T\rangle
+}
+\quad\textsc{Process-Event}
+\]
+\[
+\frac{
+ a=(b,e)=\mathsf{selectActivation}_{\sigma}(A)\quad
+ X=\mathsf{fire}_b(s,e)\quad
+ (Q',O')=\mathsf{materialize}(Q,O,X)
+}{
+ \langle s,Q,A,O,L,T\rangle
+ \rightarrow_{\sigma}
+ \langle s,Q',A\setminus a,O',L,T\mathbin{+}(b,e)\rangle
+}
+\quad\textsc{Fire-Activation}
+\]
+\end{minipage}
+\caption{Small-step scheduling rules.  Event selection, activation selection,
+and the fact that later activations observe earlier projected writes are
+explicit semantics.}
+\label{fig:small-step}
+\end{figure}
+
 Processing a pending event first applies it to state and then computes enabled
 behaviors from the updated state.  Enabled behaviors fire sequentially.  A
 later activation handling the same triggering event therefore observes state
@@ -100,10 +141,14 @@ The step bound is checked only after testing for a terminal configuration.  A
 run that becomes quiescent on the exact final step is therefore not
 misclassified as divergence.  Conversely, reaching the bound does not prove a
 cycle; the kernel reports \code{StepBoundReached} and makes no stronger claim.
+BlockedAwaitingEffect is terminal for the settlement procedure but is not a
+quiescent normal form.  The confluence definition in Section~\ref{sec:confluence}
+ranges only over executions that reach Quiescent; uniqueness under blocking is
+a different property and is not claimed here.
 
 \subsection{Observations and equivalence}
 
-Confluence and fork laws are meaningless without specifying what is observed.
+Confluence and fork claims are meaningless without specifying what is observed.
 The artifact implements three equivalences:
 
 \begin{enumerate}[leftmargin=*]

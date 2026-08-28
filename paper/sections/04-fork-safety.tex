@@ -14,11 +14,11 @@ define the properties a fork may be asked to preserve.
 
 \subsection{Effects along three dimensions}
 
-The initial research brief proposed a flat partition into Pure, Idempotent,
-Cached, and OneShot.  Real traces show that the categories answer different
-questions.  A cached model response describes where replay material comes from;
-it does not describe whether the original call had external cost.  We therefore
-use three orthogonal dimensions (Table~\ref{tab:dimensions}).
+A flat partition into Pure, Idempotent, Cached, and OneShot combines questions
+that must be answered separately.  A cached model response describes where
+replay material comes from; it does not describe whether the original call had
+external cost.  We therefore use three orthogonal dimensions
+(Table~\ref{tab:dimensions}).
 
 \begin{table}[ht]
 \centering
@@ -64,20 +64,31 @@ prefix causes zero live oracle or tool calls.
 \end{definition}
 
 \begin{definition}[ExternalContinuation]
-The target environment is assumed to represent the retained prefix.  The child
-may continue after strict replay, provided inherited committed OneShot effects
-are served from the record and never executed again, and no inherited
-footprint is unknown.  This property deliberately does not assert that a
-retrospectively discarded source suffix left the original world unchanged.
+The runtime or caller supplies a target environment asserted to represent the
+retained prefix.  The child may continue after strict replay, provided inherited
+committed OneShot effects are served from the record and never executed again,
+and no inherited footprint is unknown.  A snapshot identifier, fresh-environment
+receipt, or equivalent attestation can discharge the environment premise; when
+none is present, the executable verdict is conditional on that premise.  This
+property deliberately does not assert that a retrospectively discarded source
+suffix left the original world unchanged.
 \end{definition}
 
-\begin{definition}[CounterfactualWorld]
-In addition to ExternalContinuation, the actual external world is equivalent
-to one in which the discarded suffix did not occur.  Discarded committed
-OneShot or unknown effects block the claim; discarded idempotent or
-compensatable effects make it conditional on reconciliation or successful
-compensation.
+\begin{definition}[CounterfactualWorld$(\Omega)$]
+Let $\Omega$ be a declared set of external observables, such as delivered
+messages, provider charges, published records, or payment-ledger entries.  In
+addition to ExternalContinuation, the actual world and a world in which the
+discarded suffix did not occur agree under every observation in $\Omega$.
+Discarded committed OneShot or unknown effects block the claim; discarded
+idempotent or compensatable effects make it conditional on reconciliation or
+successful compensation.
 \end{definition}
+
+The kernel does not inspect the external world.  It checks whether retained
+effect evidence is sufficient to license CounterfactualWorld$(\Omega)$ under
+the stated footprint-coverage assumption.  Even a Sound verdict is therefore
+a contract-relative license, not an empirical observation that two worlds are
+identical.
 
 These definitions make ``sound'' property-indexed.  The same cut may be Sound
 for ProjectionReplay, Conditional for ExternalContinuation, and Unsound for
@@ -93,17 +104,17 @@ Property & Retained-prefix conditions & Discarded-suffix conditions \\
 \midrule
 ProjectionReplay & Whole source log is structurally well formed; ordering authority is fixed & None for projected prefix equality \\
 StrictExecutionReplay & No open/unknown lifecycle; every needed result is deterministic or recorded & None \\
-ExternalContinuation & Strict replay; known footprint; retained committed OneShot effects are not re-executed & Target environment is defined to represent the prefix \\
-CounterfactualWorld & ExternalContinuation conditions & No unreconciled external footprint; OneShot or unknown blocks \\
+ExternalContinuation & Strict replay; known footprint; retained committed OneShot effects are not re-executed & Target environment is attested or supplied as a premise \\
+\shortstack[l]{CounterfactualWorld\\$(\Omega)$} & ExternalContinuation conditions; effect classification covers $\Omega$ & No unreconciled observed footprint; OneShot or unknown blocks \\
 \bottomrule
 \end{tabularx}
 \caption{Property-relative fork conditions.}
 \label{tab:forkconditions}
 \end{table}
 
-\subsection{Fork laws}
+\subsection{Checked prefix identities}
 
-The executable suite checks the following trace laws over generated logs.
+The executable suite checks the following trace identities over generated logs.
 
 \begin{proposition}[Identity fork]
 $\fork(L,|L|)$ retains the full trace.  Under ExactTrace, the shared prefix is
@@ -141,6 +152,23 @@ the log never learned the result.
 For each log, the validator constructs every prefix state in one forward scan
 and every environmental suffix finding in one reverse scan.  It then assesses
 all $|L|+1$ cuts.  Three boundary cases are especially important.
+
+\begin{figure}[ht]
+\centering
+\small
+\begin{tabularx}{0.96\textwidth}{@{}P{0.20\textwidth}P{0.28\textwidth}Y@{}}
+\toprule
+Cut & Retained prefix & Licensed claim \\
+\midrule
+$k_0$ before request & No inherited request & Projection is sound; a later source-side effect may still block a retrospective world claim \\
+$k_1$ after request, before outcome & Requested lifecycle only & Strict replay and continuation are refused \\
+$k_2$ after recorded commit & Request plus terminal recorded result & Strict replay can be sound; continuation requires zero re-execution \\
+\bottomrule
+\end{tabularx}
+\caption{A single request/outcome pair creates three semantically different
+fork regions.}
+\label{fig:cut-through-request}
+\end{figure}
 
 \paragraph{Before a request.}
 The retained prefix does not inherit the effect.  Projection replay is sound.
