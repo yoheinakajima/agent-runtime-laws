@@ -36,6 +36,9 @@ Fork safety is property-relative:
   cut that does not split a request from its outcome.
 - External continuation inherits committed one-shot effects and must not
   execute them again.
+- A committed recorded result with unknown footprint is Conditional rather
+  than automatically refused; it can be served without a live call, but cannot
+  license a world-state claim until its footprint is resolved.
 - A branch that discards an irreversible effect is not a counterfactual world
   in which that effect never happened.
 
@@ -56,7 +59,7 @@ recorded:
 
 | Dimension | Values | Question answered |
 |---|---|---|
-| External footprint | pure, idempotent, compensatable, one-shot | What happened to the world? |
+| External footprint | pure, idempotent, compensatable, one-shot, unknown | What happened to the world? |
 | Replay source | deterministic, recorded, uncaptured | Can replay reproduce or serve the result? |
 | Lifecycle | requested, committed, failed, unknown | Is the effect boundary complete? |
 
@@ -120,10 +123,12 @@ checked at every cut. Its public verifier covers 4,919 of those runs; the exact
 reconciliation is 4,919 verifier-covered, 586 other completed runs, and 35
 incomplete runs. The 121 observed forks have zero structural mismatches across
 16,625 retained-prefix events after excluding child run identity and the
-store's global sequence. The separate 24-run bridge study was also checked. Its
+store's database-global `events.seq`. The separate 24-run bridge study was also checked. Its
 source and a redacted release bundle are now commit-bound locally and the bundle
 verifier passes, but no public remote exists, so the result remains illustrative
-rather than externally reproducible. No private trace payloads were copied into
+rather than externally reproducible. Bridge results now distinguish 2,616
+physically meaningful source-event-boundary cuts from 48 diagnostic positions
+between co-derived normalized facts. No private trace payloads were copied into
 this repository. See EVIDENCE.md for exact revisions, hashes, counts, commands,
 and limitations.
 
@@ -144,8 +149,9 @@ evidence over its generators and fixtures, not a universal proof.
 
 ## Status
 
-Research v0. Kernel contracts, 44 tests, conformance vectors, and deployed-trace
-validation are implemented. A three-model review round is archived and
-incorporated. Claims remain provisional pending another independent review,
-publication of the bridge artifact provenance, and validation of a public fork
-that crosses an external-effect boundary.
+Research v0. Kernel contracts, 50 tests, conformance vectors, and deployed-trace
+validation are implemented. A three-model review round and a subsequent
+ExploreScience review are archived with separate source and disposition files.
+Claims remain provisional pending owner acceptance, publication of the bridge
+artifact provenance, and validation of a public fork that crosses an
+external-effect boundary.

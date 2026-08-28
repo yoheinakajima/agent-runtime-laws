@@ -20,10 +20,15 @@ type ValidationSummary =
     { Source: string
       InputEvents: int
       NormalizedEvents: int
+      SourceBoundaryCuts: int
+      IntraSourceCuts: int
       Grade: GradeReport
       ProjectionCuts: VerdictCounts
       ExternalContinuationCuts: VerdictCounts
       CounterfactualCuts: VerdictCounts
+      SourceBoundaryProjectionCuts: VerdictCounts
+      SourceBoundaryExternalContinuationCuts: VerdictCounts
+      SourceBoundaryCounterfactualCuts: VerdictCounts
       CounterfactualUnsoundCuts: int list
       UnclassifiedTypes: string list }
 
@@ -31,11 +36,16 @@ type BatchValidationSummary =
     { Runs: int
       InputEvents: int
       NormalizedEvents: int
+      SourceBoundaryCuts: int
+      IntraSourceCuts: int
       GradeDistribution: Map<ReplayGrade, int>
       VerifiedRuns: int
       ProjectionCuts: VerdictCounts
       ExternalContinuationCuts: VerdictCounts
       CounterfactualCuts: VerdictCounts
+      SourceBoundaryProjectionCuts: VerdictCounts
+      SourceBoundaryExternalContinuationCuts: VerdictCounts
+      SourceBoundaryCounterfactualCuts: VerdictCounts
       RunsWithCounterfactualUnsoundCuts: int
       UnclassifiedTypes: string list }
 
@@ -62,6 +72,11 @@ module Validation =
           Type: string
           CausedBy: string option
           Payload: JsonElement }
+
+    type private NormalizedLog =
+        { Events: Event list
+          SourceBoundaryCuts: int list
+          UnclassifiedTypes: string list }
 
     let private property
         (name: string)
@@ -344,7 +359,7 @@ module Validation =
     let private normalizeRaw
         (profile: SourceProfile)
         (raw: RawEvent list)
-        : Event list * string list =
+        : NormalizedLog =
         let capturedResponses =
             raw
             |> List.choose (fun item ->
@@ -361,9 +376,9 @@ module Validation =
         let runId = RunId "normalized-source"
         let unclassified = ResizeArray<string>()
 
-        let classified =
+        let classifiedGroups =
             raw
-            |> List.collect (fun item ->
+            |> List.map (fun item ->
                 let eventKinds =
                     if isRequest item.Type then
                         let replaySource =
@@ -406,6 +421,11 @@ module Validation =
                             evidence
                             |> List.map EvidenceRecorded
 
+                item, eventKinds)
+
+        let classified =
+            classifiedGroups
+            |> List.collect (fun (item, eventKinds) ->
                 eventKinds
                 |> List.mapi (fun derivedIndex kind ->
                     item, derivedIndex, kind))
@@ -431,17 +451,25 @@ module Validation =
                     |> Option.map EventId
                   EmittedBy = None })
 
-        events,
-        (unclassified
-         |> Seq.distinct
-         |> Seq.sort
-         |> Seq.toList)
+        let sourceBoundaryCuts =
+            classifiedGroups
+            |> List.map (fun (_, eventKinds) -> eventKinds.Length)
+            |> List.scan (+) 0
+
+        { Events = events
+          SourceBoundaryCuts = sourceBoundaryCuts
+          UnclassifiedTypes =
+            unclassified
+            |> Seq.distinct
+            |> Seq.sort
+            |> Seq.toList }
 
     let normalize
         (profile: SourceProfile)
         (path: string)
         : Event list * string list =
-        readRaw path |> normalizeRaw profile
+        let normalized = readRaw path |> normalizeRaw profile
+        normalized.Events, normalized.UnclassifiedTypes
 
     let private countVerdicts
         (assessments: ForkAssessment list)
@@ -462,12 +490,20 @@ module Validation =
                 item.Verdict = Unsound)
             |> List.length }
 
+    let private atCuts
+        (cuts: int list)
+        (assessments: ForkAssessment list)
+        : ForkAssessment list =
+        let indexed = assessments |> List.toArray
+        cuts |> List.map (fun cut -> indexed[cut])
+
     let summarize
         (profile: SourceProfile)
         (path: string)
         : ValidationSummary =
         let raw = readRaw path
-        let log, unclassified = normalizeRaw profile raw
+        let normalized = normalizeRaw profile raw
+        let log = normalized.Events
         let assessments property =
             Forks.assessAll property log
 
@@ -480,6 +516,15 @@ module Validation =
         let counterfactual =
             assessments CounterfactualWorld
 
+        let sourceBoundaryProjection =
+            projection |> atCuts normalized.SourceBoundaryCuts
+
+        let sourceBoundaryContinuation =
+            continuation |> atCuts normalized.SourceBoundaryCuts
+
+        let sourceBoundaryCounterfactual =
+            counterfactual |> atCuts normalized.SourceBoundaryCuts
+
         let counterfactualUnsound =
             counterfactual
             |> List.choose (fun item ->
@@ -491,15 +536,23 @@ module Validation =
         { Source = path
           InputEvents = raw.Length
           NormalizedEvents = log.Length
+          SourceBoundaryCuts = normalized.SourceBoundaryCuts.Length
+          IntraSourceCuts = log.Length + 1 - normalized.SourceBoundaryCuts.Length
           Grade = Grades.grade log
           ProjectionCuts = countVerdicts projection
           ExternalContinuationCuts =
             countVerdicts continuation
           CounterfactualCuts =
             countVerdicts counterfactual
+          SourceBoundaryProjectionCuts =
+            countVerdicts sourceBoundaryProjection
+          SourceBoundaryExternalContinuationCuts =
+            countVerdicts sourceBoundaryContinuation
+          SourceBoundaryCounterfactualCuts =
+            countVerdicts sourceBoundaryCounterfactual
           CounterfactualUnsoundCuts =
             counterfactualUnsound
-          UnclassifiedTypes = unclassified }
+          UnclassifiedTypes = normalized.UnclassifiedTypes }
 
     let summarizeMany
         (profile: SourceProfile)
@@ -528,6 +581,10 @@ module Validation =
           InputEvents = summaries |> List.sumBy _.InputEvents
           NormalizedEvents =
             summaries |> List.sumBy _.NormalizedEvents
+          SourceBoundaryCuts =
+            summaries |> List.sumBy _.SourceBoundaryCuts
+          IntraSourceCuts =
+            summaries |> List.sumBy _.IntraSourceCuts
           GradeDistribution =
             summaries
             |> List.countBy (fun summary ->
@@ -543,6 +600,12 @@ module Validation =
             sumVerdicts _.ExternalContinuationCuts
           CounterfactualCuts =
             sumVerdicts _.CounterfactualCuts
+          SourceBoundaryProjectionCuts =
+            sumVerdicts _.SourceBoundaryProjectionCuts
+          SourceBoundaryExternalContinuationCuts =
+            sumVerdicts _.SourceBoundaryExternalContinuationCuts
+          SourceBoundaryCounterfactualCuts =
+            sumVerdicts _.SourceBoundaryCounterfactualCuts
           RunsWithCounterfactualUnsoundCuts =
             summaries
             |> List.filter (fun summary ->

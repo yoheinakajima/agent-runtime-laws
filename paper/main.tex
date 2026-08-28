@@ -51,11 +51,12 @@ counterfactual-world observation.  Preserved counterexamples show that general
 settlement is neither terminating nor confluent and that disjoint declared
 writes do not prevent read/trigger interference.  Against 5,540 public runtime
 logs, all 317,296 projection cuts satisfy the stated observation, while 36,251
-cuts split a model request and do not license continuation.  In 121 observed
-forks, 16,625 retained-prefix events have zero structural mismatches, but none
-crosses an external-effect boundary.  The result reframes cheap forking as a
-property-indexed semantic contract with explicit evidence and environment
-preconditions.
+cuts split a model request and do not license continuation; another 120,969
+are Conditional because a committed oracle result must be served from the
+record without re-execution.  In 121 observed forks, 16,625 retained-prefix
+events have zero structural mismatches, but none crosses an external-effect
+boundary.  The result reframes cheap forking as a property-indexed semantic
+contract with explicit evidence and environment preconditions.
 \end{abstract}
 
 \noindent\textbf{Artifact status.}

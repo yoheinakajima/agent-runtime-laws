@@ -74,7 +74,12 @@ pairwise disjoint.  That condition works for a deliberately restricted family:
 single-trigger behaviors that each unconditionally write a distinct key and do
 not read other behaviors' regions or emit cross-triggering signals.  The suite
 generates up to eight such writers and checks all four scheduler policies; their
-projected states agree.
+projected states agree.  The structural reason is stronger than those four
+samples: every generated key has exactly one unconditional writer, and no
+writer reads or triggers another, so any permutation applies the same set of
+commuting updates to distinct map entries.  The four policies are executable
+regression coverage for that restricted family, not an enumeration of arbitrary
+runtime interleavings.
 
 Declared disjointness is not sufficient in general.
 

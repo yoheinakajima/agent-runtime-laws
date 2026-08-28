@@ -40,9 +40,14 @@ Pure effects are internal descriptions with no external interaction.
 Idempotent effects can be repeated or overwritten under an explicit key.
 Compensatable effects require a separately verified compensation.  OneShot
 effects are irreversible or conservatively treated as non-repeatable.  Unknown
-fails closed.  In the validation adapter, model calls are conservatively
+fails closed for world-equivalence claims and becomes an explicit condition for
+record-served continuation.  In the validation adapter, model calls are conservatively
 OneShot with respect to cost and oracle interaction.  Their outputs may
 simultaneously be Recorded, allowing result replay without another call.
+These dimensions are orthogonal descriptions, not independent decision rules:
+a property may depend jointly on more than one dimension.  In particular,
+Idempotent constrains repeated world mutation but does not guarantee that a
+second call returns the same bytes, timestamp, identifier, or model output.
 
 Lifecycle is projected from events.  A request must precede exactly one
 terminal outcome.  Duplicate requests, conflicting descriptors, an outcome
@@ -64,14 +69,15 @@ prefix causes zero live oracle or tool calls.
 \end{definition}
 
 \begin{definition}[ExternalContinuation]
-The runtime or caller supplies a target environment asserted to represent the
-retained prefix.  The child may continue after strict replay, provided inherited
-committed OneShot effects are served from the record and never executed again,
-and no inherited footprint is unknown.  A snapshot identifier, fresh-environment
-receipt, or equivalent attestation can discharge the environment premise; when
-none is present, the executable verdict is conditional on that premise.  This
-property deliberately does not assert that a retrospectively discarded source
-suffix left the original world unchanged.
+Relative to a caller-supplied premise that the target environment represents
+the retained prefix, the child may continue after strict replay.  Inherited
+committed OneShot effects must be served from the record and never executed
+again.  A committed Recorded effect with Unknown footprint is Conditional: it
+may be served without a live call, but no stronger world-state claim is licensed
+until its footprint is resolved.  The v0 assessor takes the target-environment
+premise as an input assumption; it does not verify a snapshot or
+fresh-environment attestation.  This property deliberately does not assert that
+a retrospectively discarded source suffix left the original world unchanged.
 \end{definition}
 
 \begin{definition}[CounterfactualWorld$(\Omega)$]
@@ -79,16 +85,23 @@ Let $\Omega$ be a declared set of external observables, such as delivered
 messages, provider charges, published records, or payment-ledger entries.  In
 addition to ExternalContinuation, the actual world and a world in which the
 discarded suffix did not occur agree under every observation in $\Omega$.
-Discarded committed OneShot or unknown effects block the claim; discarded
-idempotent or compensatable effects make it conditional on reconciliation or
-successful compensation.
+Discarded committed OneShot or unknown effects whose observables intersect
+$\Omega$ block the claim; discarded idempotent or compensatable effects whose
+observables intersect $\Omega$ make it conditional on reconciliation or
+successful compensation.  Effects proven disjoint from $\Omega$ do not affect
+this property.
 \end{definition}
 
 The kernel does not inspect the external world.  It checks whether retained
 effect evidence is sufficient to license CounterfactualWorld$(\Omega)$ under
-the stated footprint-coverage assumption.  Even a Sound verdict is therefore
-a contract-relative license, not an empirical observation that two worlds are
-identical.
+the stated footprint-coverage assumption.  The current effect descriptor does
+not carry per-effect observable labels, so the executable v0 instantiates
+$\Omega$ as the entire external surface recognized by the selected adapter
+profile.  Every classified non-Pure effect is therefore conservatively in
+scope.  Supporting a narrower $\Omega$ requires explicit observable tags; the
+reported counts are not claims about such a narrower set.  Even a Sound verdict
+is a contract-relative license, not an empirical observation that two worlds
+are identical.
 
 These definitions make ``sound'' property-indexed.  The same cut may be Sound
 for ProjectionReplay, Conditional for ExternalContinuation, and Unsound for
@@ -104,8 +117,8 @@ Property & Retained-prefix conditions & Discarded-suffix conditions \\
 \midrule
 ProjectionReplay & Whole source log is structurally well formed; ordering authority is fixed & None for projected prefix equality \\
 StrictExecutionReplay & No open/unknown lifecycle; every needed result is deterministic or recorded & None \\
-ExternalContinuation & Strict replay; known footprint; retained committed OneShot effects are not re-executed & Target environment is attested or supplied as a premise \\
-\shortstack[l]{CounterfactualWorld\\$(\Omega)$} & ExternalContinuation conditions; effect classification covers $\Omega$ & No unreconciled observed footprint; OneShot or unknown blocks \\
+ExternalContinuation & Strict replay; retained committed OneShot effects are not re-executed; committed Recorded Unknown footprint is Conditional & Target environment represents the retained prefix as a caller-supplied premise \\
+\shortstack[l]{CounterfactualWorld\\$(\Omega)$} & ExternalContinuation conditions; effect classification covers $\Omega$ & No unreconciled footprint intersecting $\Omega$; in-scope OneShot or unknown blocks \\
 \bottomrule
 \end{tabularx}
 \caption{Property-relative fork conditions.}
@@ -186,6 +199,29 @@ The response may be Recorded, making strict replay possible with zero external
 calls.  ExternalContinuation is Conditional: the interpreter must serve the
 recorded result and enforce zero re-executions.  This is a semantic obligation,
 not merely an optimization.
+
+\paragraph{After an uncaptured idempotent result.}
+Idempotence alone does not reconstruct the retained result.  Re-executing the
+same key may leave the external resource unchanged while returning a different
+receipt, timestamp, identifier, or oracle output.  Because ExternalContinuation
+in this paper includes StrictExecutionReplay, the v0 verdict remains Unsound.
+A separate live-resumption property could permit a repeated call under a
+provider-specific outcome-equivalence contract; it is not the property checked
+here.
+
+\paragraph{After a reported failure.}
+A terminal Failed event does not establish that the external world was
+unchanged.  A non-atomic remote operation may partially mutate state before
+reporting failure.  The executable assessor therefore makes discarded failed
+Idempotent or Compensatable effects Conditional on reconciliation, and treats
+discarded failed OneShot or Unknown effects as Unsound.  Only a failed Pure
+effect adds no world finding.
+
+Compensation is likewise not retroactive.  Even successful compensation may
+leave a temporal interval in which the mutation was observable and could have
+triggered webhooks, quotas, or other secondary effects.  A Conditional
+Compensatable verdict licenses CounterfactualWorld only for an $\Omega$ and
+environment contract that explicitly exclude or reconcile those exposures.
 
 These cases expose why a Decider that returns only domain events cannot express
 the full agent-runtime question.  The log needs request/outcome boundaries,

@@ -20,5 +20,5 @@ not replace the raw reports.
 
 This is a three-reviewer round. It does not claim to satisfy the established
 four-model Claude/Gemini/Codex/Grok review protocol because no fresh independent
-Codex report is preserved here. No Explore Science review or publication event
-is implied.
+Codex report is preserved here. A later ExploreScience report is preserved
+separately under `explore-science/`; neither review event implies publication.

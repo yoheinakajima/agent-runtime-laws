@@ -90,6 +90,9 @@ Checked identities and findings:
 - a cut through an unresolved request is unsound for strict replay or
   continuation;
 - a retained committed one-shot is conditional on zero re-execution;
+- a retained committed recorded effect with unknown footprint is conditional,
+  while a discarded unknown footprint still blocks an in-scope world claim;
+- idempotent footprint does not reconstruct an uncaptured result;
 - a one-shot in the discarded suffix invalidates the counterfactual-world
   claim even though trace projection remains exact.
 
@@ -110,7 +113,8 @@ Checked identities and findings:
   it.
 - FsCheck properties over generated logs, behaviors, and schedules.
 - Named minimized failures retained as regression fixtures.
-- Every-cut enumeration for real logs.
+- Every-normalized-position enumeration plus source-event-boundary reporting
+  when one source event expands to multiple normalized facts.
 - JSON conformance vectors and schema for independent implementations.
 - Threats: bounded generators, adapter classification, projection equivalence,
   and missing production behavior inventory.
@@ -127,7 +131,7 @@ Checked identities and findings:
 | External-continuation cuts | 160,076 sound; 120,969 conditional; 36,251 unsound |
 | Counterfactual cuts | 150,230 sound; 24,172 conditional; 142,894 unsound |
 | Observed forks | 121 |
-| Structural prefix comparison | 16,625 events; 0 mismatches modulo run ID and global sequence |
+| Structural prefix comparison | 16,625 events; 0 mismatches modulo run ID and database-global `events.seq` |
 
 The observed forks all cut at `round.played` and retain no classified external
 request. They validate cheap trace branching for that cut family, not arbitrary
@@ -140,8 +144,10 @@ oracle/effect boundaries.
 | Runs / source events | 24 / 2,592 |
 | Log-alone grade | Boundary: 24 |
 | Decision / ordered-path agreement | 66.6667% / 0% |
-| Projection cuts | 2,664 sound; 0 unsound |
-| Counterfactual cuts | 0 sound; 288 conditional; 2,376 unsound |
+| Source-boundary cuts / intra-source diagnostics | 2,616 / 48 |
+| Source-boundary Projection cuts | 2,616 sound; 0 unsound |
+| Source-boundary ExternalContinuation cuts | 1,968 sound; 264 conditional; 384 unsound |
+| Source-boundary Counterfactual cuts | 0 sound; 264 conditional; 2,352 unsound |
 
 Use the 66.7% decision agreement with 0% path agreement only as an illustrative
 motivation for distinct equivalence relations. State prominently that this is a
@@ -164,6 +170,8 @@ Algebra name collision.
 - Deterministic production ordering can mask non-confluence rather than solve
   it.
 - A log can be externally verified yet self-license only Observed replay.
+- The v0 assessor assumes a caller-supplied target environment; it does not
+  implement an attestation-discharge pathway.
 - Runtime contracts should record canonical ordering, effect footprint,
   request/outcome linkage, receipt provenance, and verification attestations.
 

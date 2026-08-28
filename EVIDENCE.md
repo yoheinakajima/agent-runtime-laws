@@ -2,8 +2,9 @@
 
 The validation harness is read-only. It normalizes ordered JSONL logs into the
 kernel event model, computes a replay grade, evaluates every cut from zero
-through the normalized log length, and reports unclassified source event types.
-External verification is not silently promoted into log evidence.
+through the normalized log length, separately reports atomic source-event
+boundaries, and reports unclassified source event types. External verification
+is not silently promoted into log evidence.
 
 ## Checked-in harness fixtures
 
@@ -16,6 +17,7 @@ and fail-closed behavior only.
 | evidence/fixtures/activegraph-sanitized.jsonl | activegraph | effect lifecycle adapter | synthetic, sanitized, shape-conformant |
 | tests/fixtures/activegraph-recorded.jsonl | activegraph | recorded-result regression | authored test fixture |
 | tests/fixtures/fail-closed.jsonl | activegraph | unknown-footprint regression | authored test fixture |
+| tests/fixtures/bridge-multi-derived.jsonl | bridge | source-boundary versus intra-expansion cut regression | authored test fixture |
 
 `evidence/manifest.json` binds evidence fixtures by SHA-256 and refuses entries
 without source receipts or an explicit public/sanitized declaration. The
@@ -35,10 +37,13 @@ The production scheduler is FIFO, matches behaviors in registration order, and
 dispatches sequentially. Delayed work at the same tick retains FIFO order.
 This is a deterministic policy for one schedule, not evidence of confluence
 under other legal schedules. Projection occurs before notification, so an
-earlier registered behavior can change state observed by a later behavior
-handling the same original event. Relation enumeration has no documented
-canonical ordering. The kernel therefore treats ProductionOrder as one policy
-and separately permutes event order and activation order.
+event's own state is visible before its handlers run. The source audit does not
+establish that an event emitted by one handler is projected before a later
+handler of that same triggering event. The executable kernel makes the narrower
+choice explicit: activations for one trigger read the same state, while emitted
+events become visible at later event-processing steps. Relation enumeration has
+no documented canonical ordering. The kernel therefore treats ProductionOrder
+as one policy and separately permutes event order and activation order.
 
 The public repository has a deterministic nine-event golden log and an offline
 quickstart fixture, but no committed production capsule or production SQLite
@@ -114,6 +119,45 @@ require serving the recorded result rather than re-executing it.
 Counterfactual-world verdicts are stricter because a call in the discarded
 suffix still occurred and may already have incurred cost.
 
+A separate ordinal query confirms that all 160,076 Sound
+ExternalContinuation cuts occur before the first classified external request;
+617 runs contain no classified request at all. The public corpus therefore does
+not empirically validate a post-oracle continuation, a target-environment
+attestation, or a zero-reexecution receipt. The v0 assessor takes the target
+environment as a caller-supplied premise and does not implement an attestation
+discharge path.
+
+The confirming read-only SQLite query was:
+
+~~~sql
+WITH ordered AS (
+  SELECT
+    run_id,
+    type,
+    ROW_NUMBER() OVER (PARTITION BY run_id ORDER BY seq) AS ordinal,
+    COUNT(*) OVER (PARTITION BY run_id) AS n
+  FROM events
+),
+per_run AS (
+  SELECT
+    run_id,
+    MAX(n) AS n,
+    MIN(CASE WHEN type IN (
+      'llm.requested', 'model.requested', 'embedding.requested',
+      'tool.requested', 'human.requested', 'retrieval.requested',
+      'external.requested', 'effect.requested'
+    ) THEN ordinal END) AS first_request
+  FROM ordered
+  GROUP BY run_id
+)
+SELECT
+  SUM(CASE WHEN first_request IS NULL THEN n + 1 ELSE first_request END),
+  SUM(CASE WHEN first_request IS NULL THEN 1 ELSE 0 END),
+  COUNT(*)
+FROM per_run;
+-- 160076 | 617 | 5540
+~~~
+
 Unclassified domain/runtime types are reported rather than guessed:
 `behavior.started`, `behavior.completed`, `decision.parsed`, `infra.*`,
 `object.created`, `patch.applied`, `round.played`, `round.requested`,
@@ -138,8 +182,11 @@ Unclassified domain/runtime types are reported rather than guessed:
 | Unresolved retained requests | 0 |
 
 These observed forks preserve every compared retained-prefix field: event ID,
-type, actor, payload, frame, cause, and timestamp. Child run identity and the
-store's global sequence number are intentionally excluded. The forks satisfy
+type, actor, payload, frame, cause, and timestamp. Child run identity and
+`events.seq` are intentionally excluded. In this schema, `events.seq` is the
+database-wide autoincrement primary key used to order each run, not a run-local
+envelope field; the per-run contiguous sequence is derived only after export.
+The forks satisfy
 the current external-continuation precondition, but they do not validate cuts
 through external effects because none of the 121 retained prefixes contains
 one.
@@ -178,7 +225,7 @@ scope is instrumentation feasibility only. The paired metrics recover 66.6667%
 decision agreement, 0% ordered path agreement, and 66.6667%
 same-decision/different-path cases.
 
-### All-cut property results
+### Cut property results
 
 | Measure | Result |
 |---|---:|
@@ -186,20 +233,32 @@ same-decision/different-path cases.
 | Source / normalized events | 2,592 / 2,640 |
 | Grade distribution | Boundary: 24 |
 | Verified from log alone | 24 |
-| Projection cuts | Sound 2,664; Conditional 0; Unsound 0 |
-| External-continuation cuts | Sound 1,992; Conditional 288; Unsound 384 |
-| Counterfactual-world cuts | Sound 0; Conditional 288; Unsound 2,376 |
+| Source-event-boundary cuts | 2,616 |
+| Intra-source normalized positions | 48 |
+| Source-boundary Projection cuts | Sound 2,616; Conditional 0; Unsound 0 |
+| Source-boundary External-continuation cuts | Sound 1,968; Conditional 264; Unsound 384 |
+| Source-boundary Counterfactual-world cuts | Sound 0; Conditional 264; Unsound 2,352 |
+| All-normalized Projection cuts | Sound 2,664; Conditional 0; Unsound 0 |
+| All-normalized External-continuation cuts | Sound 1,992; Conditional 288; Unsound 384 |
+| All-normalized Counterfactual-world cuts | Sound 0; Conditional 288; Unsound 2,376 |
 | Runs with a counterfactual-unsound cut | 24 |
 
 Boundary grade is derived only when a run log explicitly records fresh-factory
 reconstruction and a successful verification event with an effects-served
-count and null divergence. The normalized count is 48 events higher because
-those 24 source events each establish two distinct evidence facts.
+count and null divergence. Here null divergence means that the source payload's
+`divergence` field is present with JSON `null`, an assertion by the bridge
+verifier that it detected no unresolved reconstruction divergence. The
+normalized count is 48 events higher because 48 source events each establish
+one additional evidence fact. Cuts between co-derived facts are useful for
+testing normalization but are not physically selectable source-log forks, so
+source boundaries are the primary denominator.
 
 Every run contains a one-shot `submit_recommendation` effect. Consequently, no
 cut supports an unconditional claim that the external world is as if the run
 never happened: before the effect, it appears in the discarded suffix; after
-the effect, continuation is conditional on not executing it again.
+the effect, continuation is conditional on not executing it again. The world
+verdict uses the adapter profile's entire recognized external surface as
+`Omega_profile`; v0 has no per-effect observable tags for a narrower claim.
 
 ## Interpretation limits
 

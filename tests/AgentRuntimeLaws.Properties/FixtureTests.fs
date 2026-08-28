@@ -231,3 +231,17 @@ module FixtureTests =
         Assert.StartsWith("derived-sha256:", effect.ResponseHash.Value)
         Assert.Contains("round.requested", unclassified)
         Assert.Equal(Conditional, assessment.Verdict)
+
+    [<Fact>]
+    let validation_reports_only_source_event_boundaries_as_executable_cuts () =
+        let fixturePath =
+            path [ "tests"; "fixtures"; "bridge-multi-derived.jsonl" ]
+
+        let summary = Validation.summarize ActiveGraphBridge fixturePath
+
+        Assert.Equal(2, summary.InputEvents)
+        Assert.Equal(4, summary.NormalizedEvents)
+        Assert.Equal(3, summary.SourceBoundaryCuts)
+        Assert.Equal(2, summary.IntraSourceCuts)
+        Assert.Equal(5, summary.ProjectionCuts.Sound)
+        Assert.Equal(3, summary.SourceBoundaryProjectionCuts.Sound)

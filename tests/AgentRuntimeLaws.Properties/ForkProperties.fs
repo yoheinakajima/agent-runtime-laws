@@ -67,7 +67,7 @@ module ForkProperties =
             match replaySource, footprint with
             | Uncaptured, _ -> Unsound
             | _, OneShot -> Conditional
-            | _, UnknownFootprint -> Unsound
+            | _, UnknownFootprint -> Conditional
             | _ -> Sound
 
         actual.Verdict = expected
@@ -176,6 +176,34 @@ module ForkProperties =
             fun finding -> finding.Code = "inherit-one-shot-without-reexecution"
         )
 
+        Assert.Contains(
+            ServeRecordedResultWithoutReexecution(EffectId "fx-1"),
+            assessment.Obligations
+        )
+
+    [<Fact>]
+    let retained_recorded_unknown_footprint_is_conditional_not_blocked () =
+        let log = TestData.effectLog UnknownFootprint Recorded
+        let assessment = Forks.assess ExternalContinuation log.Length log
+
+        Assert.Equal(Conditional, assessment.Verdict)
+
+        Assert.Contains(
+            ResolveUnknownInheritedFootprint(EffectId "fx-1"),
+            assessment.Obligations
+        )
+
+    [<Fact>]
+    let idempotence_does_not_reconstruct_an_uncaptured_result () =
+        let log = TestData.effectLog Idempotent Uncaptured
+        let assessment = Forks.assess ExternalContinuation log.Length log
+
+        Assert.Equal(Unsound, assessment.Verdict)
+        Assert.Contains(
+            assessment.Findings,
+            fun finding -> finding.Code = "uncaptured-prefix-effect"
+        )
+
     [<Fact>]
     let cut_through_external_request_is_unsound_for_strict_replay () =
         let log = TestData.effectLog Idempotent Recorded
@@ -205,6 +233,44 @@ module ForkProperties =
         Assert.Contains(
             assessment.Findings,
             fun finding -> finding.Code = "discarded-request-may-have-executed"
+        )
+
+    [<Fact>]
+    let discarded_failed_idempotent_effect_requires_reconciliation () =
+        let descriptor = TestData.descriptor "partial-idempotent" Idempotent Recorded
+
+        let log =
+            [ TestData.event "partial-idempotent" 1 (EffectRequested descriptor)
+              TestData.event
+                  "partial-idempotent"
+                  2
+                  (EffectFailed(descriptor.Id, "remote failure")) ]
+
+        let assessment = Forks.assess CounterfactualWorld 0 log
+
+        Assert.Equal(Conditional, assessment.Verdict)
+        Assert.Contains(
+            ReconcileFailedEffect descriptor.Id,
+            assessment.Obligations
+        )
+
+    [<Fact>]
+    let discarded_failed_one_shot_may_have_partially_committed () =
+        let descriptor = TestData.descriptor "partial-one-shot" OneShot Recorded
+
+        let log =
+            [ TestData.event "partial-one-shot" 1 (EffectRequested descriptor)
+              TestData.event
+                  "partial-one-shot"
+                  2
+                  (EffectFailed(descriptor.Id, "remote failure")) ]
+
+        let assessment = Forks.assess CounterfactualWorld 0 log
+
+        Assert.Equal(Unsound, assessment.Verdict)
+        Assert.Contains(
+            assessment.Findings,
+            fun finding -> finding.Code = "discarded-failed-effect-ambiguous"
         )
 
     [<Fact>]

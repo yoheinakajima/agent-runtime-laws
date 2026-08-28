@@ -35,7 +35,7 @@ cost undefined.  With them, the implementation can refuse unsafe cuts, require
 an idempotency key, request compensation, select a snapshot, or downgrade the
 claim to ProjectionReplay.
 
-A copyable API contract is:
+A proposed copyable API contract is:
 
 \begin{equation}
 \mathsf{fork}(L,k,P) \rightarrow
@@ -44,10 +44,25 @@ A copyable API contract is:
 \mathsf{Conditional}(obligation).
 \end{equation}
 
-The receipt binds the parent, cut, observation $P$, prefix hash, environment
-premise, inherited effect identities, and zero-reexecution obligations.  In
-particular, a cut through Requested is refused unless an explicit recovery
-policy changes the requested property.
+The executable assessment represents a Conditional payload with the closed
+union
+
+\begin{align}
+\mathsf{Obligation} ::= {}&
+  \mathsf{ServeRecordedResultWithoutReexecution}(effectId) \\
+  \mid{}& \mathsf{ResolveUnknownInheritedFootprint}(effectId) \\
+  \mid{}& \mathsf{ReconcileDiscardedEffect}(effectId) \\
+  \mid{}& \mathsf{ApplyCompensation}(effectId) \\
+  \mid{}& \mathsf{ReconcileFailedEffect}(effectId).
+\end{align}
+
+The proposed receipt binds the parent, cut, observation $P$, prefix hash,
+caller-supplied environment premise, inherited effect identities, and the
+typed obligation set.  The current F\# assessor computes findings and this
+obligation set; it does not yet implement a receipt-authenticating production
+fork endpoint or verify the environment premise.  In particular, a cut through
+Requested is refused unless an explicit recovery policy changes the requested
+property.
 
 \subsection{Deterministic ordering can conceal non-confluence}
 

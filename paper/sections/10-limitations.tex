@@ -29,11 +29,24 @@ classify a read-only deterministic local model differently.  A derived content
 hash proves captured bytes, not provider authenticity, commitment, or
 idempotence.
 
+The v0 effect descriptor has no per-effect observable-set label.  Its
+CounterfactualWorld result therefore uses the selected profile's entire
+recognized external surface as $\Omega_{profile}$.  Narrower claims require
+adapter-supplied observable tags and new conformance vectors.
+
 Unknown footprint fails closed only after the adapter recognizes an event as an
 effect.  Unclassified source events remain reported signals.  The all-cut Sound
 counts therefore depend on an audited profile declaration that those event
 types do not hide external interactions.  A newly introduced effect type can
 make an old verdict false until the adapter is updated.
+
+\paragraph{Partial failure and compensation scope.}
+Failed remote operations may have partially committed before reporting an
+error.  The assessor conservatively conditions or blocks discarded failures by
+footprint, but it cannot inspect the remote system.  Likewise, successful
+compensation does not erase a temporal exposure window or third-party secondary
+effects.  A caller whose $\Omega$ includes those histories needs stronger
+reconciliation evidence than the current effect descriptor records.
 
 \paragraph{Whole-log malformedness policy.}
 The current assessor treats structural malformedness anywhere in the source log
@@ -54,7 +67,11 @@ The 121 observed forks are useful positive evidence, but all cut at
 \code{round.played} and retain no classified external request.  No observed
 fork in the public capsule crosses a recorded oracle or irreversible effect
 boundary.  The difficult cases are exercised by all-cut analysis and fixtures,
-not by an actual public fork with a no-reexecution receipt.
+not by an actual public fork with a no-reexecution receipt.  Moreover, all
+160,076 Sound public ExternalContinuation cuts precede the first classified
+effect.  The current target-environment premise is caller-supplied and has no
+implemented attestation-discharge path, so neither observed forks nor those
+Sound counts validate one.
 
 \paragraph{Bridge provenance.}
 The bridge artifact is locally content-addressed and now bound to local source

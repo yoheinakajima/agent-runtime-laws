@@ -11,10 +11,14 @@ An event envelope is a tuple
 
 \begin{equation}
  e = (id, run, seq, kind, cause, emitter).
+ \label{eq:event-envelope}
 \end{equation}
 
 The event kind is a closed sum containing domain facts, signals, effect
-lifecycle events, and evidence facts.  A log
+lifecycle events, and evidence facts.  The evidence branch includes
+\code{HazardDetected(detail)}; an envelope records it as
+\code{EvidenceRecorded(HazardDetected detail)}, and the grader treats that fact
+as an explicit blocker.  A log
 $L = \langle e_1,\ldots,e_n\rangle$ is ordered and append-only.  The pure
 reducer $\mathsf{evolve}:S\times E\rightarrow S$ yields
 
@@ -112,17 +116,21 @@ outcome.
 \quad\textsc{Fire-Activation}
 \]
 \end{minipage}
-\caption{Small-step scheduling rules.  Event selection, activation selection,
-and the fact that later activations observe earlier projected writes are
-explicit semantics.}
+\caption{Small-step scheduling rules.  Event and activation selection are
+explicit.  Emissions become visible to state only after a later
+\textsc{Process-Event} step, not within the activation batch for one trigger.}
 \label{fig:small-step}
 \end{figure}
 
 Processing a pending event first applies it to state and then computes enabled
-behaviors from the updated state.  Enabled behaviors fire sequentially.  A
-later activation handling the same triggering event therefore observes state
-changes produced by earlier activations.  This choice mirrors the ordering seam
-found in ActiveGraph and makes interference visible.
+behaviors from the updated state.  Enabled behaviors fire sequentially, but
+their emissions enter the pending queue.  Activations handling the same
+triggering event therefore observe the same projected state.  A behavior
+activated by a later-processed event observes changes committed by earlier
+\textsc{Process-Event} steps, including events materialized from prior
+activations.  This cross-event ordering seam mirrors the one found in
+ActiveGraph and is sufficient for the read/trigger interference witness in
+Section~\ref{sec:confluence}.
 
 Let $C\rightarrow_\sigma C'$ denote one legal event-processing or
 activation-firing step under scheduler $\sigma$.  Settlement repeatedly steps

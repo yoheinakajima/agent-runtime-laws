@@ -1,0 +1,380 @@
+Reporting Quality
+6 minor
+
+
+B6
+Consistency Between FIRE-ACTIVATION Rule and Same-Trigger State-Observation Claim
+Reporting Quality
+·
+Methods
+Location
+p. 4
+p. 5
+Critique
+The FIRE-ACTIVATION transition rule in Figure 2 raises a consistency concern with the prose claim in Section 2.3 that later activations observe state changes from earlier activations on the same triggering event.
+
+Justification
+The FIRE-ACTIVATION rule holds state s invariant , events materialized by one activation enter Q' as pending and are only projected into state upon a subsequent PROCESS-EVENT step. Multiple activations sharing a triggering event therefore read identical s, not an updated state. The paper should clarify that the described observation ordering operates across PROCESS-EVENT steps rather than within a single activation batch for the same trigger, since the key non-confluence witness (Counterexample 3) in fact relies on distinct triggering events and is unaffected by this narrow inconsistency.
+
+Related section
+Section 2.3 scheduling description including the sequential firing claim (p. 4); Figure 2 FIRE-ACTIVATION and PROCESS-EVENT rules (p. 5).
+
+Recommended actions
+1Revise the Section 2.3 prose to read: "A behavior activated by a later-processed event observes state changes committed by earlier PROCESS-EVENT steps, including those materialised from prior activations" , clarifying that the ordering seam operates across event-processing steps, not within a single activation batch for the same trigger.
+2Optionally add a brief parenthetical in Figure 2's caption noting that intra-trigger state visibility requires an intervening PROCESS-EVENT step.
+Work this in chat
+Set aside
+Team
+
+
+
+B7
+Definition of 'Null Divergence' as a Boundary Grade Prerequisite
+Reporting Quality
+·
+Methods
+Location
+p. 11
+p. 16
+Critique
+A minor clarification would help readers verify the 24 Boundary verdicts in Table 6: 'null divergence,' cited in Section 5.1 as a prerequisite for the bridge Boundary derivation, is not defined anywhere in the paper.
+
+Justification
+The term appears in no other section , not in the event vocabulary (Section 2.2), effect descriptor (Table 2), or conformance vectors , yet it is a stated prerequisite for a grade that underpins the bridge study's demonstration that Boundary evidence cannot promise world-state equivalence. The bridge study is scoped as illustrative and excluded from headline claims, so the practical impact is limited, but the undefined prerequisite reduces the transparency the paper claims for its grade computation.
+
+Related section
+Section 5.1 grade computation prerequisites (p. 11); Table 6 bridge Boundary verdicts (p. 16).
+
+Recommended actions
+1Add a parenthetical definition in Section 5.1, e.g.: "an explicit null divergence (a log-level assertion that no unresolved behavioral divergence was detected during reconstruction)."
+2Alternatively, include null divergence as a row in Table 2 or as a named event kind in Section 2.2 if it belongs to the closed vocabulary.
+Work this in chat
+Set aside
+Team
+
+
+
+B8
+Formal Definition of 'Hazard Event' in the Grade Vocabulary
+Reporting Quality
+·
+Methods
+Location
+p. 3
+p. 11
+p. 12
+p. 13
+Critique
+A minor clarification would help readers verify Counterexample 4: 'hazard event' is used to establish grade non-monotonicity but is not defined within the paper's closed event or effect vocabulary.
+
+Justification
+The term appears in Section 5.2 and in the named regression fixtures (Section 6.2) without entry in Section 2.2's closed event sum, Table 2's effect dimensions, or the lifecycle values. Non-monotonicity of grades is an operationally important property , foregrounded in Table 1 and Section 5.3 , and the counterexample is its only formal witness. The contextual meaning (an event that introduces a grade-lowering blocker) is clear, but the absence of a formal definition in the executable vocabulary slightly undermines the precision the paper claims for its contract-based approach.
+
+Related section
+Section 5.2 Counterexample 4 (p. 11); Section 6.2 named regression fixtures (p. 12-13); Section 2.2 event kinds (p. 3).
+
+Recommended actions
+1Add 'HazardEvent' (or equivalent) to the closed event kind sum in Section 2.2 with a one-sentence definition specifying that it introduces a grade-lowering blocker when appended to a log.
+2Alternatively, add a parenthetical in Counterexample 4: e.g., "a hazard event (a log entry whose recognized type is mapped to a grade blocker in the adapter)."
+Work this in chat
+Set aside
+Team
+
+
+
+C3
+Run-Local Sequence Field Coverage in the Observed Fork Structural Audit
+Reporting Quality
+·
+Results & Analysis
+Location
+p. 3
+p. 13
+p. 15
+Critique
+A minor clarification would help readers verify the 'zero structural mismatches' claim: the fork audit in Section 7.1.3 does not explicitly state whether the run-local seq field from the event envelope (Equation 3) was compared or was among the excluded fields.
+
+Justification
+Section 6.3 establishes events.seq as the ordering authority for normalisation, making it a structurally significant envelope field. The audit lists event ID, type, actor, payload, frame, cause, and timestamp as compared fields, while explicitly excluding child run ID and the database's global autoincrement sequence. Whether run-local seq maps to the excluded global autoincrement or is a separate field that should match is not stated; this ambiguity slightly underspecifies the basis for the abstract's zero-mismatch assertion, though it does not materially affect the structural-equality conclusion given the remaining seven matched fields.
+
+Related section
+Section 7.1.3 observed fork audit (p. 15); Equation 3 event envelope definition (p. 3); Section 6.3 ordering authority description (p. 13).
+
+Recommended actions
+1In Section 7.1.3, add a single parenthetical clarifying the treatment of seq: either confirm it equals the excluded global autoincrement (and therefore is covered by the existing exclusion) or confirm it was compared and matched, resolving the ambiguity in the zero-mismatch claim.
+Work this in chat
+Set aside
+Team
+
+
+
+D1
+Type Structure of the Conditional(obligation) Branch in the Fork API Contract
+Reporting Quality
+·
+Discussion
+Location
+p. 19
+Critique
+A minor clarification would complete the fork API contract in Equation 9: the obligation payload of the Conditional branch is described only in prose and is not given a typed structure or enumeration.
+
+Justification
+For Ok, Section 9.2 enumerates the receipt's contents. For Conditional, obligations range across structurally distinct categories , serving a recorded result without re-execution (ExternalContinuation) versus applying compensation or supplying attestation (CounterfactualWorld) , each requiring different caller actions. The paper describes these in surrounding prose, and the F# artifact implements the exhaustive patterns, but the absence of a printed union definition means the API contract as presented in the paper is formally incomplete relative to the paper's own claim that Equation 9 is a 'copyable API contract.'
+
+Related section
+Section 9.2 fork API contract discussion and Equation 9 (p. 19); Section 12.3 connection to fork safety (p. 12).
+
+Recommended actions
+1In Section 9.2, add a brief enumeration of the obligation type alongside the receipt description, e.g.: "Conditional(obligation) where obligation \u2208 {ServeFromRecord(effectId), SupplyAttestation(snapshotSpec), ApplyCompensation(compensationRef)}," mirroring the level of detail provided for Ok(child, receipt).
+Work this in chat
+Set aside
+Team
+
+
+
+A1
+Abstract Reporting of ExternalContinuation Cut Distribution
+Reporting Quality
+·
+Abstract
+Location
+p. 1
+p. 15
+Critique
+The abstract's ExternalContinuation summary could be strengthened by acknowledging the 120,969 Conditional cuts alongside the 36,251 Unsound cuts.
+
+Justification
+Table 5 shows these Conditional cuts , roughly 38% of all 317,296 cuts , each carry a concrete semantic obligation (serve committed OneShot oracle results from record without re-execution). Omitting them implicitly frames the non-Unsound majority as unproblematic, understating the obligation burden the framework identifies, though space constraints make the current selective reporting a standard and defensible choice.
+
+Related section
+Abstract (p. 1) reporting ExternalContinuation findings, and Table 5 all-cut verdicts (p. 15).
+
+Recommended actions
+1Add a brief clause to the abstract noting that beyond the 36,251 Unsound cuts, 120,969 cuts are Conditional for ExternalContinuation, each requiring the runtime to serve committed oracle results from the record; e.g., append "...while a further 120,969 carry explicit re-execution obligations."
+Work this in chat
+Set aside
+Team
+
+Analytical Approach
+5 minor
+
+
+B1
+Fail-Closed Treatment of Unknown Footprint in ExternalContinuation Assessment
+Analytical Approach
+·
+Methods
+Location
+p. 8
+p. 9
+Critique
+The ExternalContinuation verdict matrix warrants attention for the Unknown + Recorded + Committed permutation, where the current fail-closed rule produces an Unsound verdict that appears over-restrictive relative to Definition 5's stated purpose.
+
+Justification
+Definition 5 explicitly does not assert world-state equivalence , only that the child can continue safely. For an effect with a Committed lifecycle and a Recorded replay source, the runtime possesses everything required to serve the result without any live oracle call, satisfying the zero-re-execution goal. The sole uncertainty is the ontological footprint of the original execution, which concerns past world-state, not future child safety. Conflating footprint uncertainty with re-execution unsafety collapses two distinct concerns, and the paper provides no explicit argument for why this conflation is necessary under Definition 5, leaving the over-conservatism unjustified.
+
+Related section
+Definition 5 (ExternalContinuation) and Table 3 fork conditions (pp. 8-9); Section 4.1 orthogonal effect dimensions and Table 2 (p. 8); Section 6.3 fail-closed rule description (p. 13).
+
+Recommended actions
+1In Table 3 and the surrounding discussion, add a row or note explicitly addressing the Unknown + Recorded + Committed case, arguing either that the Unsound verdict is intentional (with justification) or revising it to Conditional , permitting the child to continue while flagging that world-state claims cannot be made.
+2If revised to Conditional, update Section 4.3's prose to clarify that Unknown footprint with terminal Committed lifecycle distinguishes future execution safety from past ontological uncertainty under Definition 5.
+Work this in chat
+Set aside
+Team
+
+
+
+B2
+Scoping of CounterfactualWorld Blocking Rule to Declared Observable Set Ω
+Analytical Approach
+·
+Methods
+Location
+p. 9
+p. 13
+p. 16
+Critique
+Definition 6's blocking rule for CounterfactualWorld(Ω) requires revision to condition the block on whether a discarded OneShot effect's observable falls within the declared scope Ω, rather than applying globally.
+
+Justification
+Ω is explicitly parameterised as a declared set of external observables, yet the stated rule , "discarded committed OneShot or unknown effects block the claim" , is unscoped. An effect whose observable lies entirely outside Ω (e.g., a telemetry ping when Ω covers only financial ledger entries) should not block a CounterfactualWorld(Ω) claim about that ledger. The Section 6.3 adapter already applies profile-scoped logic for Sound continuation verdicts, but this scoping is not carried through to Definition 6, producing conservatively inflated Unsound and Conditional counts in Table 6 and reducing the framework's practical utility for systems with heterogeneous, targeted observability requirements.
+
+Related section
+Definition 6 (CounterfactualWorld) (p. 9); Table 3 fork conditions (p. 9); Section 6.3 profile declaration discussion (p. 13); Table 6 bridge cut verdicts (p. 16).
+
+Recommended actions
+1Revise Definition 6 to explicitly scope the blocking condition: "Discarded committed OneShot or unknown effects whose observables intersect Ω block the claim; effects with observables entirely outside Ω do not."
+2Update Table 3 and Section 9.2's fork API discussion to reflect that CounterfactualWorld(Ω) verdicts depend jointly on the effect's footprint and its membership in Ω.
+3Note in Section 7.2 how this revised scoping would affect the bridge study's Conditional/Unsound counts.
+Work this in chat
+Set aside
+Team
+
+
+
+B3
+Coupling of ExternalContinuation to Zero-Call StrictExecutionReplay for Idempotent Effects
+Analytical Approach
+·
+Methods
+Location
+p. 8
+p. 9
+Critique
+The hard coupling of ExternalContinuation (Definition 5) to the zero-live-call requirement of StrictExecutionReplay (Definition 4) creates an internal inconsistency with the paper's claim that external footprint and replay source are orthogonal dimensions.
+
+Justification
+Definition 5 requires strict replay as a prerequisite, mandating zero oracle or tool calls regardless of footprint. For an Idempotent + Uncaptured permutation, this forces refusal of a live re-execution that is, by the framework's own definition of Idempotent, safe to repeat under an explicit key , a property that distributed systems exploit precisely to tolerate re-execution safely (Bernstein & Newcomer, 2009). Section 4.1 asserts the three dimensions are orthogonal, yet this coupling collapses footprint and replay-source into a single decision axis for this combination, producing a verdict that is more restrictive than the declared semantics of Idempotent footprint require.
+
+Related section
+Definition 4 (StrictExecutionReplay) and Definition 5 (ExternalContinuation) (pp. 8-9); Section 4.1 orthogonal effect dimensions and Table 2 (p. 8); Table 3 fork conditions (p. 9).
+
+Recommended actions
+1In Definition 5 or Table 3, add an explicit clause: for an Idempotent + Uncaptured + Committed permutation, ExternalContinuation may be assessed as Conditional (live re-execution permitted under the idempotency key) rather than Unsound, with the obligation documented in the fork receipt.
+2Add a sentence in Section 4.1 or 4.2 acknowledging that the Idempotent footprint dimension partially relaxes the zero-call constraint, clarifying the precise boundary at which the coupling applies.
+Work this in chat
+Set aside
+1 reference
+Bernstein, P.A. (2009)
+Team
+
+
+
+C1
+All-Cut Enumeration on Intra-Source-Event Normalization Positions in the Bridge Study
+Analytical Approach
+·
+Results & Analysis
+Location
+p. 13
+p. 16
+Critique
+The all-cut enumeration over the bridge study's normalized event stream generates synthetic intra-expansion cut positions , between derived facts from the same atomic source event , that do not correspond to physically executable branch points in the source log.
+
+Justification
+The authors commendably document the 1-to-N expansion (2,592 → 2,640 events) and the resulting cut count (2,664 in Table 6). At an intra-expansion cut between a fresh-reconstruction fact and its paired mediated-boundary fact, the prefix satisfies neither the full Boundary prerequisite nor valid ExternalContinuation conditions, yet these positions are included in the reported totals. The non-contiguity blocker addresses identity integrity but does not reclassify these positions as non-executable artifacts. The reported cut counts therefore include positions that are artefacts of normalisation rather than genuine fork candidates, a distinction the paper does not draw.
+
+Related section
+Section 6.3 normalization and multi-fact expansion (p. 13); Section 7.2.2 bridge cut verdicts and Table 6 (p. 16).
+
+Recommended actions
+1Add a sentence in Section 7.2.2 noting that cuts between co-derived facts from the same source event are normalization artifacts and do not represent physically executable fork points, clarifying the denominator of the 2,664 reported cuts.
+2Optionally report source-event-boundary cut counts separately from intra-expansion positions to distinguish the two populations.
+Work this in chat
+Set aside
+Team
+
+
+
+B9
+Scheduler Coverage for Positive Convergence Result on Isolated Disjoint Writers
+Analytical Approach
+·
+Methods
+Location
+p. 6
+p. 7
+p. 13
+p. 21
+Critique
+The four-scheduler positive convergence result for isolated disjoint writers could be marginally strengthened with a brief note on the coverage boundary, though the paper's existing qualification already limits the claim appropriately.
+
+Justification
+The authors commendably qualify the result as holding only "for the checked family" and explicitly frame the model's four deterministic extremes as intended coverage rather than exhaustive enumeration , the paper's limitations section likewise notes that randomised or bounded-exhaustive interleaving checks remain future work. The current framing is internally consistent with the stated scope; a brief additional sentence in Section 3.2 indicating the structural rationale for why four extremes suffice for symmetric single-trigger writers would complete the argument.
+
+Related section
+Section 3.2 isolated disjoint writers convergence result (p. 6); Section 6.2 property-based check list (pp. 12-13); Section 10 Limitations, scheduler space paragraph (p. 21).
+
+Recommended actions
+1In Section 3.2, after reporting convergence for the checked family, add a single sentence explaining why four deterministic extremes (canonical/reverse-event/reverse-activation/both-reversed) bound the symmetric single-trigger writer family, e.g. noting that for unconditional writers with disjoint keys, any interleaving reduces to one of these orderings.
+Work this in chat
+Set aside
+Team
+
+Research Design
+1 minor
+
+
+B4
+Non-Atomic External API Failures and Request/Outcome Cut Coverage
+Research Design
+·
+Methods
+Location
+p. 8
+p. 9
+p. 10
+Critique
+The Request/Outcome cut taxonomy (Figure 4) and Definition 6's blocking conditions require a discussion of non-atomic external API failures, which can produce partial external mutations under a Failed lifecycle and fall outside the current blocking logic.
+
+Justification
+Definition 6 restricts CounterfactualWorld blocks to "committed OneShot or unknown effects." In distributed systems, non-atomic operations , batch writes, multi-step remote processes , can mutate external state before returning a failure response, meaning the interpreter logs a Failed lifecycle while the world has partially changed (Gray & Reuter, 1992). This case falls between the k1 and k2 boundaries of Figure 4 yet is assigned a terminal Failed outcome, which the current blocking rule treats as safe. The resulting gap could produce a falsely Sound CounterfactualWorld verdict for a fork whose discarded suffix contains an externally partially-committed Failed effect.
+
+Related section
+Definition 6 (CounterfactualWorld) and Table 3 fork conditions (pp. 9); Figure 4 request/outcome cut regions (p. 10); Section 4.1 effect dimensions including OneShot/Compensatable description (p. 8).
+
+Recommended actions
+1Add a brief paragraph in Section 4.4 (or Section 10 Limitations) acknowledging that the k0/k1/k2 taxonomy assumes atomic external API responses; non-atomic partial-commit scenarios where a Failed outcome co-occurs with external state mutation are outside the current model.
+2Clarify that the framework's conservatism in treating Unknown footprint (rather than just Failed) provides partial mitigation, and note this as a boundary condition requiring explicit recovery policy.
+Work this in chat
+Set aside
+1 reference
+Gray, J. (1992)
+Team
+
+Interpretive Rigor
+1 minor
+
+
+B5
+Temporal Side-Effects of Compensation in CounterfactualWorld Assessment
+Interpretive Rigor
+·
+Methods
+Location
+p. 8
+p. 9
+p. 17
+Critique
+The treatment of Compensatable effects in Definition 6 could be strengthened by acknowledging that successful compensation does not guarantee temporal-window counterfactual equivalence.
+
+Justification
+Conditioning CounterfactualWorld on "reconciliation or successful compensation" assumes compensation perfectly restores the environment, but saga literature acknowledges that compensation does not retroactively erase the interval during which the original state was observable (Garcia-Molina & Salem, 1987). During that window, secondary side-effects in third-party systems (quota triggers, dependent webhooks, cron jobs) may be uncompensatable. The framework can issue a Conditional verdict for a Compensatable effect, yet the counterfactual claim may remain unsound due to temporal exposure the compensation cannot retract , a limitation the authors note in passing for sagas but do not apply to the Compensatable dimension's world-level guarantees.
+
+Related section
+Definition 6 (CounterfactualWorld) (p. 9); Table 3 fork conditions (p. 9); Section 4.1 Compensatable dimension in Table 2 (p. 8); Section 8 saga discussion (p. 17).
+
+Recommended actions
+1In Definition 6 or Section 4.1, add a qualifying sentence noting that Conditional verdicts for Compensatable effects assume compensation is both successful and timely; temporal windows during which compensated state was observable may introduce secondary effects outside the model's scope.
+2Optionally add this as a bullet in Section 10 Limitations alongside the saga reference already present in Section 8.
+Work this in chat
+Set aside
+1 reference
+Garcia-Molina, H. (1987)
+Team
+
+Data & Evidence
+1 minor
+
+
+C2
+Empirical Coverage of the Environment Attestation Discharge Pathway
+Data & Evidence
+·
+Results & Analysis
+Location
+p. 8
+p. 15
+p. 21
+Critique
+The 160,076 Sound ExternalContinuation verdicts in Table 5 validate only the trivial no-inherited-effect case, leaving the attestation-discharge mechanism , the operationally significant pathway for post-LLM-call forks , without empirical support in the public corpus.
+
+Justification
+Definition 5 specifies that the environment premise can be discharged by a snapshot identifier or fresh-environment receipt; absent such attestation, the verdict is Conditional. Inspection of the corpus shows that the 160,076 Sound cuts precede the first classified LLM request and therefore never require attestation. The paper acknowledges in Section 10 that no observed fork crosses an oracle boundary, but does not connect this explicitly to what the Sound ExternalContinuation counts in Table 5 do and do not validate. Synthetic fixtures (Section 6.2) exercise the rule mechanically, but real-corpus validation of the attestation pathway remains absent , a limit the authors note.
+
+Related section
+Definition 5 (ExternalContinuation) (p. 8); Table 5 all-cut verdicts (p. 15); Section 7.1.3 observed forks discussion (p. 15); Section 10 fork coverage limitation (p. 21).
+
+Recommended actions
+1In Section 7.1.2 or 7.3, add a sentence clarifying that the 160,076 Sound ExternalContinuation cuts are pre-effect cuts where no attestation is required, and that empirical exercise of the attestation-discharge pathway awaits a corpus containing post-effect forks with explicit environment receipts.

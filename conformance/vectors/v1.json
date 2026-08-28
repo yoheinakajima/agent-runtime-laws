@@ -106,7 +106,7 @@
       "ExpectedFacts": []
     },
     {
-      "Name": "unknown-footprint-blocks-external-continuation",
+      "Name": "recorded-unknown-footprint-conditions-external-continuation",
       "Events": [
         {
           "Kind": "effect.requested",
@@ -135,7 +135,7 @@
       ],
       "Cut": 2,
       "Property": "external-continuation",
-      "ExpectedVerdict": "unsound",
+      "ExpectedVerdict": "conditional",
       "ExpectedGrade": "observed",
       "ExpectedFacts": []
     },

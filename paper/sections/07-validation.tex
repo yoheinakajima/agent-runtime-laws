@@ -77,6 +77,15 @@ CounterfactualWorld is stricter: 4,923 runs have at least one Unsound cut
 because a discarded oracle interaction already occurred or a boundary is
 ambiguous.
 
+The 160,076 Sound ExternalContinuation cuts validate only the
+no-inherited-effect case.  A direct per-run ordinal query confirms that every
+one lies before the first classified external request, including all cuts in
+the 617 runs with no classified request.  They do not empirically validate a
+post-oracle continuation, target-environment attestation, or zero-reexecution
+receipt.  Generated properties and named fixtures exercise post-oracle verdicts
+and typed no-reexecution obligations.  The target-environment premise itself is
+not discharged by an attestation mechanism in v0 and remains unvalidated.
+
 The validator leaves domain and infrastructure types unclassified, including
 \code{behavior.started} and \code{decision.parsed}.  It likewise leaves
 \code{infra.*}, \code{round.requested}, and \code{run.completed} unclassified.  In particular,
@@ -91,8 +100,11 @@ The SQLite run table contains 121 child runs from 41 distinct parents and no
 nested child in this sample.  All forks cut at a \code{round.played} event.  The
 audit compares 16,625 parent-prefix events with the beginning of their child
 traces and finds zero mismatches in event ID, type, actor, payload, frame, cause,
-or timestamp.  Every cut event resolves.  Run identity and the database's
-global sequence are excluded because they are expected to differ.
+or timestamp.  Every cut event resolves.  Run identity and \code{events.seq}
+are excluded because they are expected to differ: in this store schema,
+\code{seq} is the database-wide autoincrement key used for ordering, not a
+run-local field.  The per-run normalized sequence is derived after export and
+was therefore not an additional physical field available for comparison.
 
 None of the 121 retained prefixes contains a classified external request, and
 none contains an unresolved request.  The observed forks therefore satisfy the
@@ -136,7 +148,10 @@ equal under a task-level observation.
 Each run's source events normalize to two additional evidence facts: fresh
 reconstruction and mediated boundary.  The 2,592 source events therefore become
 2,640 normalized events.  All 24 logs grade Boundary and all 24 are verified
-from explicit log facts.
+from explicit log facts.  The 48 additional facts create 48 diagnostic
+intra-source positions that cannot be selected as cuts in the atomic source
+log.  We therefore report source-event-boundary verdicts as the primary bridge
+result and retain every-normalized-position counts as a transformation check.
 
 \begin{table}[ht]
 \centering
@@ -145,22 +160,29 @@ from explicit log facts.
 \toprule
 Property & Sound & Conditional & Unsound \\
 \midrule
-ProjectionReplay & 2,664 & 0 & 0 \\
-ExternalContinuation & 1,992 & 288 & 384 \\
-CounterfactualWorld & 0 & 288 & 2,376 \\
+ProjectionReplay & 2,616 & 0 & 0 \\
+ExternalContinuation & 1,968 & 264 & 384 \\
+CounterfactualWorld & 0 & 264 & 2,352 \\
 \bottomrule
 \end{tabular}
-\caption{All-cut verdicts for 24 bridge logs.}
+\caption{Source-event-boundary verdicts for 24 bridge logs.}
 \label{tab:bridgecuts}
 \end{table}
 
-All 2,664 projection cuts are sound.  Every run contains a OneShot
+All 2,616 source-boundary ProjectionReplay cuts are Sound; the diagnostic over
+every normalized position is 2,664 Sound.  For completeness, the normalized
+ExternalContinuation totals are 1,992 Sound, 288 Conditional, and 384 Unsound;
+the CounterfactualWorld totals are 0 Sound, 288 Conditional, and 2,376 Unsound.
+Every run contains a OneShot
 \code{submit\_recommendation} effect.  No cut is unconditionally Sound for
 CounterfactualWorld: before the commit, the effect lies in the discarded
 suffix; after the commit, continuation is Conditional on not executing it
 again.  The result demonstrates why Boundary grade licenses effect-boundary
 operations but cannot promise a world in which discarded actions never
-happened.
+happened.  These counts use the adapter-wide $\Omega_{profile}$, under which
+\code{submit\_recommendation} is in scope.  A narrower observable set could
+change the world verdicts, but v0 has no per-effect observable tags and does not
+report such a result.
 
 \subsection{Validation status}
 
