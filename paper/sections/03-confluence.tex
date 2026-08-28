@@ -1,0 +1,116 @@
+\section{Confluence and Quiescence}
+\label{sec:confluence}
+
+The ActiveGraph architecture describes behaviors reacting until quiescence
+without a privileged orchestrator.  The working graph is then described as a
+deterministic projection of the log.  Projection of a \emph{fixed} log is
+deterministic, but the reactive loop can produce different logs under different
+legal schedules.  We separate termination from uniqueness of the terminal
+projection.
+
+\begin{definition}[Termination at a bound]
+For behavior set $B$, initial configuration $C_0$, scheduler $\sigma$, and
+bound $m$, $\settle_m(B,C_0,\sigma)$ terminates if it reaches Quiescent or
+BlockedAwaitingEffect in at most $m$ steps.  StepBoundReached is evidence of
+bounded nontermination, not a proof of infinite reduction.
+\end{definition}
+
+\begin{definition}[Schedule confluence under an observation]
+A behavior set is confluent for $C_0$ and observation $P$ when every legal
+scheduler execution that reaches a quiescent configuration reaches a unique
+normal form modulo $\simeq_P$.  Formally, if
+$C_0\rightarrow^*_{\sigma_1} C_1$ and
+$C_0\rightarrow^*_{\sigma_2} C_2$, and both $C_1$ and $C_2$ are quiescent,
+then $C_1\simeq_P C_2$.
+\end{definition}
+
+This is Church--Rosser-shaped, but the current artifact does not prove a
+Church--Rosser theorem.  It searches scheduler policies, generates restricted
+families, and preserves witnesses when the proposition fails.
+
+\subsection{A1: general termination is false}
+
+\begin{counterexample}[Self-triggering emission]
+Let a behavior trigger on signal \code{loop} and emit the same signal.  Seed the
+pending queue with \code{loop}.  Every processed signal enables the behavior,
+and every firing enqueues another signal.  No quiescent or effect-blocked
+configuration is reached.  For every generated bound from 1 through 100, the
+artifact reports StepBoundReached at that bound.
+\end{counterexample}
+
+The example is intentionally small.  It shows that purity of the reducer and
+append-only logging do not imply termination of a reactive runtime.  Detecting
+a repeated finite fingerprint would not solve the general problem: generated
+identities and sequence counters can make configurations syntactically fresh
+while their domain behavior cycles.  The implementation therefore avoids a
+heuristic \code{CycleDetected} verdict.
+
+Two natural restoring contracts remain candidates.  One assigns every
+internally emitted event a well-founded rank that strictly decreases along
+trigger edges.  The other requires an acyclic graph from event kinds to
+behavior emissions.  Both would exclude the fixture, but neither is claimed
+minimal, and both need refinement for state-dependent triggers.
+
+\subsection{A2: general confluence is false}
+
+\begin{counterexample}[Overlapping writers]
+Behaviors $\alpha$ and $\beta$ are both enabled by \code{start}.  Each emits a
+write to fact \code{winner}; $\alpha$ writes 1 and $\beta$ writes 2.  Under
+canonical activation order the emitted events are processed so that the
+terminal winner is 2.  Reversing activation order yields 1.  Both executions
+quiesce, but their projected states differ.
+\end{counterexample}
+
+FsCheck generalizes this witness over generated integer values by constructing
+distinct adjacent values.  Across the generated family, canonical and reverse
+activation schedules always disagree.  The write-set diagnostic correctly
+reports \code{winner} as a conflict.
+
+It is tempting to restore confluence by requiring declared write sets to be
+pairwise disjoint.  That condition works for a deliberately restricted family:
+single-trigger behaviors that each unconditionally write a distinct key and do
+not read other behaviors' regions or emit cross-triggering signals.  The suite
+generates up to eight such writers and checks all four scheduler policies; their
+projected states agree.
+
+Declared disjointness is not sufficient in general.
+
+\begin{counterexample}[Read/trigger interference with disjoint writes]
+Two behaviors, \code{left} and \code{right}, trigger on \code{start} and emit
+signals \code{left-ready} and \code{right-ready}.  Their declared write sets are
+empty.  A third behavior triggers on \code{left-ready}, reads whether
+\code{right-ready} is already in state, and writes the only fact
+\code{observed-right}.  All declared write sets are disjoint.  Under canonical
+event order the observer records 0; under reverse event order it records 1.
+\end{counterexample}
+
+The second witness matters because a write-write conflict detector would
+certify it.  The actual dependency crosses four surfaces: an emission, an event
+selection, trigger eligibility, and a state read.  Any useful general restoring
+condition must constrain at least behavior reads, behavior writes, emitted
+event kinds, and the trigger relation.  Under-declared dependencies must either
+be rejected or made observable by instrumentation.
+
+\subsection{Production ordering masks the question}
+
+The ActiveGraph v1.10.0 scheduler uses a FIFO queue, evaluates matching
+behaviors in registration order, and dispatches them sequentially.  Work due at
+the same delayed tick remains FIFO.  This supplies a reproducible
+\emph{ProductionOrder}, and it may be entirely appropriate as an operational
+contract.  It is not evidence that alternate legal orders have the same normal
+form.
+
+The distinction is practical.  Projection occurs before scheduler
+notification, so an earlier registered behavior can emit an event whose
+projection changes the state read by a later behavior handling the same
+original event.  Relation enumeration introduces another ordering seam when a
+backend query does not specify a canonical order.  A stable FIFO queue can hide
+both effects in ordinary replay tests.  Our scheduler tests bypass the
+production policy and vary event and activation order directly.
+
+\paragraph{Result.}
+The strongest supported conclusion is negative and conditional.  General
+termination and general confluence are false.  Isolated disjoint writers
+converge for the checked family, but declared writes alone do not restore
+confluence.  Deriving and validating a general non-interference contract is
+future work; this draft does not present a minimal side condition.

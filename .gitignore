@@ -1,0 +1,23 @@
+bin/
+obj/
+.dotnet/
+.idea/
+.vscode/
+TestResults/
+artifacts/
+*.user
+*.suo
+*.log
+
+# Local validation and PDF-render scratch space.
+/tmp/
+/output/pdf/main.pdf
+/output/pdf/*.blg
+
+# TeX intermediates when the paper is built in place.
+/paper/*.aux
+/paper/*.bbl
+/paper/*.blg
+/paper/*.out
+/paper/*.toc
+/paper/*.synctex.gz

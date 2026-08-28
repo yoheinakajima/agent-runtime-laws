@@ -1,0 +1,177 @@
+\section{Validation Against Runtime Artifacts}
+\label{sec:validation}
+
+We evaluate the laws against two independent trace corpora.  The first is a
+public, sealed Synthetic Players capsule containing an ActiveGraph SQLite
+store.  The second is a local activegraph-bridge synthetic executive study with
+explicit boundary verification.  Both contain synthetic experimental content;
+``real'' here means that we analyze the actual runtime artifacts and their
+recorded failure modes rather than invented shape fixtures.  We do not claim
+human behavioral validity or real-model performance for the bridge study.
+
+\subsection{Synthetic Players capsule}
+
+The public source is pinned to revision \code{82556ef9dae3}.  The compressed
+engine store begins SHA-256 \code{7b7fdfe64b5b}, and the capsule checksum
+ledger begins SHA-256 \code{6d80f3b19b92}.  The evidence ledger records the
+complete revision and digests.
+Running the public verifier reports:
+
+\begin{quote}
+CAPSULE VERIFICATION PASS --- 4,919 archived Phase 3--5 runs verified
+(4,916 confirmatory + 3 legacy diagnostics).
+\end{quote}
+
+The decompressed database contains 5,540 runs and 311,756 events.  Event types
+include 36,251 \code{llm.requested}, 36,227 \code{llm.responded}, and 30,397
+\code{decision.parsed} records.  The difference between request and response
+counts is reflected rather than repaired by the adapter.
+
+\subsubsection{Replay grades}
+
+All 5,540 logs grade Observed, and zero are verified \emph{from the run log
+alone}.  This does not contradict the passing capsule verifier.  The capsule
+attestation is external to each run's event stream.  A grading function that
+claims to depend on the log alone cannot silently import that attestation.
+This is a useful negative result: sealed-artifact reproducibility and
+self-describing run replayability are distinct properties.
+
+\subsubsection{All-cut results}
+
+Table~\ref{tab:syntheticcuts} reports every cut.  The projection total is
+$311{,}756 + 5{,}540 = 317{,}296$, because each run of length $n$ has $n+1$
+cuts.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Property & Sound & Conditional & Unsound \\
+\midrule
+ProjectionReplay & 317,296 & 0 & 0 \\
+ExternalContinuation & 160,076 & 120,969 & 36,251 \\
+CounterfactualWorld & 150,230 & 24,172 & 142,894 \\
+\bottomrule
+\end{tabular}
+\caption{All-cut verdicts for 5,540 Synthetic Players logs.}
+\label{tab:syntheticcuts}
+\end{table}
+
+Every projection cut is sound under the specified domain-projection
+observation.  The 36,251 ExternalContinuation-unsound cuts equal the number of
+open/cut-through LLM requests.  Conditional continuation cuts retain a
+committed OneShot oracle interaction and require serving the recorded result
+without another call.  CounterfactualWorld is stricter: 4,923 runs have at
+least one Unsound cut because a discarded oracle interaction already occurred
+or a boundary is ambiguous.
+
+The validator leaves domain and infrastructure types unclassified, including
+\code{behavior.started} and \code{decision.parsed}.  It likewise leaves
+\code{infra.*}, \code{round.requested}, and \code{run.completed} unclassified.  In particular,
+\code{round.requested} is not misclassified as an external request merely
+because its name ends in \code{requested}.
+
+\subsubsection{Observed forks}
+
+The SQLite run table contains 121 child runs from 41 distinct parents and no
+nested child in this sample.  All forks cut at a \code{round.played} event.  The
+audit compares 16,625 parent-prefix events with the beginning of their child
+traces and finds zero mismatches in event ID, type, actor, payload, frame, cause,
+or timestamp.  Every cut event resolves.  Run identity and the database's
+global sequence are excluded because they are expected to differ.
+
+None of the 121 retained prefixes contains a classified external request, and
+none contains an unresolved request.  The observed forks therefore satisfy the
+current ExternalContinuation precondition for a domain-only cut family.  This
+is strong evidence for cheap structural branching where the runtime actually
+forked.  It is not evidence for an effect-boundary fork: the observed sample
+does not contain one.
+
+\subsection{activegraph-bridge executive study}
+
+The second artifact contains 12 synthetic vendor due-diligence cases evaluated
+under two deterministic offline mock strategies, for 24 runs and 2,592 source
+events.  The manifest states that no real LLM or external provider was used and
+limits the claim to instrumentation feasibility.  It records fresh-factory
+reconstruction and enables boundary verification.
+
+The artifact files are hash-bound.  Hash prefixes for the run store, manifest,
+metrics, and paired results are \code{7a38a1e8}, \code{da1cbc3b},
+\code{9f9242e1}, and \code{f4d95dbb}, respectively; the evidence ledger records
+the complete hashes.  However,
+the containing migration-lab directory has no Git
+commit or configured remote and all source files are untracked.  The local
+result is content-addressed but not externally source-reproducible.  We retain
+the finding and state this provenance defect plainly.
+
+\subsubsection{Decision and path equivalence}
+
+The paired artifact reports 66.6667\% final-decision agreement and 0\% ordered
+tool-path agreement.  Eight of twelve pairs reach the same decision via
+different paths, yielding 66.6667\% same-decision/different-path.  This is not a
+model-quality result---both strategies are deterministic mocks.  It is an
+instrumented witness that decision equivalence and trace equivalence answer
+different questions.  A system that reports only agreement can hide total path
+divergence; a system that requires exact paths can reject decisions that are
+equal under a task-level observation.
+
+\subsubsection{Grades and cuts}
+
+Each run's source events normalize to two additional evidence facts: fresh
+reconstruction and mediated boundary.  The 2,592 source events therefore become
+2,640 normalized events.  All 24 logs grade Boundary and all 24 are verified
+from explicit log facts.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Property & Sound & Conditional & Unsound \\
+\midrule
+ProjectionReplay & 2,664 & 0 & 0 \\
+ExternalContinuation & 1,992 & 288 & 384 \\
+CounterfactualWorld & 0 & 288 & 2,376 \\
+\bottomrule
+\end{tabular}
+\caption{All-cut verdicts for 24 bridge logs.}
+\label{tab:bridgecuts}
+\end{table}
+
+All 2,664 projection cuts are sound.  Every run contains a OneShot
+\code{submit\_recommendation} effect.  No cut is unconditionally Sound for
+CounterfactualWorld: before the commit, the effect lies in the discarded
+suffix; after the commit, continuation is Conditional on not executing it
+again.  The result demonstrates why Boundary grade licenses effect-boundary
+operations but cannot promise a world in which discarded actions never
+happened.
+
+\subsection{Answers to the validation questions}
+
+The research brief posed three concrete validation tasks.
+
+\paragraph{V1: compute grade distributions.}
+Completed.  The public capsule yields Observed for 5,540 logs because
+verification is external to the log; the bridge yields Boundary for 24 logs
+because the necessary evidence is explicit.  The contrast supports log-derived
+grading rather than profile-derived labels.
+
+\paragraph{V2: inspect real forks and their preconditions.}
+Completed for the public capsule.  All 121 observed forks preserve the compared
+prefix fields and retain no classified external request.  No observed fork
+tests an oracle boundary, so that case remains open.
+
+\paragraph{V3: test production confluence conditions.}
+Partially completed.  Source audit confirms that ActiveGraph imposes FIFO plus
+registration order, which can mask non-confluence.  The property suite bypasses
+that order.  A complete inventory of production behavior reads, writes,
+emissions, triggers, and relation-order dependencies was not available, so we
+cannot certify or falsify a general production non-interference contract.
+
+\paragraph{Combined interpretation.}
+The evidence supports deterministic projection and structurally correct
+observed prefix copying.  It does not support an unrestricted claim that any
+historical cut is safely executable or environmentally counterfactual.  Those
+stronger claims require effect-complete evidence and a property-specific
+precondition.

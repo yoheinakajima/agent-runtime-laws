@@ -1,0 +1,127 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{``The log replayed'' is not one assertion}
+
+The empirical results expose a hierarchy of claims that are often collapsed in
+agent-runtime descriptions.
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Byte replay}: a serialized artifact is identical under a
+  verifier.
+  \item \textbf{Trace replay}: the same ordered semantic events are retained.
+  \item \textbf{Projection replay}: folding the events yields an equivalent
+  state under a chosen observation.
+  \item \textbf{Path replay}: the same model/tool/action sequence occurs.
+  \item \textbf{Decision equivalence}: a task-level conclusion agrees.
+  \item \textbf{Execution replay}: the run can be reproduced with zero live
+  calls by serving deterministic or recorded effect results.
+  \item \textbf{Environmental equivalence}: the external world matches the
+  world described by the retained prefix.
+\end{enumerate}
+
+None of these relations automatically implies all the others.  The bridge
+study has equal decisions in two thirds of pairs and equal ordered paths in
+none.  The Synthetic Players capsule passes an external byte-exact verifier but
+its individual logs contain no verification attestation, so they remain
+Observed under a log-alone grade.  Every prefix projects, but cuts through
+requests fail execution continuation.  These are not contradictions; they are
+different predicates.
+
+\subsection{Cheap fork is semantic before it is fast}
+
+Sharing an immutable prefix is computationally cheap.  The harder question is
+what the child is allowed to do next.  A runtime that advertises \code{fork(k)}
+should specify at least:
+
+\begin{itemize}[leftmargin=*]
+  \item the observation under which parent prefix and child are equivalent;
+  \item the ordering authority for the prefix;
+  \item whether a cut may split a request from its outcome;
+  \item how recorded results are served without re-execution;
+  \item which retained external effects are inherited;
+  \item whether the child receives an isolated/snapshotted environment or the
+  already-mutated source environment;
+  \item the treatment of external effects in a retrospectively discarded
+  suffix.
+\end{itemize}
+
+Without these clauses, ``cheap'' describes storage cost while leaving semantic
+cost undefined.  With them, the implementation can refuse unsafe cuts, require
+an idempotency key, request compensation, select a snapshot, or downgrade the
+claim to ProjectionReplay.
+
+\subsection{Deterministic ordering can conceal non-confluence}
+
+FIFO and registration order are useful engineering contracts.  They make one
+execution repeatable and improve debuggability.  But they can turn an accidental
+ordering dependency into a stable behavior, making ordinary replay tests pass
+while schedule independence remains false.  This matters when a runtime later
+parallelizes handlers, changes relation storage, distributes a queue, or moves
+from one database backend to another.
+
+The appropriate response need not be to demand full confluence.  Some systems
+may intentionally make order semantic.  The contract should then name the
+canonical order, preserve it in the log, and reject backends that cannot supply
+it.  Systems that want schedule independence need a stronger behavior
+non-interference discipline.  The current work distinguishes the choices but
+does not prescribe one universally.
+
+\subsection{The log should carry its own licenses}
+
+The gap between capsule verification and log-alone grade suggests a design
+principle: evidence needed to authorize later replay or fork should be retained
+with the run or its signed sidecar.  A minimum receipt should include canonical
+sequence, run identity, parent and cut lineage, effect request identity,
+footprint annotation, outcome linkage, response content hash, commitment or
+failure evidence, reconstruction method, and verification result.
+
+This does not require every event to be trusted merely because it is present.
+The event type must be recognized, the producer or signature may need
+authentication, and cross-event integrity must be checked.  The present
+artifact enforces structural integrity and exact recognized types but does not
+implement cryptographic attestation.  A future signed evidence capsule could
+make grade computation portable across implementations.
+
+\subsection{The graph may be a projection, but the scheduler remains real}
+
+The original minimality experiment asked whether an agent graph is fundamental
+or merely a projection over event-producing reducers.  The present findings
+support part of that intuition: replayed domain state can indeed be treated as
+a projection.  They also reveal what the reduction omits.  Once multiple
+behaviors react, event and activation order become part of the operational
+semantics unless a confluence condition removes them.  Once effects leave the
+process, the external world becomes a second state that the event projection
+can describe but not reverse.
+
+Thus reducing the runtime to a pure fold is useful but incomplete.  The deeper
+object is an event-producing transition system plus a scheduler, an effect
+interpreter, and evidence linking interpreter outcomes back to the log.  The
+graph may be derived; the ordering and effect contracts cannot be wished away.
+
+\subsection{Operational recommendations}
+
+The results suggest concrete contracts for event-sourced agent runtimes:
+
+\begin{enumerate}[leftmargin=*]
+  \item Treat production order as an explicit scheduler policy and test at
+  least event-order and activation-order perturbations.
+  \item Record behavior read, write, emission, and trigger dependencies if
+  schedule independence is a goal; a write set alone is insufficient.
+  \item Separate replay source from external footprint.  ``Cached'' does not
+  mean ``never happened'' or ``safe to repeat.''
+  \item Make request and terminal outcome a one-to-one integrity boundary.
+  Refuse a cut through Requested or Unknown without an owner-selected recovery
+  policy.
+  \item Give every fork API a property parameter or an equivalently explicit
+  mode.  Do not return a single unqualified \code{safe} Boolean.
+  \item Preserve verification and reconstruction evidence inside a portable,
+  hash-bound run capsule.
+  \item Distinguish actual observed forks from every-cut counterfactual tests.
+  The former show where users forked; the latter reveal untested hazards.
+\end{enumerate}
+
+These recommendations are compatible with F\#, C\#, Python, Rust, or
+TypeScript.  The conformance vectors intentionally encode events and expected
+verdicts in language-neutral JSON so another implementation can challenge the
+semantics.

@@ -1,0 +1,9 @@
+{"id":"ag-001","type":"run.started","payload":{}}
+{"id":"model-1","type":"model.requested","payload":{"name":"model","side_effect":"read","prompt_hash":"sha256:prompt"}}
+{"id":"model-1-response","type":"model.responded","caused_by":"model-1","payload":{"output_hash":"sha256:completion"}}
+{"id":"ag-004","type":"runtime.invocation_completed","payload":{}}
+{"id":"ag-005","type":"runtime.boundary_mediated","payload":{}}
+{"id":"ag-006","type":"runtime.clean_reconstruction","payload":{}}
+{"id":"ag-007","type":"runtime.checkpoint_recorded","payload":{}}
+{"id":"ag-008","type":"runtime.native_runtime","payload":{}}
+{"id":"ag-009","type":"runtime.verification","payload":{"ok":true}}

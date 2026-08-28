@@ -1,0 +1,8 @@
+{"id":"bridge-001","type":"bridge.run_started","payload":{}}
+{"id":"bridge-002","type":"bridge.invocation_started","payload":{}}
+{"id":"fx-email","type":"tool.requested","payload":{"name":"send-email","side_effect":"write","request_hash":"sha256:request"}}
+{"id":"fx-email-result","type":"tool.responded","caused_by":"fx-email","payload":{"response_hash":"sha256:response"}}
+{"id":"bridge-005","type":"bridge.boundary_mediated","payload":{}}
+{"id":"bridge-006","type":"bridge.clean_reconstruction","payload":{}}
+{"id":"bridge-007","type":"bridge.invocation_completed","payload":{}}
+{"id":"bridge-008","type":"bridge.verification","payload":{"ok":true}}

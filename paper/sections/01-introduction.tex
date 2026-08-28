@@ -1,0 +1,91 @@
+\section{Introduction}
+
+Agent runtimes increasingly retain an append-only record of model calls, tool
+results, human decisions, state updates, and coordination events.  Event
+sourcing makes several desirable properties seem immediate.  If state is a
+fold over the log, a run can be replayed.  If a child log shares a prefix with a
+parent, a run can be forked without recomputing that prefix.  If causes are
+recorded, artifacts can be traced back to model and tool activity.  ActiveGraph
+states these properties as consequences of making the log the source of truth
+\cite{nakajima2026log}.
+
+This paper formalizes and empirically checks the replay and fork properties
+claimed on architectural grounds in Nakajima (2026).  The relationship is
+deliberate: the earlier work describes a deployed architecture, while the
+present work asks which side conditions make its architectural claims sound.
+Negative results about the originating runtime are therefore part of the
+contribution rather than exceptions to be hidden.
+
+Two gaps motivate the work.  First, ``deterministic replay'' often means
+deterministic replay \emph{after oracle outputs have been fixed}.  This is
+useful, but the phrase suppresses operational questions.  Was the model output
+captured faithfully?  Is a request retained without its result?  Does replay
+serve the recorded result or make a new call?  Is the runtime itself
+schedule-independent, or does a particular FIFO order merely produce one
+repeatable execution?
+
+Second, event sourcing in a business application normally reconstructs
+application state; it does not claim to reverse the external world.  That
+distinction becomes load-bearing for agents.  A retrospectively discarded log
+suffix may contain an email, a charge, a delete, a publication, or a billable
+model call.  The forked trace can omit the effect, but the world cannot be
+assumed to be one in which the effect never happened.  A correct fork contract
+must say which property it preserves.
+
+The initial version of this project asked whether
+
+\begin{equation}
+  A : S \times E \rightarrow S \times F^*
+\end{equation}
+
+was the irreducible agent primitive.  That framing is not novel.  The shape is
+a Mealy-style transition system \cite{mealy1955method}, closely resembles the
+Elm update architecture \cite{elmarchitecture}, and appears in functional
+event sourcing through the Decider pattern \cite{chassaing2021decider}.  We
+concede the minimality lane and instead exploit the effects/events seam that
+becomes visible when agents interact with irreversible external systems.
+
+\paragraph{Contributions.}
+This draft makes four contributions.
+
+\begin{enumerate}[leftmargin=*]
+  \item It gives an executable operational model in which scheduler order is
+  explicit.  The model separates termination, blocking on an external effect,
+  and bounded divergence.
+
+  \item It preserves counterexamples showing that general settlement is neither
+  terminating nor confluent.  It further shows that pairwise-disjoint
+  \emph{declared writes} are insufficient when behavior reads and emitted
+  triggers interfere.  A restricted isolated-writer family does converge, but
+  we do not claim a minimal general condition.
+
+  \item It defines property-relative fork assessment over three orthogonal
+  effect dimensions: footprint, replay source, and lifecycle.  This separates
+  exact retained-prefix projection from execution replay, continuation, and a
+  counterfactual-world claim.
+
+  \item It checks the laws against 5,564 runtime logs, 314,348 source events,
+  every possible cut in each log, and 121 observed forks.  The validation finds
+  both a strong positive result---zero structural mismatches in the observed
+  shared prefixes---and sharp limitations on which hypothetical cuts license
+  continuation or counterfactual claims.
+\end{enumerate}
+
+\paragraph{Genre.}
+This is not a mechanized-proof paper.  Laws are stated as propositions, checked
+over generated families with FsCheck, and evaluated exhaustively over the cuts
+of the available logs.  A failed law produces a minimized, named regression
+fixture.  Passing checks are finite evidence over the specified generators and
+artifacts, not universal proofs.  This choice is intentional: calculi with
+machine-checked composition, termination, and information-flow results already
+exist \cite{liu2026lambdaa,garby2026llmbda}.  Our comparative advantage is an
+executable runtime contract connected to real runtime artifacts.
+
+\paragraph{Roadmap.}
+Section~\ref{sec:model} defines the executable model and observations.
+Section~\ref{sec:confluence} reports termination and confluence results.
+Section~\ref{sec:fork} defines fork properties and effect conditions.
+Section~\ref{sec:grades} connects those conditions to replayability grades.
+Sections~\ref{sec:method} and~\ref{sec:validation} describe the artifact and
+empirical validation.  We then position the work, discuss implications, and
+state limitations.

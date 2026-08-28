@@ -1,0 +1,111 @@
+\section{Executable Specification and Method}
+\label{sec:method}
+
+The artifact is a single .NET solution written in F\#.  Purity is enforced at
+the transition boundary, not imposed on the surrounding program.  The source
+contains ordinary file I/O, JSON parsing, hashing, mutable library internals,
+and command-line orchestration outside the reducer.  There is no database,
+dependency-injection container, actor framework, plugin system, network client,
+or asynchronous interpreter inside the kernel.
+
+\subsection{Artifact structure}
+
+The transition and settlement boundary consists of 594 source lines in
+\code{Domain.fs} and \code{Kernel.fs}.  Fork and grade analyzers add 799 lines,
+for 1,393 core-law lines.  Validation and conformance adapters are separate.
+This exceeds the initial 1,000-line whole-kernel target.  We report the miss
+explicitly rather than compressing away lifecycle integrity, property-relative
+findings, or lineage-bearing branches.
+
+The artifact includes:
+
+\begin{itemize}[leftmargin=*]
+  \item a closed event and effect model;
+  \item a pure projector and explicit settlement scheduler;
+  \item branch construction with parent/child identity, cut, shared prefix,
+  continuation, inherited effects, and prefix hash;
+  \item cut-level fork assessments and replay-grade computation;
+  \item an ActiveGraph/bridge JSONL normalizer and batch validator;
+  \item 44 passing tests, including FsCheck properties and named fixtures;
+  \item seven language-neutral JSON conformance vectors and a JSON Schema;
+  \item read-only SQLite export and actual-fork audit scripts;
+  \item a findings log that records failed laws as they are discovered.
+\end{itemize}
+
+All F\# projects treat warnings as errors.  Pattern matches over closed domain
+unions are exhaustive.  External effect execution is not linked into the
+kernel, so replay cannot accidentally call a model or tool through an injected
+client.
+
+\subsection{Property-based laws}
+
+FsCheck generates bounded event values, writer families, effect dimensions,
+and step bounds.  Scheduler policies are enumerated rather than sampled because
+the executable model exposes four intended extremes.  Properties include:
+
+\begin{itemize}[leftmargin=*]
+  \item deterministic projection and event-identity idempotence;
+  \item exact-bound quiescence and bounded self-cycle divergence;
+  \item convergence of isolated disjoint writers under all schedulers;
+  \item schedule dependence for generated conflicting writers;
+  \item identity, nested-collapse, projection, and suffix laws for forks;
+  \item verdict matrices across generated footprint and replay-source values;
+  \item grade-chain lattice laws and prerequisite enforcement.
+\end{itemize}
+
+FsCheck shrinking is useful for scalar values, but the semantically important
+counterexamples are named and checked in as JSON-backed fixtures.  The fixtures
+include overlapping writers, read/trigger interference despite disjoint writes,
+a self-cycle, a discarded OneShot effect, an unresolved request, malformed
+effect transitions, and forged look-alike evidence types.
+
+\subsection{Real-log normalization}
+
+Validation accepts ordered JSONL.  For SQLite-backed ActiveGraph stores, an
+export script uses \code{events.seq} as the ordering authority and emits one
+file per run.  Source domain events that are not part of the closed effect or
+evidence vocabulary remain signals and are reported by type.  The adapter does
+not infer effects from every \code{*.requested} event because real domains use
+names such as \code{round.requested}; only a closed list of known external
+request types is classified.
+
+For an external request, footprint is read from explicit side-effect metadata.
+A write without an idempotency key is OneShot; an unknown tool footprint remains
+Unknown.  Model and embedding requests default conservatively to OneShot.  A
+response is Recorded only when the log contains an explicit response hash,
+output hash, or raw output from which the validator derives a content SHA-256.
+The derived hash certifies captured replay material; it is not a provider
+receipt or proof of external commitment.
+
+Every source event is assigned a contiguous normalized sequence.  Bridge
+events can produce multiple evidence facts; this is why the bridge normalized
+count exceeds its source count.  The source event identity is retained for the
+first fact, and deterministic derived identifiers are used for additional
+facts.  Duplicate or non-contiguous normalized identity remains a blocker.
+
+\subsection{All-cut enumeration}
+
+For a normalized log of length $n$, the validator evaluates cuts
+$0,\ldots,n$.  Prefix states are computed with one scan; environmental findings
+for suffixes are accumulated in reverse.  The validator reports Sound,
+Conditional, and Unsound totals for ProjectionReplay, ExternalContinuation,
+and CounterfactualWorld, plus the number of runs containing an unsound
+counterfactual cut.
+
+Actual ActiveGraph forks require a second audit because the child trace has
+lineage and store-level sequence differences.  The SQL audit resolves the
+parent cut event, orders the parent prefix and child trace independently, and
+compares corresponding event ID, type, actor, payload, frame, cause, and
+timestamp.  Child run ID and the database's global autoincrement sequence are
+excluded by definition.  The audit separately counts retained external
+requests and unresolved boundaries.
+
+\subsection{Reproducibility discipline}
+
+Evidence entries record repository, immutable revision when available, source
+path, artifact hashes, counts, parser profile, command, publication status, and
+limitations.  Checked-in fixtures are hash-bound and explicitly marked
+synthetic or sanitized.  Private and local runtime payloads are not copied into
+the repository merely to make a test convenient.  Missing revision or source
+provenance is reported as a limitation rather than replaced with a hash-only
+claim of reproducibility.

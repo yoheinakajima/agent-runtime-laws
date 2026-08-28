@@ -1,0 +1,84 @@
+\section{Limitations and Threats to Validity}
+\label{sec:limitations}
+
+\paragraph{No mechanized proof.}
+The propositions are encoded as executable laws and checked over finite
+generators and artifacts.  A passing FsCheck property is not a proof over all
+behaviors, schedulers, or logs.  This is a conscious genre choice, but it limits
+the strength of words such as ``law.''  Future work may mechanize selected
+definitions after the operational contracts stabilize.
+
+\paragraph{No minimal confluence condition.}
+We falsify general confluence and declared-write disjointness.  We check a
+restricted isolated-writer family.  We do not establish a necessary or
+sufficient general condition over reads, writes, emissions, triggers, and state
+domains.  Calling the current restricted condition ``the'' restoring condition
+would overstate the result.
+
+\paragraph{Limited scheduler space.}
+The executable suite uses four deterministic scheduler extremes.  They expose
+the preserved counterexamples but do not enumerate every interleaving for an
+arbitrary behavior set.  Relation ordering is discussed from source audit but
+not modeled as a separate production activation dimension.
+
+\paragraph{Adapter assumptions.}
+Real-log classification relies on explicit event names and payload fields.  The
+adapter is deliberately conservative, but mistakes remain possible.  Model
+calls are treated as OneShot for cost/oracle semantics; another property might
+classify a read-only deterministic local model differently.  A derived content
+hash proves captured bytes, not provider authenticity, commitment, or
+idempotence.
+
+\paragraph{Whole-log malformedness policy.}
+The current assessor treats structural malformedness anywhere in the source log
+as a blocker for every cut, including projection.  This is fail-closed and
+appropriate for the evidence study, but it is stricter than a theorem about an
+independently authenticated well-formed prefix.  The projection suffix law is
+therefore stated only for well-formed ordered logs.
+
+\paragraph{Synthetic content.}
+The Synthetic Players capsule contains archived experimental runs, but the
+present analysis concerns runtime traces rather than human ground truth.  The
+bridge study uses deterministic offline mocks and explicitly makes no real-model
+performance claim.  Its agreement numbers illustrate equivalence relations,
+not predictive validity.
+
+\paragraph{Fork coverage.}
+The 121 observed forks are useful positive evidence, but all cut at
+\code{round.played} and retain no classified external request.  No observed
+fork in the public capsule crosses a recorded oracle or irreversible effect
+boundary.  The difficult cases are exercised by all-cut analysis and fixtures,
+not by an actual public fork with a no-reexecution receipt.
+
+\paragraph{Bridge provenance.}
+The bridge artifact is locally content-addressed but lives in an unborn Git
+repository with no remote.  A fresh external reviewer cannot reconstruct the
+source revision.  The result should remain a draft finding until the artifact
+and generator are committed or published.  This limitation is particularly
+important because provenance is part of the paper's thesis.
+
+\paragraph{Production behavior inventory.}
+The ActiveGraph source establishes FIFO and registration-order scheduling, but
+we did not recover a complete deployed behavior dependency inventory.  We
+therefore cannot say whether production behaviors satisfy a future
+non-interference condition.  Static source inspection of the scheduler is not
+production confluence validation.
+
+\paragraph{No authorization or information-flow result.}
+Effect descriptors classify replay and environmental conditions; they do not
+grant capabilities or prove that a caller is authorized.  The artifact also
+does not track secrecy labels or prove noninterference.  Those topics are
+covered by distinct systems and calculi and remain explicit non-goals.
+
+\paragraph{No performance benchmark.}
+The all-cut implementation is efficient enough for the reported corpora, but
+we make no throughput, storage, or latency claim.  ``Cheap'' in this paper is
+analyzed semantically.  A separate benchmark would be needed for production
+performance.
+
+\paragraph{Size target.}
+The core-law implementation is 1,393 lines rather than the desired roughly
+1,000.  The transition/settlement boundary remains 594 lines.  The additional
+fork and grade diagnostics improved fail-closed behavior, but the overage may
+still reduce readability.  Refactoring should preserve named findings and law
+coverage rather than optimizing only for a line count.

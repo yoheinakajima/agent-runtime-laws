@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "writeConflict": {
+    "canonicalWinner": 2,
+    "reverseWinner": 1,
+    "restoringCondition": "pairwise-disjoint declared writes"
+  },
+  "readTriggerInterference": {
+    "canonicalValue": 0,
+    "eventReverseValue": 1,
+    "finding": "disjoint declared writes are insufficient when reads and emitted triggers interfere"
+  },
+  "cycle": {
+    "expectedOutcome": "step-bound-reached",
+    "mustNotBeReportedAs": "quiescent"
+  },
+  "discardedOneShot": {
+    "findingCode": "discarded-one-shot-still-happened"
+  }
+}

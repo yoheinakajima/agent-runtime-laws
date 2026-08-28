@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/yoheinakajima/agent-runtime-laws/conformance/schema/v1.schema.json",
+  "title": "Agent Runtime Laws conformance vectors v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["SchemaVersion", "Cases"],
+  "properties": {
+    "SchemaVersion": { "const": 1 },
+    "Cases": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/case" }
+    }
+  },
+  "$defs": {
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "Kind", "Key", "Value", "EffectId", "Name", "Footprint",
+        "ReplaySource", "RequestHash", "ResponseHash", "Evidence"
+      ],
+      "properties": {
+        "Kind": {
+          "enum": [
+            "fact.set", "fact.increment", "signal", "effect.requested",
+            "effect.committed", "effect.failed", "effect.unknown", "evidence"
+          ]
+        },
+        "Key": { "type": "string" },
+        "Value": { "type": "integer" },
+        "EffectId": { "type": "string" },
+        "Name": { "type": "string" },
+        "Footprint": {
+          "enum": ["", "pure", "idempotent", "compensatable", "one-shot", "unknown"]
+        },
+        "ReplaySource": {
+          "enum": ["", "deterministic", "recorded", "uncaptured"]
+        },
+        "RequestHash": { "type": "string" },
+        "ResponseHash": { "type": "string" },
+        "Evidence": { "type": "string" }
+      }
+    },
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["Key", "Value"],
+      "properties": {
+        "Key": { "type": "string" },
+        "Value": { "type": "integer" }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "Name", "Events", "Cut", "Property", "ExpectedVerdict",
+        "ExpectedGrade", "ExpectedFacts"
+      ],
+      "properties": {
+        "Name": { "type": "string", "minLength": 1 },
+        "Events": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/event" }
+        },
+        "Cut": { "type": "integer", "minimum": 0 },
+        "Property": {
+          "enum": ["", "projection", "strict-replay", "external-continuation", "counterfactual-world"]
+        },
+        "ExpectedVerdict": { "enum": ["", "sound", "conditional", "unsound"] },
+        "ExpectedGrade": { "enum": ["", "observed", "envelope", "boundary", "checkpointed", "native"] },
+        "ExpectedFacts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fact" }
+        }
+      }
+    }
+  }
+}
