@@ -1,6 +1,6 @@
 # Findings log
 
-This file is written alongside the artifact. Failed laws are retained; they are
+This file is written alongside the artifact. Failed properties are retained; they are
 not converted into passing tests by narrowing generators after the fact.
 
 Status labels:
@@ -143,8 +143,14 @@ verifier independently passes byte-exact checks. The verification attestation
 is outside each run log, so a log-alone grading function must not infer a higher
 grade.
 
-The local activegraph-bridge study contains 24 explicitly verified offline mock
-runs. All 24 grade Boundary because the run logs themselves record fresh
+The 5,540 store runs reconcile as 4,919 verifier-covered runs, 586 other
+completed runs outside that verifier contract, and 35 incomplete runs. The
+36,251 continuation-unsound cuts likewise reconcile exactly: 36,227 linked
+request/response pairs contribute one open-boundary cut each, while 24 failed
+runs end at an unmatched request and contribute one cut each.
+
+The local bridge study contains 24 explicitly verified offline mock runs. All
+24 grade Boundary because the run logs themselves record fresh
 reconstruction and a successful mediated-boundary verification with no
 divergence.
 
@@ -181,3 +187,18 @@ available, so production satisfaction of a restoring non-interference condition
 is not claimed.
 
 Exact revisions, hashes, commands, counts, and limitations are in EVIDENCE.md.
+
+## V4 — Review and release provenance
+
+Status: locally commit-bound; public release pending owner decision.
+
+Three supplied model reviews are preserved under `reviews/2026-08-28`, with
+their consensus and dispositions recorded separately from the raw reports. The
+bridge study source and redacted release bundle are committed in the separate
+local `activegraph-model-migration-lab` repository, and the bundle verifier
+passes. That repository has no public remote, so the bridge result remains
+illustrative and is excluded from the abstract.
+
+The review round does not yet include a preserved fresh Codex report, a public
+effect-boundary fork, a production behavior-dependency inventory, or an
+external runtime corpus. Those are open evidence items, not accepted claims.

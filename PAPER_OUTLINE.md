@@ -1,4 +1,4 @@
-# Confluence and Fork-Safety in Event-Sourced Agent Runtimes
+# Replay Is a Family of Assertions: Fork-Safety in Event-Sourced Agent Runtimes
 
 Working arXiv outline, cs.AI / cs.MA. The findings ledger, not this outline, is
 the claim authority.
@@ -29,7 +29,8 @@ falsification and bounded evidence.
   2. property-relative fork-safety conditions over effect footprint, replay
      source, and lifecycle;
   3. a fail-closed replay-grade computation from retained evidence;
-  4. validation over 5,564 run logs plus 121 observed forks.
+  4. exhaustive cut assessment over 5,540 public store runs plus 121 observed
+     forks; a separate 24-run local study remains illustrative.
 
 ## 2. Executable runtime model
 
@@ -82,7 +83,7 @@ State fork soundness relative to a property, not globally:
 - external continuation;
 - counterfactual external world.
 
-Laws and findings:
+Checked identities and findings:
 
 - identity fork and nested-prefix collapse hold for trace prefixes;
 - projection commutes with retaining the same prefix;
@@ -107,7 +108,7 @@ Laws and findings:
 
 - F# executable specification; pure reducer boundary with ordinary .NET outside
   it.
-- FsCheck laws over generated logs, behaviors, and schedules.
+- FsCheck properties over generated logs, behaviors, and schedules.
 - Named minimized failures retained as regression fixtures.
 - Every-cut enumeration for real logs.
 - JSON conformance vectors and schema for independent implementations.
@@ -142,16 +143,18 @@ oracle/effect boundaries.
 | Projection cuts | 2,664 sound; 0 unsound |
 | Counterfactual cuts | 0 sound; 288 conditional; 2,376 unsound |
 
-Use the 66.7% decision agreement with 0% path agreement to motivate distinct
-equivalence relations. State prominently that this is a deterministic offline
-mock instrumentation study and its containing source directory is not yet
-committed or externally reproducible.
+Use the 66.7% decision agreement with 0% path agreement only as an illustrative
+motivation for distinct equivalence relations. State prominently that this is a
+deterministic offline mock instrumentation study whose source and redacted
+bundle are commit-bound locally but not available from a public remote.
 
 ## 8. Related work
 
-Cover every item in `docs/RELATED_WORK.md`: Decider, Elm, Mealy machines,
-lambda_A, LLMbda, MCP process calculus, Agent libOS, Effect-Transparent
-Governance, AgentSpec, ActiveGraph, and the prior Agent Algebra name collision.
+Cover every item in `docs/RELATED_WORK.md`: Decider, Elm, Mealy machines, event
+sourcing, active-database ECA rules, Newman, CRDTs, sagas, durable workflow
+engines, LangGraph, lambda_A, LLMbda, MCP process calculus, Agent libOS,
+Effect-Transparent Governance, AgentSpec, ActiveGraph, and the prior Agent
+Algebra name collision.
 
 ## 9. Discussion
 
@@ -170,7 +173,8 @@ Governance, AgentSpec, ActiveGraph, and the prior Agent Algebra name collision.
 - No real-model inference in the bridge study.
 - No complete production read/write/trigger inventory.
 - No actual fork in the public capsule crosses an external-effect boundary.
-- Bridge source provenance must be committed before paper submission.
-- Future work: mechanize selected laws after the empirical contracts stabilize,
+- Bridge source provenance must be publicly fetchable before its quantitative
+  result can support a publication claim.
+- Future work: mechanize selected properties after the empirical contracts stabilize,
   add production behavior dependency extraction, and validate a fork containing
   a recorded oracle boundary without re-execution.

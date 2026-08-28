@@ -10,13 +10,6 @@ or asynchronous interpreter inside the kernel.
 
 \subsection{Artifact structure}
 
-The transition and settlement boundary consists of 594 source lines in
-\code{Domain.fs} and \code{Kernel.fs}.  Fork and grade analyzers add 799 lines,
-for 1,393 core-law lines.  Validation and conformance adapters are separate.
-This exceeds the initial 1,000-line whole-kernel target.  We report the miss
-explicitly rather than compressing away lifecycle integrity, property-relative
-findings, or lineage-bearing branches.
-
 The artifact includes:
 
 \begin{itemize}[leftmargin=*]
@@ -29,7 +22,8 @@ The artifact includes:
   \item 44 passing tests, including FsCheck properties and named fixtures;
   \item seven language-neutral JSON conformance vectors and a JSON Schema;
   \item read-only SQLite export and actual-fork audit scripts;
-  \item a findings log that records failed laws as they are discovered.
+  \item a findings log that records failed checked properties as they are
+  discovered.
 \end{itemize}
 
 All F\# projects treat warnings as errors.  Pattern matches over closed domain
@@ -37,7 +31,7 @@ unions are exhaustive.  External effect execution is not linked into the
 kernel, so replay cannot accidentally call a model or tool through an injected
 client.
 
-\subsection{Property-based laws}
+\subsection{Property-based checks}
 
 FsCheck generates bounded event values, writer families, effect dimensions,
 and step bounds.  Scheduler policies are enumerated rather than sampled because
@@ -48,9 +42,9 @@ the executable model exposes four intended extremes.  Properties include:
   \item exact-bound quiescence and bounded self-cycle divergence;
   \item convergence of isolated disjoint writers under all schedulers;
   \item schedule dependence for generated conflicting writers;
-  \item identity, nested-collapse, projection, and suffix laws for forks;
+  \item identity, nested-collapse, projection, and suffix identities for forks;
   \item verdict matrices across generated footprint and replay-source values;
-  \item grade-chain lattice laws and prerequisite enforcement.
+  \item grade-chain mechanics and prerequisite enforcement.
 \end{itemize}
 
 FsCheck shrinking is useful for scalar values, but the semantically important
@@ -68,6 +62,14 @@ evidence vocabulary remain signals and are reported by type.  The adapter does
 not infer effects from every \code{*.requested} event because real domains use
 names such as \code{round.requested}; only a closed list of known external
 request types is classified.
+
+This choice creates an explicit adapter-coverage premise.  Unknown footprint
+fails closed once an event is classified as an effect, but an unclassified
+source event is not automatically treated as an effect.  A Sound continuation
+verdict therefore means ``Sound under the profile declaration that the listed
+unclassified types are domain-only.''  A new source type that hides an external
+interaction can invalidate that verdict.  The validator reports every such type
+so the declaration can be audited rather than silently assumed.
 
 For an external request, footprint is read from explicit side-effect metadata.
 A write without an idempotency key is OneShot; an unknown tool footprint remains
@@ -109,3 +111,9 @@ synthetic or sanitized.  Private and local runtime payloads are not copied into
 the repository merely to make a test convenient.  Missing revision or source
 provenance is reported as a limitation rather than replaced with a hash-only
 claim of reproducibility.
+
+The local bridge study follows a separate repository rule: generated developer
+artifacts remain ignored, while a deliberate redacted release bundle carries
+the store, metrics, source hashes, and verifier.  The source and bundle now have
+local Git revisions.  They are not treated as public evidence until a remote
+publishes those revisions.

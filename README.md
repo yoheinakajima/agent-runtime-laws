@@ -10,8 +10,8 @@ architecture, and the event-sourcing Decider pattern. The open problem is:
 > Under which observable conditions are deterministic replay, cheap forking,
 > and end-to-end lineage sound claims?
 
-The companion paper’s working title is “Confluence and Fork-Safety in
-Event-Sourced Agent Runtimes.” The artifact is written in F# as an executable
+The companion paper’s working title is “Replay Is a Family of Assertions:
+Fork-Safety in Event-Sourced Agent Runtimes.” The artifact is written in F# as an executable
 specification. FsCheck explores generated logs and schedules; named
 counterexamples are retained as regression fixtures.
 
@@ -62,11 +62,9 @@ recorded:
 
 The kernel never performs an effect. Interpreters remain outside the artifact.
 
-The transition and settlement boundary (`Domain.fs` plus `Kernel.fs`) is 594
-source lines. Fork and grade analyzers add 799 lines. Validation and conformance
-adapters are kept outside that count. This is larger than the initial 1,000-line
-whole-kernel target; the overage is explicit rather than hidden by deleting
-lifecycle integrity or property-relative fork diagnostics.
+The transition and settlement boundary is intentionally separated from fork,
+grade, validation, and conformance analyzers. Readability and explicit lifecycle
+integrity take priority over a line-count claim.
 
 ## Replay grades
 
@@ -105,25 +103,29 @@ Or run the complete local gate:
 ## Layout
 
 - src/AgentRuntimeLaws — the readable kernel and validation adapters
-- tests/AgentRuntimeLaws.Properties — FsCheck laws and named regressions
+- tests/AgentRuntimeLaws.Properties — FsCheck properties and named regressions
 - tests/fixtures — preserved counterexamples
 - conformance/vectors — language-neutral JSON vectors
 - conformance/schema — machine-readable JSON Schema for those vectors
 - evidence — hash-bound sanitized harness fixtures and provenance notes
 - apps/AgentRuntimeLaws.Cli — demo, conformance, and validation commands
-- FINDINGS.md — the living record of failed laws and restoring conditions
+- FINDINGS.md — the living record of failed properties and restoring conditions
 - docs/RELATED_WORK.md — explicit novelty boundary
+- reviews/2026-08-28 — preserved reviewer reports and disposition ledger
 
 ## Evidence status
 
-The public Synthetic Players capsule was verified and all 5,540 run logs were
-checked at every cut. Its 121 observed forks have zero structural mismatches
-across 16,625 retained-prefix events after excluding child run identity and the
-store's global sequence. The separate 24-run activegraph-bridge study was also
-checked, but its source directory has no commit or remote; hashes bind the local
-artifact without making it externally reproducible. No private trace payloads
-were copied into this repository. See EVIDENCE.md for exact revisions, hashes,
-counts, commands, and limitations.
+The public Synthetic Players capsule was verified and all 5,540 store runs were
+checked at every cut. Its public verifier covers 4,919 of those runs; the exact
+reconciliation is 4,919 verifier-covered, 586 other completed runs, and 35
+incomplete runs. The 121 observed forks have zero structural mismatches across
+16,625 retained-prefix events after excluding child run identity and the
+store's global sequence. The separate 24-run bridge study was also checked. Its
+source and a redacted release bundle are now commit-bound locally and the bundle
+verifier passes, but no public remote exists, so the result remains illustrative
+rather than externally reproducible. No private trace payloads were copied into
+this repository. See EVIDENCE.md for exact revisions, hashes, counts, commands,
+and limitations.
 
 ## Scope
 
@@ -136,12 +138,14 @@ This artifact does not claim:
 - capability confinement;
 - performance results.
 
-The intended contribution is executable laws, honest counterexamples, and
+The intended contribution is executable contracts, honest counterexamples, and
 validation against deployed-runtime traces. A passing property suite is
 evidence over its generators and fixtures, not a universal proof.
 
 ## Status
 
-Research v0. Kernel laws, 44 tests, conformance vectors, and deployed-trace
-validation are implemented. Claims remain provisional pending review of the
-findings and publication of the bridge artifact provenance.
+Research v0. Kernel contracts, 44 tests, conformance vectors, and deployed-trace
+validation are implemented. A three-model review round is archived and
+incorporated. Claims remain provisional pending another independent review,
+publication of the bridge artifact provenance, and validation of a public fork
+that crosses an external-effect boundary.

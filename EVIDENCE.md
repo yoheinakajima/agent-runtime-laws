@@ -70,11 +70,16 @@ Running `capsule/verify.sh` produced:
 > (4,916 confirmatory + 3 legacy diagnostics)
 
 The store contains 5,540 runs, 311,756 events, 36,251 `llm.requested` events,
-36,227 `llm.responded` events, and 30,397 `decision.parsed` events. The capsule
-verifier and the kernel answer different questions: the former verifies the
-sealed artifact, while the latter grades evidence retained inside each run log.
+36,227 `llm.responded` events, and 30,397 `decision.parsed` events. It contains
+5,505 completed and 35 incomplete runs. The verifier covers 4,916 confirmatory
+Phase 3--5 runs plus 3 legacy diagnostics. The remaining 586 completed runs are
+outside that verifier contract. The complete reconciliation is therefore
+4,919 verifier-covered + 586 other completed + 35 incomplete = 5,540 store
+runs. The capsule verifier and the kernel answer different questions: the
+former verifies the sealed artifact, while the latter grades evidence retained
+inside each run log.
 
-### All-cut law results
+### All-cut property results
 
 Command sequence:
 
@@ -99,10 +104,15 @@ dotnet run --project apps/AgentRuntimeLaws.Cli --no-build -- \
 
 All runs grade Observed because capsule verification is not recorded as an
 attestation inside each run log. The 36,251 external-continuation-unsound cuts
-are exactly the cuts through outstanding LLM requests. Conditional cuts retain
-an already committed oracle call and require serving the recorded result rather
-than re-executing it. Counterfactual-world verdicts are stricter because a call
-in the discarded suffix still occurred and may already have incurred cost.
+are exactly the cuts through outstanding LLM requests. Direct sequence audit
+found 36,227 requests immediately followed by their linked response, yielding
+one open-boundary cut each. The other 24 requests are the final event of a
+failed run, also yielding one open-boundary cut each. Thus 36,227 + 24 = 36,251;
+an unmatched request does not create later cuts because no later event exists in
+those runs. Conditional cuts retain an already committed oracle call and
+require serving the recorded result rather than re-executing it.
+Counterfactual-world verdicts are stricter because a call in the discarded
+suffix still occurred and may already have incurred cost.
 
 Unclassified domain/runtime types are reported rather than guessed:
 `behavior.started`, `behavior.completed`, `decision.parsed`, `infra.*`,
@@ -138,13 +148,22 @@ one.
 
 ### Provenance and limitation
 
-The artifact was recovered from an unpublished local checkout at
-`activegraph-model-migration-lab/artifacts/experiments/synthetic-executive-demo-v1`.
+The source study was recovered from the separate local
+`activegraph-model-migration-lab` checkout. It is not part of the public
+`activegraph-bridge` repository. Source provenance is now bound to local commit
+`54dfde4d7379f909eb04e32b9ae0d8f503fc34c1`; a deliberate redacted release
+bundle is bound to subsequent local commit
+`201efa7853b4e5e04b611ad57e8c2fd8aaa81fa5`. The bundle passes its offline
+`verify.sh`, including checksum and
+publication-policy checks. The repository still has no configured remote, so an
+external reviewer cannot fetch these commits and the result remains
+illustrative.
 
-The containing repository has no commit and no configured remote; all source
-files are untracked. The four hashes below bind this local result, but an
-external reviewer cannot reproduce source provenance until the artifact is
-committed or published.
+The redacted bundle lives at
+`activegraph-model-migration-lab/releases/synthetic-executive-demo-v1` and
+contains the manifest, metrics, paired results, compressed run store, source and
+bundle checksum ledgers, and verifier. The public `activegraph-bridge` checkout
+had unrelated local changes and was deliberately left untouched.
 
 | File | SHA-256 |
 |---|---|
@@ -159,7 +178,7 @@ scope is instrumentation feasibility only. The paired metrics recover 66.6667%
 decision agreement, 0% ordered path agreement, and 66.6667%
 same-decision/different-path cases.
 
-### All-cut law results
+### All-cut property results
 
 | Measure | Result |
 |---|---:|
@@ -193,11 +212,14 @@ the effect, continuation is conditional on not executing it again.
   effects. CounterfactualWorld is the stronger test for whether a retrospectively
   discarded suffix left the external world unchanged.
 - Adapter evidence is granted only for exact recognized event types. Names that
-  merely contain words such as `verification` remain unclassified.
+  merely contain words such as `verification` remain unclassified. A profile's
+  claim that its recognized effect-request vocabulary is complete is an
+  explicit coverage premise; unclassified domain events cannot establish a
+  complete cross-runtime footprint claim.
 - A recorded response proves replay material is present. It does not by itself
   prove an external write committed or was idempotent.
 - Unknown effect footprint, malformed lifecycle, absent ordering authority, or
-  missing receipt evidence fail closed.
+  missing receipt evidence fail closed within the declared adapter vocabulary.
 - Production behavior-set conformance remains open because no complete
   read/write/trigger inventory was available.
 
