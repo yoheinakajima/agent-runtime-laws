@@ -81,7 +81,7 @@ selectors: one chooses a pending event, and the other chooses an enabled
 activation.  Four policies are included: canonical, reverse-event,
 reverse-activation, and both reversed.
 
-Writing a configuration as $\langle s,Q,A,O,L,T\rangle$, the two load-bearing
+Writing a configuration as $\langle s,Q,A,O,L_{\mathrm{ret}},T\rangle$, the two load-bearing
 transition rules are shown in Figure~\ref{fig:small-step}.  The helper
 $\mathsf{materialize}$ turns a behavior's pure action descriptions into pending
 fact/signal events or effect-request events.  It never produces an interpreter
@@ -97,9 +97,9 @@ outcome.
  s'=\mathsf{evolve}(s,e)\quad
  A'=A\mathbin{+}\{(b,e)\mid \mathsf{trigger}_b(s',e)\}
 }{
- \langle s,Q,A,O,L,T\rangle
+ \langle s,Q,A,O,L_{\mathrm{ret}},T\rangle
  \rightarrow_{\sigma}
- \langle s',Q\setminus e,A',O,L\mathbin{+}e,T\rangle
+ \langle s',Q\setminus e,A',O,L_{\mathrm{ret}}\mathbin{+}e,T\rangle
 }
 \quad\textsc{Process-Event}
 \]
@@ -109,9 +109,9 @@ outcome.
  X=\mathsf{fire}_b(s,e)\quad
  (Q',O')=\mathsf{materialize}(Q,O,X)
 }{
- \langle s,Q,A,O,L,T\rangle
+ \langle s,Q,A,O,L_{\mathrm{ret}},T\rangle
  \rightarrow_{\sigma}
- \langle s,Q',A\setminus a,O',L,T\mathbin{+}(b,e)\rangle
+ \langle s,Q',A\setminus a,O',L_{\mathrm{ret}},T\mathbin{+}(b,e)\rangle
 }
 \quad\textsc{Fire-Activation}
 \]

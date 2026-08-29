@@ -24,8 +24,8 @@ $C_0\rightarrow^*_{\sigma_2} C_2$, and both $C_1$ and $C_2$ are quiescent,
 then $C_1\simeq_P C_2$.
 \end{definition}
 
-This is Church--Rosser-shaped, but the current artifact does not prove a
-Church--Rosser theorem.  It searches scheduler policies, generates restricted
+This proposition is structurally analogous to the Church--Rosser property, but
+the current artifact does not prove a Church--Rosser theorem.  It searches scheduler policies, generates restricted
 families, and preserves witnesses when the proposition fails.  Newman's lemma
 connects termination plus local confluence to confluence in an abstract
 rewriting system \cite{newman1942}; our first counterexample removes the
@@ -98,8 +98,10 @@ selection, trigger eligibility, and a state read.  Any useful general restoring
 condition must constrain at least behavior reads, behavior writes, emitted
 event kinds, and the trigger relation.  Under-declared dependencies must either
 be rejected or made observable by instrumentation.
+Table~\ref{tab:read-trigger-interference} shows the resulting
+schedule-dependent path surface by surface.
 
-\begin{figure}[ht]
+\begin{table}[ht]
 \centering
 \small
 \begin{tabularx}{0.96\textwidth}{@{}p{0.18\textwidth}Y Y@{}}
@@ -114,8 +116,8 @@ Write & \code{observed-right}=0 & \code{observed-right}=1 \\
 \end{tabularx}
 \caption{Counterexample 3 crosses emission, event selection, trigger
 eligibility, and a state read despite disjoint declared write sets.}
-\label{fig:read-trigger-interference}
-\end{figure}
+\label{tab:read-trigger-interference}
+\end{table}
 
 \subsection{Production ordering masks the question}
 
@@ -148,4 +150,4 @@ The strongest supported conclusion is negative and conditional.  General
 termination and general confluence are false.  Isolated disjoint writers
 converge for the checked family, but declared writes alone do not restore
 confluence.  Deriving and validating a general non-interference contract is
-future work; this draft does not present a minimal side condition.
+future work; this manuscript does not present a minimal side condition.

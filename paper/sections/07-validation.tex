@@ -65,16 +65,27 @@ CounterfactualWorld & 150,230 & 24,172 & 142,894 \\
 \end{table}
 
 Every projection cut is sound under the specified domain-projection
-observation.  The 36,251 ExternalContinuation-unsound cuts equal the number of
+observation.  The 36,251 ExternalContinuation \code{Unsound} cuts equal the number of
 open/cut-through LLM requests.  Direct sequence audit explains the equality:
 36,227 requests are immediately followed by their linked response, so each
 creates exactly one cut between request and response; the remaining 24 requests
 are the final event of failed runs, so each also creates exactly one open cut.
-Conditional continuation cuts retain a committed OneShot oracle interaction
-and require serving the recorded result without another call.
-CounterfactualWorld is stricter: 4,923 runs have at least one Unsound cut
-because a discarded oracle interaction already occurred or a boundary is
-ambiguous.
+The 120,969 \code{Conditional} continuation cuts also have a direct per-run
+identity.  For a request-bearing run with $n_r$ events, first-request ordinal
+$q_r$, and $m_r$ requests, the $q_r$ earlier cuts are \code{Sound}, each request
+contributes one open-boundary \code{Unsound} cut, and the remaining
+$n_r+1-q_r-m_r$ closed post-response cuts are \code{Conditional}.  Summing that
+last term yields 120,969; these cuts retain at least one committed OneShot oracle
+interaction and require serving recorded results without another call.
+
+CounterfactualWorld is stricter and has a separate structural identity.  In
+runs whose requests are all closed, every cut before the final response has a
+committed oracle interaction in the discarded suffix; the sum of those final
+response ordinals is 141,545.  In the 24 runs ending with an unmatched request,
+all $n_r+1$ cuts are \code{Unsound}, adding 1,349.  Thus
+$141{,}545+1{,}349=142{,}894$.  The union contains 4,923 affected runs: 4,919
+have at least one response, four open runs have none, and the other 20 open runs
+are already in the first set.
 
 The 160,076 Sound ExternalContinuation cuts validate only the
 no-inherited-effect case.  A direct per-run ordinal query confirms that every

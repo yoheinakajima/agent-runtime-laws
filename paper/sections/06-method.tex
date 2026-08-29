@@ -47,11 +47,44 @@ the executable model exposes four intended extremes.  Properties include:
   \item grade-chain mechanics and prerequisite enforcement.
 \end{itemize}
 
+The 50-test suite comprises 15 live FsCheck properties and 35 xUnit facts.
+Per-property \code{MaxTest} values range from 100 to 250, totaling 3,300
+top-level generated trials in a default full run; properties that enumerate
+schedulers or dimension values perform additional checks inside each trial.
+No fixed global replay seed is configured.  Regression reproducibility comes
+from the checked-in named fixtures rather than from repeating one pseudorandom
+stream.
+
 FsCheck shrinking is useful for scalar values, but the semantically important
 counterexamples are named and checked in as JSON-backed fixtures.  The fixtures
 include overlapping writers, read/trigger interference despite disjoint writes,
 a self-cycle, a discarded OneShot effect, an unresolved request, malformed
 effect transitions, and forged look-alike evidence types.
+
+Table~\ref{tab:vector-coverage} states the deliberately bounded role of the
+seven language-neutral vectors.  They are portability smoke tests, not an
+exhaustive cross-product of property, footprint, replay source, lifecycle, and
+obligation.
+
+\begin{table}[ht]
+\centering
+\scriptsize
+\begin{tabularx}{\textwidth}{@{}P{0.38\textwidth}Y@{}}
+\toprule
+Vector & Boundary exercised \\
+\midrule
+\path{projection-last-write-wins} & ProjectionReplay \code{Sound}; deterministic fact projection \\
+\path{discarded-one-shot-is-not-counterfactual} & CounterfactualWorld \code{Unsound}; discarded committed OneShot \\
+\path{recorded-effect-strict-replay} & StrictExecutionReplay \code{Sound}; committed Recorded result \\
+\shortstack[l]{\code{recorded-unknown-footprint-}\\\code{conditions-external-continuation}} & ExternalContinuation \code{Conditional}; unknown inherited footprint \\
+\path{outcome-without-request-is-malformed} & ProjectionReplay \code{Unsound}; lifecycle-integrity blocker \\
+\path{boundary-grade} & Boundary grade prerequisites \\
+\path{native-grade} & Native grade and prerequisite chain \\
+\bottomrule
+\end{tabularx}
+\caption{Coverage intent of the language-neutral v1 conformance vectors.}
+\label{tab:vector-coverage}
+\end{table}
 
 \subsection{Real-log normalization}
 

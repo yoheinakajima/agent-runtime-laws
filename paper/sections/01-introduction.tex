@@ -59,6 +59,34 @@ observation and evidence contract.}
 \label{fig:replay-family}
 \end{figure}
 
+Table~\ref{tab:assertion-map} makes the scope of those seven assertions
+explicit.  The four fork properties operationalize only the assertions needed
+to decide whether a particular cut may be projected, executed, continued, or
+treated as a counterfactual world.  Path and Decision remain application-level
+equivalences rather than independent fork properties in this artifact.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}P{0.14\textwidth}P{0.34\textwidth}Y@{}}
+\toprule
+Assertion & Operationalization in this paper & Evidence boundary \\
+\midrule
+Byte & Source-artifact verifier; not a fork property & External capsule verification can establish byte identity without raising a run's log-derived grade. \\
+Trace & ExactTrace and the checked prefix identities & The observed-fork audit compares semantic prefix fields modulo declared lineage exclusions. \\
+Projection & ProjectionReplay under ProjectedState or FactsOnly$(K)$ & A fixed, well-formed ordered prefix is sufficient; no effect execution occurs. \\
+Path & ExactTrace restricted to model, tool, and action events when a source schema exposes them & Not independently assessed in the submitted cut matrix; equal decisions need not imply equal paths. \\
+Decision & A source-specific task-level equivalence when decisions are present & Not an independent fork property or replay-grade license in this artifact. \\
+Execution & StrictExecutionReplay & Boundary is the first run-level grade that licenses recorded-effect re-execution in general; the cut-level assessment remains authoritative. \\
+Environment & ExternalContinuation and CounterfactualWorld$(\Omega)$ & No replay grade suffices alone; footprint coverage, a target-environment premise, and any reconciliation obligations are also required. \\
+\bottomrule
+\end{tabularx}
+\caption{Cross-map from the replay assertion family to the paper's formal and
+empirical scope.  Replay grades summarize retained evidence; they are not a
+one-to-one replacement for these assertions.}
+\label{tab:assertion-map}
+\end{table}
+
 The familiar reducer shape
 
 \begin{equation}
@@ -105,7 +133,7 @@ End-to-end lineage & Upheld in the observed scope & The 121 observed children pr
 \end{table}
 
 \paragraph{Contributions.}
-This draft makes four contributions.
+This manuscript makes four contributions.
 
 \begin{enumerate}[leftmargin=*]
   \item It defines property-relative fork assessment for projection, strict

@@ -182,6 +182,16 @@ completed runs outside that verifier contract, and 35 incomplete runs. The
 request/response pairs contribute one open-boundary cut each, while 24 failed
 runs end at an unmatched request and contribute one cut each.
 
+The other two headline counts also have direct per-run identities. For a
+request-bearing run with `n` events, first-request ordinal `q`, and `m`
+requests, the ExternalContinuation Conditional count is `n + 1 - q - m`;
+summing yields 120,969. For CounterfactualWorld, closed-response runs contribute
+the ordinal of their final response (141,545 cuts in aggregate), while the 24
+open runs contribute all of their `n + 1` cuts (1,349), yielding 142,894. The
+4,923 affected runs are the union of 4,919 runs with a response and four open
+runs with no prior response; the other 20 open runs are already in the first
+set.
+
 All 160,076 Sound ExternalContinuation cuts occur before the first classified
 external request. They validate only the no-inherited-effect case. No public
 trace in the Synthetic Players corpus validates post-oracle continuation, a
@@ -239,7 +249,7 @@ Exact revisions, hashes, commands, counts, and limitations are in EVIDENCE.md.
 
 ## V4 — Review and release provenance
 
-Status: review archive preserved; unpublished study excluded by owner decision.
+Status: review archives preserved; unpublished study excluded by owner decision.
 
 Three supplied model reviews and the later ExploreScience review are preserved
 under `reviews/2026-08-28`, with their consensus and dispositions recorded
@@ -253,3 +263,12 @@ independent Codex report and closure review are also preserved. A production
 behavior-dependency inventory and an external runtime corpus remain absent. A
 public effect-boundary conformance fork is preserved at the bridge revision
 above. These are stated evidence limits rather than accepted claims.
+
+A second Explore Science review on 2026-08-29 scored the frozen manuscript
+99/100 and reported 11 minor, zero major issues. Ten detailed issues appear in
+the supplied PDF; the eleventh, a tonal-register comment, was available only in
+the authenticated online review and is preserved separately. All 11 were
+incorporated or explicitly scoped in the subsequent review branch. The
+reviewer's suggested per-response explanation for the 120,969 Conditional cuts
+was not copied verbatim because tail positions cannot be assigned uniquely to
+individual responses; the exact per-run identity above replaces it.

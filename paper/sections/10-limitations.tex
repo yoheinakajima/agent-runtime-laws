@@ -51,6 +51,16 @@ counts therefore depend on an audited profile declaration that those event
 types do not hide external interactions.  A newly introduced effect type can
 make an old verdict false until the adapter is updated.
 
+\paragraph{Assessment snapshot and delayed hazards.}
+Every verdict is relative to the finite log snapshot presented to the assessor.
+An asynchronous failure, compensation result, webhook timeout, or other hazard
+may be appended after that assessment and downgrade a previously clean prefix.
+The artifact does not model an observation-delay distribution or prove that a
+source log is closed.  Production admission therefore requires a receipt bound
+to a source high-water mark plus an explicit closure, quiescence, or freshness
+policy and a recheck immediately before continuation.  A time window alone is
+an operational assumption, not proof that no later hazard exists.
+
 \paragraph{Partial failure and compensation scope.}
 Failed remote operations may have partially committed before reporting an
 error.  The assessor conservatively conditions or blocks discarded failures by
@@ -101,6 +111,14 @@ ActiveGraph.  The language-neutral vectors support other implementations, but
 no LangGraph, Temporal, or other independent runtime trace has yet been
 normalized.  Generalization beyond the source family is therefore conceptual
 rather than empirically demonstrated.
+
+\paragraph{Baseline conformance-vector coverage.}
+The seven language-neutral vectors cover the boundary cases listed in
+Table~\ref{tab:vector-coverage}; they do not enumerate the full verdict matrix.
+Only the unknown-inherited-footprint obligation has a dedicated Conditional
+vector.  Dedicated portable vectors for no-reexecution, discarded-effect
+reconciliation, compensation, and failed-effect reconciliation remain future
+work, although the F\# suite exercises those obligations directly.
 
 \paragraph{No authorization or information-flow result.}
 Effect descriptors classify replay and environmental conditions; they do not
