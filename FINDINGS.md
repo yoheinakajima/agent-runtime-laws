@@ -58,6 +58,16 @@ Reversing event order changes the observed value from 0 to 1.
 The general restoring condition must constrain reads, writes, emitted triggers,
 and activation eligibility. A minimal condition has not been established.
 
+Scheduler-semantics clarification: in the executable F# kernel, activations
+enabled by one triggering event read the same projected state, and emissions
+become visible only after a later event-processing step. A dedicated regression
+locks this kernel boundary; the read/trigger counterexample uses distinct later
+events and is unchanged. ActiveGraph's pinned production source is different in
+one relevant respect: it computes the match set once, but rebuilds each
+handler's view against the current graph after prior handlers may have emitted
+and synchronously projected events. The kernel result must therefore not be
+reported as evidence that production same-trigger reads are snapshot-isolated.
+
 Fixture: tests/fixtures/counterexamples.json, keys writeConflict and
 readTriggerInterference.
 
@@ -115,6 +125,29 @@ A retained committed one-shot is Conditional for external continuation. The
 branch inherits the already-mutated world and must serve the recorded result
 without re-executing the action.
 
+## B7 — Retained committed recorded effect with unknown footprint
+
+Status: checked; revised after external review.
+
+The earlier fail-closed rule marked this combination Unsound for
+ExternalContinuation. That conflated inability to make a world-state claim with
+ability to serve an already recorded result. The revised verdict is Conditional
+with a typed `ResolveUnknownInheritedFootprint` obligation. It remains Unsound
+for a discarded-suffix CounterfactualWorld claim until the footprint is known.
+
+An Idempotent plus Uncaptured result remains Unsound for ExternalContinuation:
+idempotent world mutation does not guarantee reproduction of returned bytes.
+
+## B8 — Failed effects may have partially committed
+
+Status: checked by named regressions.
+
+A Failed lifecycle is not evidence that the external world was unchanged.
+Discarded failed Idempotent or Compensatable effects are Conditional on
+reconciliation; discarded failed OneShot or Unknown effects are Unsound. A
+failed Pure effect adds no world finding. Successful compensation also does not
+erase temporal exposure or third-party secondary effects.
+
 ## G1 — Replay grades form a lattice
 
 Status: checked.
@@ -149,10 +182,11 @@ completed runs outside that verifier contract, and 35 incomplete runs. The
 request/response pairs contribute one open-boundary cut each, while 24 failed
 runs end at an unmatched request and contribute one cut each.
 
-The local bridge study contains 24 explicitly verified offline mock runs. All
-24 grade Boundary because the run logs themselves record fresh
-reconstruction and a successful mediated-boundary verification with no
-divergence.
+All 160,076 Sound ExternalContinuation cuts occur before the first classified
+external request. They validate only the no-inherited-effect case. No public
+trace in the Synthetic Players corpus validates post-oracle continuation, a
+target-environment attestation, or a zero-reexecution receipt. The separate
+public bridge conformance fixture described under V2 now exercises that case.
 
 Finding: replay grade is a property of retained evidence, not a property of an
 external claim about the artifact.
@@ -163,10 +197,25 @@ Status: observed.
 
 The store contains 121 forks from 41 distinct parents. Across 16,625 retained
 parent-prefix events there are zero structural mismatches after excluding child
-run identity and the store's global sequence number. Every observed cut is at
+run identity and `events.seq`, the store's database-wide autoincrement key. The
+normalized per-run sequence is derived after export and is not a second
+physical child field. Every observed cut is at
 round.played, and every retained prefix contains zero classified external
 requests. The actual forks therefore satisfy the current external-continuation
 precondition, but only for this domain-only cut family.
+
+A separate public activegraph-bridge fixture at revision
+`843824a44d48d816779fc0c08580ae06108fe7b6` records an actual child fork after
+one committed `one_shot + recorded` fixture-oracle effect. The generator
+directly observes one source call and no second fixture-oracle call in the
+child. Its hash-bound receipt records that inherited request `evt_008` was
+served from outcome `evt_009`; the verifier checks receipt/log consistency and
+signature-checks a caller assertion bound to the child, cut, prefix hash, and
+target fingerprint under a public conformance trust root. It does not validate
+the assertion's environmental contents. This closes the public mechanism-test
+gap, but does not establish real-provider behavior or a production identity or
+attestation system. The implementation is pinned on the public v0.2.0 release
+and default branch.
 
 The all-cuts counterfactual is much stricter: 4,923 of 5,540 runs contain at
 least one cut assessed Unsound because an oracle call in the discarded suffix
@@ -190,15 +239,17 @@ Exact revisions, hashes, commands, counts, and limitations are in EVIDENCE.md.
 
 ## V4 — Review and release provenance
 
-Status: locally commit-bound; public release pending owner decision.
+Status: review archive preserved; unpublished study excluded by owner decision.
 
-Three supplied model reviews are preserved under `reviews/2026-08-28`, with
-their consensus and dispositions recorded separately from the raw reports. The
-bridge study source and redacted release bundle are committed in the separate
-local `activegraph-model-migration-lab` repository, and the bundle verifier
-passes. That repository has no public remote, so the bridge result remains
-illustrative and is excluded from the abstract.
+Three supplied model reviews and the later ExploreScience review are preserved
+under `reviews/2026-08-28`, with their consensus and dispositions recorded
+separately from the raw reports. On 2026-08-28, the owner chose to exclude the
+unpublished local executive study from the submission. It is not used as
+evidence or cited by the manuscript; the historical review archive remains
+unchanged.
 
-The review round does not yet include a preserved fresh Codex report, a public
-effect-boundary fork, a production behavior-dependency inventory, or an
-external runtime corpus. Those are open evidence items, not accepted claims.
+ExploreScience reported 96/100 with 14 minor and zero major issues. A fresh
+independent Codex report and closure review are also preserved. A production
+behavior-dependency inventory and an external runtime corpus remain absent. A
+public effect-boundary conformance fork is preserved at the bridge revision
+above. These are stated evidence limits rather than accepted claims.

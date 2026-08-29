@@ -1,14 +1,13 @@
 \section{Validation Against Runtime Artifacts}
 \label{sec:validation}
 
-We evaluate the contracts against one public trace corpus and retain one local
-instrumented study as illustrative evidence.  The public, sealed Synthetic
-Players capsule contains an ActiveGraph SQLite store.  The local
-activegraph-bridge executive study records explicit boundary verification but
-has no public source remote.  Both contain synthetic experimental content;
-``real'' here means actual runtime artifacts rather than invented shape
-fixtures.  Neither corpus is independent of the ActiveGraph family, and we do
-not claim human behavioral validity or real-model performance.
+We evaluate the contracts against one public trace corpus and one public
+post-oracle conformance fork.  The sealed Synthetic Players capsule contains an
+ActiveGraph SQLite store.  The activegraph-bridge fixture executes an actual
+bridge fork after a committed recorded fixture-oracle effect.  Both contain
+synthetic experimental content; ``real'' here means actual runtime artifacts
+rather than invented shape fixtures.  Neither is independent of the ActiveGraph
+family, and we do not claim human behavioral validity or real-model performance.
 
 \subsection{Synthetic Players capsule}
 
@@ -77,6 +76,16 @@ CounterfactualWorld is stricter: 4,923 runs have at least one Unsound cut
 because a discarded oracle interaction already occurred or a boundary is
 ambiguous.
 
+The 160,076 Sound ExternalContinuation cuts validate only the
+no-inherited-effect case.  A direct per-run ordinal query confirms that every
+one lies before the first classified external request, including all cuts in
+the 617 runs with no classified request.  The Synthetic Players corpus alone
+therefore does not empirically validate a post-oracle continuation,
+target-environment attestation, or zero-reexecution receipt.  Generated
+properties and named fixtures exercise post-oracle verdicts and typed
+no-reexecution obligations; the public conformance fork below separately
+exercises their runtime discharge under a fixture trust root.
+
 The validator leaves domain and infrastructure types unclassified, including
 \code{behavior.started} and \code{decision.parsed}.  It likewise leaves
 \code{infra.*}, \code{round.requested}, and \code{run.completed} unclassified.  In particular,
@@ -91,8 +100,11 @@ The SQLite run table contains 121 child runs from 41 distinct parents and no
 nested child in this sample.  All forks cut at a \code{round.played} event.  The
 audit compares 16,625 parent-prefix events with the beginning of their child
 traces and finds zero mismatches in event ID, type, actor, payload, frame, cause,
-or timestamp.  Every cut event resolves.  Run identity and the database's
-global sequence are excluded because they are expected to differ.
+or timestamp.  Every cut event resolves.  Run identity and \code{events.seq}
+are excluded because they are expected to differ: in this store schema,
+\code{seq} is the database-wide autoincrement key used for ordering, not a
+run-local field.  The per-run normalized sequence is derived after export and
+was therefore not an additional physical field available for comparison.
 
 None of the 121 retained prefixes contains a classified external request, and
 none contains an unresolved request.  The observed forks therefore satisfy the
@@ -101,79 +113,65 @@ is strong evidence for cheap structural branching where the runtime actually
 forked.  It is not evidence for an effect-boundary fork: the observed sample
 does not contain one.
 
-\subsection{Illustrative local activegraph-bridge executive study}
+\subsection{Public post-oracle conformance fork}
 
-The second artifact contains 12 synthetic vendor due-diligence cases evaluated
-under two deterministic offline mock strategies, for 24 runs and 2,592 source
-events.  The manifest states that no real LLM or external provider was used and
-limits the claim to instrumentation feasibility.  It records fresh-factory
-reconstruction and enables boundary verification.
+The companion activegraph-bridge artifact is public in the v0.2.0 release and
+on the default branch at revision \code{843824a44d48}.  The complete
+\href{https://github.com/yoheinakajima/activegraph-bridge/tree/843824a44d48d816779fc0c08580ae06108fe7b6/evidence/post-oracle-fork-v1}{public post-oracle fixture and verifier}
+are revision-pinned.
+It records an actual bridge child fork after a committed effect classified as
+OneShot footprint plus Recorded replay source.  The source run makes one
+deterministic offline fixture-oracle call.  Verification and the child serve
+the committed outcome from the record, and the child diverges only after a
+changed tool result.
 
-The artifact files are hash-bound.  Hash prefixes for the run store, manifest,
-metrics, and paired results are \code{7a38a1e8}, \code{da1cbc3b},
-\code{9f9242e1}, and \code{f4d95dbb}, respectively; the evidence ledger records
-the complete hashes.  Review exposed that the containing migration-lab had no
-commit or remote.  We repaired the local half of that defect: source revision
-\code{54dfde4d7379} and release-bundle revision \code{201efa7} bind a redacted
-manifest, metrics, pairs, report, compressed run store, and verifier.  The
-repository still has no configured remote.  This result remains illustrative,
-is excluded from the abstract, and is not externally source-reproducible until
-those revisions are published.
+The receipt binds the parent and child run identities, cut boundary, parent log
+hash, exact retained-prefix hash, child log hash before receipt emission,
+inherited request and outcome identities, response hash, source and target
+runtime fingerprints, and target-environment claims.  The fixture generator
+directly observes the oracle-call counter before and after the child operation.
+The verifier checks that process-produced counter, the receipt/log hashes, and
+an HMAC-SHA256 signature under a configured trust root whose caller-issued
+claims include the child, cut, prefix, and target fingerprint.
+The published command reports:
 
-\subsubsection{Decision and path equivalence}
+\begin{quote}
+POST-ORACLE FORK RECEIPT PASS --- committed oracle served from record;
+0 inherited external calls.
+\end{quote}
 
-The paired artifact reports 66.6667\% final-decision agreement and 0\% ordered
-tool-path agreement.  Eight of twelve pairs reach the same decision via
-different paths, yielding 66.6667\% same-decision/different-path.  This is not a
-model-quality result---both strategies are deterministic mocks.  It is an
-instrumented witness that decision equivalence and trace equivalence answer
-different questions.  A system that reports only agreement can hide total path
-divergence; a system that requires exact paths can reject decisions that are
-equal under a task-level observation.
+The parent JSONL digest begins \code{884e8ae34296}; the child begins
+\code{747305a6774a}.  The receipt file begins \code{da5503a80b92}, and its
+canonical internal receipt hash begins \code{5d36df7dc177}.  The verified receipt names inherited request
+\code{evt\_008}, its recorded outcome \code{evt\_009}, one source oracle call,
+and zero inherited external calls in the fork.
 
-\subsubsection{Grades and cuts}
-
-Each run's source events normalize to two additional evidence facts: fresh
-reconstruction and mediated boundary.  The 2,592 source events therefore become
-2,640 normalized events.  All 24 logs grade Boundary and all 24 are verified
-from explicit log facts.
-
-\begin{table}[ht]
-\centering
-\small
-\begin{tabular}{@{}lrrr@{}}
-\toprule
-Property & Sound & Conditional & Unsound \\
-\midrule
-ProjectionReplay & 2,664 & 0 & 0 \\
-ExternalContinuation & 1,992 & 288 & 384 \\
-CounterfactualWorld & 0 & 288 & 2,376 \\
-\bottomrule
-\end{tabular}
-\caption{All-cut verdicts for 24 bridge logs.}
-\label{tab:bridgecuts}
-\end{table}
-
-All 2,664 projection cuts are sound.  Every run contains a OneShot
-\code{submit\_recommendation} effect.  No cut is unconditionally Sound for
-CounterfactualWorld: before the commit, the effect lies in the discarded
-suffix; after the commit, continuation is Conditional on not executing it
-again.  The result demonstrates why Boundary grade licenses effect-boundary
-operations but cannot promise a world in which discarded actions never
-happened.
+This exercises the previously missing implementation path for a public
+conformance case.  In this deterministic offline fixture, an inherited recorded
+oracle outcome crosses a fork boundary with no second observed fixture-oracle
+call.  A caller-issued target-environment assertion is signature-checked and
+bound to that fork under a configured trust root; the verifier does not inspect
+or independently establish the asserted environment contents.  The HMAC key is
+deliberately published as a fixture key.  The result does not attest a real
+provider, production identity, model quality, or production environmental
+fidelity.
 
 \subsection{Validation status}
 
 \paragraph{V1: compute grade distributions.}
-Completed.  The public capsule yields Observed for 5,540 logs because
-verification is external to the log; the bridge yields Boundary for 24 logs
-because the necessary evidence is explicit.  The contrast supports log-derived
-grading rather than profile-derived labels.
+Completed for the public corpus.  The capsule yields Observed for 5,540 logs
+because verification is external to each run log.  The result supports
+log-derived grading rather than profile-derived labels and separates a sealed
+artifact's verification from evidence carried by an individual run.
 
 \paragraph{V2: inspect real forks and their preconditions.}
-Completed for the public capsule.  All 121 observed forks preserve the compared
-prefix fields and retain no classified external request.  No observed fork
-tests an oracle boundary, so that case remains open.
+Completed for the public capsule and the public conformance fixture.  All 121
+observed corpus forks preserve the compared prefix fields and retain no
+classified external request.  The companion fixture tests one actual bridge
+fork after a committed recorded oracle call.  Its generator observes no second
+fixture-oracle call; its verifier checks receipt/log consistency and a
+fork-bound caller assertion under a public conformance key.  It is conformance
+evidence, not a real-provider or production-attestor result.
 
 \paragraph{V3: test production confluence conditions.}
 Partially completed.  Source audit confirms that ActiveGraph imposes FIFO plus
@@ -183,8 +181,9 @@ emissions, triggers, and relation-order dependencies was not available, so we
 cannot certify or falsify a general production non-interference contract.
 
 \paragraph{Combined interpretation.}
-The evidence supports deterministic projection and structurally correct
-observed prefix copying.  It does not support an unrestricted claim that any
-historical cut is safely executable or environmentally counterfactual.  Those
-stronger claims require effect-complete evidence and a property-specific
-precondition.
+The evidence supports deterministic projection, structurally correct observed
+prefix copying, and one public offline post-oracle fixture in which no second
+fixture-oracle call was observed and a caller environment assertion was
+fork-bound.  It does not support an unrestricted claim that any historical cut
+is safely executable or environmentally counterfactual.  Those stronger claims
+require effect-complete evidence and a property-specific precondition.

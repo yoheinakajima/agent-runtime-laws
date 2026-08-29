@@ -19,7 +19,7 @@ The artifact includes:
   continuation, inherited effects, and prefix hash;
   \item cut-level fork assessments and replay-grade computation;
   \item an ActiveGraph/bridge JSONL normalizer and batch validator;
-  \item 44 passing tests, including FsCheck properties and named fixtures;
+  \item 50 passing tests, including FsCheck properties and named fixtures;
   \item seven language-neutral JSON conformance vectors and a JSON Schema;
   \item read-only SQLite export and actual-fork audit scripts;
   \item a findings log that records failed checked properties as they are
@@ -83,24 +83,35 @@ Every source event is assigned a contiguous normalized sequence.  Bridge
 events can produce multiple evidence facts; this is why the bridge normalized
 count exceeds its source count.  The source event identity is retained for the
 first fact, and deterministic derived identifiers are used for additional
-facts.  Duplicate or non-contiguous normalized identity remains a blocker.
+facts.  Duplicate or non-contiguous normalized identity remains a blocker.  The
+normalizer also retains the cumulative cut after each atomic source event.
+These source-boundary positions are reported separately from diagnostic cuts
+between co-derived facts.
 
 \subsection{All-cut enumeration}
 
 For a normalized log of length $n$, the validator evaluates cuts
 $0,\ldots,n$.  Prefix states are computed with one scan; environmental findings
-for suffixes are accumulated in reverse.  The validator reports Sound,
-Conditional, and Unsound totals for ProjectionReplay, ExternalContinuation,
-and CounterfactualWorld, plus the number of runs containing an unsound
-counterfactual cut.
+for suffixes are accumulated in reverse.  It reports both (i) every normalized
+position, useful for checking the executable transformation, and (ii) only
+source-event boundaries, which are the physically meaningful fork candidates
+in the source trace.  The validator reports Sound, Conditional, and Unsound
+totals for ProjectionReplay, ExternalContinuation, and CounterfactualWorld,
+plus the number of runs containing an unsound counterfactual cut.
 
 Actual ActiveGraph forks require a second audit because the child trace has
 lineage and store-level sequence differences.  The SQL audit resolves the
 parent cut event, orders the parent prefix and child trace independently, and
 compares corresponding event ID, type, actor, payload, frame, cause, and
-timestamp.  Child run ID and the database's global autoincrement sequence are
-excluded by definition.  The audit separately counts retained external
-requests and unresolved boundaries.
+timestamp.  In this SQLite schema, \code{events.seq} is the database-wide
+autoincrement primary key, not a run-local envelope field.  It is used to order
+each trace and excluded from equality because copied child events receive new
+store positions.  The normalizer then assigns the contiguous per-run sequence
+used by Equation~\ref{eq:event-envelope}; that derived ordinal is not a second physical field in the
+fork audit.  Child run ID is also excluded.  The audit separately counts
+retained external requests and unresolved boundaries using the same explicit
+request/outcome vocabulary as the normalizer; unknown event types remain
+unclassified rather than being inferred as effects.
 
 \subsection{Reproducibility discipline}
 
@@ -111,9 +122,3 @@ synthetic or sanitized.  Private and local runtime payloads are not copied into
 the repository merely to make a test convenient.  Missing revision or source
 provenance is reported as a limitation rather than replaced with a hash-only
 claim of reproducibility.
-
-The local bridge study follows a separate repository rule: generated developer
-artifacts remain ignored, while a deliberate redacted release bundle carries
-the store, metrics, source hashes, and verifier.  The source and bundle now have
-local Git revisions.  They are not treated as public evidence until a remote
-publishes those revisions.

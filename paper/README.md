@@ -16,11 +16,18 @@ The checked-in review copy is
 `../output/pdf/agent-runtime-laws-paper-draft.pdf`. Build logs and visual-QA
 scratch renders are intentionally excluded from version control.
 
-The draft is not publication-approved. Before submission:
+The owner approved this candidate for public freeze and submission on
+2026-08-28. The remaining release checklist is:
 
-1. publish or commit the bridge study artifact so its source provenance is
-   externally reproducible;
-2. review every related-work characterization against the cited primary source;
-3. freeze the F# artifact revision and replace the draft repository placeholder;
-4. rerun the capsule and all-cut tables from that revision;
-5. complete an author and independent technical review.
+1. **Completed:** publish and pin, in the public v0.2.0 release, a post-oracle bridge
+   fixture whose generator observes no second fixture-oracle call and whose
+   verifier checks a hash-bound receipt plus fork-bound caller assertion;
+2. **Completed:** exclude the unpublished local executive study from the
+   submission while preserving its historical review record;
+3. **Completed for release:** make `agent-runtime-laws` public and freeze the
+   submission revision as `arxiv-v1`;
+4. **Completed:** rerun the capsule, all-cut tables, code gate, and PDF QA from
+   the release candidate;
+5. **Completed:** preserve and resolve the independent technical review
+   dispositions and obtain owner approval; complete any author declarations
+   required by the submission service.

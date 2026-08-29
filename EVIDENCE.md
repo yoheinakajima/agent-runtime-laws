@@ -2,8 +2,9 @@
 
 The validation harness is read-only. It normalizes ordered JSONL logs into the
 kernel event model, computes a replay grade, evaluates every cut from zero
-through the normalized log length, and reports unclassified source event types.
-External verification is not silently promoted into log evidence.
+through the normalized log length, separately reports atomic source-event
+boundaries, and reports unclassified source event types. External verification
+is not silently promoted into log evidence.
 
 ## Checked-in harness fixtures
 
@@ -16,6 +17,7 @@ and fail-closed behavior only.
 | evidence/fixtures/activegraph-sanitized.jsonl | activegraph | effect lifecycle adapter | synthetic, sanitized, shape-conformant |
 | tests/fixtures/activegraph-recorded.jsonl | activegraph | recorded-result regression | authored test fixture |
 | tests/fixtures/fail-closed.jsonl | activegraph | unknown-footprint regression | authored test fixture |
+| tests/fixtures/bridge-multi-derived.jsonl | bridge | source-boundary versus intra-expansion cut regression | authored test fixture |
 
 `evidence/manifest.json` binds evidence fixtures by SHA-256 and refuses entries
 without source receipts or an explicit public/sanitized declaration. The
@@ -34,11 +36,22 @@ language-neutral vectors have a JSON Schema at
 The production scheduler is FIFO, matches behaviors in registration order, and
 dispatches sequentially. Delayed work at the same tick retains FIFO order.
 This is a deterministic policy for one schedule, not evidence of confluence
-under other legal schedules. Projection occurs before notification, so an
-earlier registered behavior can change state observed by a later behavior
-handling the same original event. Relation enumeration has no documented
-canonical ordering. The kernel therefore treats ProductionOrder as one policy
-and separately permutes event order and activation order.
+under other legal schedules. `Registry.match` fixes the enabled behaviors and
+their relation/pattern matches before the handler loop. Each invocation then
+calls `build_view` against the current graph. A handler's `BehaviorGraph.emit`
+calls `Graph.emit`, which appends and projects synchronously before the emitted
+event is queued for later behavior matching. An earlier handler can therefore
+change state read by a later handler of the same triggering event, even though
+it cannot change that trigger's already-computed activation set. Relation
+enumeration has no documented canonical ordering.
+
+The executable kernel deliberately chooses a narrower snapshot semantics:
+activations for one trigger read the same state, while emitted events become
+visible at later event-processing steps. Its properties therefore check the
+kernel contract rather than reproducing ActiveGraph's per-invocation view
+refresh. The later-event read/trigger counterexample remains applicable, and
+the production source audit supplies an additional reason not to infer
+schedule independence from one stable ProductionOrder.
 
 The public repository has a deterministic nine-event golden log and an offline
 quickstart fixture, but no committed production capsule or production SQLite
@@ -114,6 +127,47 @@ require serving the recorded result rather than re-executing it.
 Counterfactual-world verdicts are stricter because a call in the discarded
 suffix still occurred and may already have incurred cost.
 
+A separate ordinal query confirms that all 160,076 Sound
+ExternalContinuation cuts occur before the first classified external request;
+617 runs contain no classified request at all. The public corpus therefore does
+not empirically validate a post-oracle continuation, a target-environment
+attestation, or a zero-reexecution receipt. The F# assessor takes the target
+environment as a supplied premise and computes typed obligations; the companion
+bridge fixture below separately implements and tests a deployment-side
+receipt path that signature-checks and fork-binds a caller-issued environment
+assertion without independently validating its contents.
+
+The confirming read-only SQLite query was:
+
+~~~sql
+WITH ordered AS (
+  SELECT
+    run_id,
+    type,
+    ROW_NUMBER() OVER (PARTITION BY run_id ORDER BY seq) AS ordinal,
+    COUNT(*) OVER (PARTITION BY run_id) AS n
+  FROM events
+),
+per_run AS (
+  SELECT
+    run_id,
+    MAX(n) AS n,
+    MIN(CASE WHEN type IN (
+      'llm.requested', 'model.requested', 'embedding.requested',
+      'tool.requested', 'human.requested', 'retrieval.requested',
+      'external.requested', 'effect.requested'
+    ) THEN ordinal END) AS first_request
+  FROM ordered
+  GROUP BY run_id
+)
+SELECT
+  SUM(CASE WHEN first_request IS NULL THEN n + 1 ELSE first_request END),
+  SUM(CASE WHEN first_request IS NULL THEN 1 ELSE 0 END),
+  COUNT(*)
+FROM per_run;
+-- 160076 | 617 | 5540
+~~~
+
 Unclassified domain/runtime types are reported rather than guessed:
 `behavior.started`, `behavior.completed`, `decision.parsed`, `infra.*`,
 `object.created`, `patch.applied`, `round.played`, `round.requested`,
@@ -138,68 +192,68 @@ Unclassified domain/runtime types are reported rather than guessed:
 | Unresolved retained requests | 0 |
 
 These observed forks preserve every compared retained-prefix field: event ID,
-type, actor, payload, frame, cause, and timestamp. Child run identity and the
-store's global sequence number are intentionally excluded. The forks satisfy
+type, actor, payload, frame, cause, and timestamp. Child run identity and
+`events.seq` are intentionally excluded. In this schema, `events.seq` is the
+database-wide autoincrement primary key used to order each run, not a run-local
+envelope field; the per-run contiguous sequence is derived only after export.
+The forks satisfy
 the current external-continuation precondition, but they do not validate cuts
 through external effects because none of the 121 retained prefixes contains
 one.
 
-## activegraph-bridge synthetic-executive-demo-v1
+## Public activegraph-bridge post-oracle fork receipt
 
-### Provenance and limitation
+### Provenance
 
-The source study was recovered from the separate local
-`activegraph-model-migration-lab` checkout. It is not part of the public
-`activegraph-bridge` repository. Source provenance is now bound to local commit
-`54dfde4d7379f909eb04e32b9ae0d8f503fc34c1`; a deliberate redacted release
-bundle is bound to subsequent local commit
-`201efa7853b4e5e04b611ad57e8c2fd8aaa81fa5`. The bundle passes its offline
-`verify.sh`, including checksum and
-publication-policy checks. The repository still has no configured remote, so an
-external reviewer cannot fetch these commits and the result remains
-illustrative.
-
-The redacted bundle lives at
-`activegraph-model-migration-lab/releases/synthetic-executive-demo-v1` and
-contains the manifest, metrics, paired results, compressed run store, source and
-bundle checksum ledgers, and verifier. The public `activegraph-bridge` checkout
-had unrelated local changes and was deliberately left untouched.
-
-| File | SHA-256 |
+| Field | Value |
 |---|---|
-| `runs.db` | `7a38a1e8dce58bbc7a82ce019c7d05fde815f4bf81cfbd73f2d8eb0bc8d0730c` |
-| `manifest.json` | `da1cbc3bd8ba6c9662e6daba10cdc79ec16a721923e9be929a746f7a46107af6` |
-| `metrics.json` | `9f9242e1d064aa5f211cf8976c97c8594364ae5cb221081743fc08a877ee008c` |
-| `pairs.json` | `f4d95dbb413936d59685b16133698617c6a7fed3e16a335ea26dd3bf4ca55110` |
+| Repository | https://github.com/yoheinakajima/activegraph-bridge |
+| Pull request | https://github.com/yoheinakajima/activegraph-bridge/pull/2 (merged) |
+| Release | https://github.com/yoheinakajima/activegraph-bridge/releases/tag/v0.2.0 |
+| Revision | `843824a44d48d816779fc0c08580ae06108fe7b6` |
+| Fixture | `evidence/post-oracle-fork-v1` |
+| Publication status | public v0.2.0 source release, immutable revision pinned |
 
-The manifest records 12 synthetic cases, two deterministic offline mock
-strategies, 24 runs, no real model, and verification enabled. Its stated claim
-scope is instrumentation feasibility only. The paired metrics recover 66.6667%
-decision agreement, 0% ordered path agreement, and 66.6667%
-same-decision/different-path cases.
+The fixture, merged to the public default branch, records an actual bridge fork after one committed recorded
+fixture-oracle call. The inherited effect is classified `one_shot + recorded`
+with `provider.cost` and `provider.oracle` observables. The parent makes one
+deterministic offline oracle call. The generator directly observes the call
+counter before and after the child operation. Verification and the child serve
+request `evt_008` from recorded outcome `evt_009`; that process-produced
+inherited-prefix external-call count is zero. A changed tool result creates a
+divergent child tail.
 
-### All-cut property results
+| File or field | SHA-256 / value |
+|---|---|
+| `parent.jsonl` | `884e8ae3429604b2d7a24dd7fff56c05f8d471427256faeadda18047d5c7c176` |
+| `child.jsonl` | `747305a6774a3a505820a4b6a2ccbaf3556fb40d76dbef4d83873b9a483faaa6` |
+| `receipt.json` | `da5503a80b9276f13f0fe37ce4cbf61a3ddb2416a7ec64c664084ca1f7883164` |
+| `environment-attestation.json` | `43a0e7bb6dec6ba9bca578f87b169ecb02224dcf8e82702ea0860a6678ccc584` |
+| `manifest.json` | `dac48a19b35b6c72756ee3cb38a923670685c01a70ac2216d4880fe891f82f07` |
+| canonical prefix hash | `3de3251368f20c4da2d234ac101e8a31b7b3142ede845157d9dcf39d69ccd8e4` |
+| canonical receipt hash | `5d36df7dc177a9801fa8ff6a4b070612fd0b16e4c45207825498fda03af3d3f0` |
+| source oracle calls | 1 |
+| inherited external calls in fork | 0 |
 
-| Measure | Result |
-|---|---:|
-| Runs | 24 |
-| Source / normalized events | 2,592 / 2,640 |
-| Grade distribution | Boundary: 24 |
-| Verified from log alone | 24 |
-| Projection cuts | Sound 2,664; Conditional 0; Unsound 0 |
-| External-continuation cuts | Sound 1,992; Conditional 288; Unsound 384 |
-| Counterfactual-world cuts | Sound 0; Conditional 288; Unsound 2,376 |
-| Runs with a counterfactual-unsound cut | 24 |
+The receipt binds parent and child identities, the cut, source/prefix/child-log
+hashes, inherited request and outcome identities, source and target runtime
+fingerprints, and target-environment claims. The verifier rejects receipt,
+attestation, or log tampering; verifies an HMAC-SHA256 signature using a
+configured trust root; binds the caller-issued assertion to the child, cut,
+prefix, and target fingerprint; and checks receipt/log consistency around the
+process-produced zero-call counter. It does not inspect or independently
+establish the asserted environment contents.
 
-Boundary grade is derived only when a run log explicitly records fresh-factory
-reconstruction and a successful verification event with an effects-served
-count and null divergence. The normalized count is 48 events higher because
-those 24 source events each establish two distinct evidence facts.
+~~~bash
+./evidence/post-oracle-fork-v1/verify.sh
+# POST-ORACLE FORK RECEIPT PASS — committed oracle served from record;
+# 0 inherited external calls
+~~~
 
-Every run contains a one-shot `submit_recommendation` effect. Consequently, no
-cut supports an unconditional claim that the external world is as if the run
-never happened: before the effect, it appears in the discarded suffix; after
-the effect, continuation is conditional on not executing it again.
+The HMAC key is deliberately published as a conformance trust root. This is
+evidence for the receipt protocol and zero-reexecution mechanism, not for a real
+provider, production identity, model quality, or production environmental
+fidelity.
 
 ## Interpretation limits
 

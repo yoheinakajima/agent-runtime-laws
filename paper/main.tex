@@ -51,20 +51,22 @@ counterfactual-world observation.  Preserved counterexamples show that general
 settlement is neither terminating nor confluent and that disjoint declared
 writes do not prevent read/trigger interference.  Against 5,540 public runtime
 logs, all 317,296 projection cuts satisfy the stated observation, while 36,251
-cuts split a model request and do not license continuation.  In 121 observed
-forks, 16,625 retained-prefix events have zero structural mismatches, but none
-crosses an external-effect boundary.  The result reframes cheap forking as a
-property-indexed semantic contract with explicit evidence and environment
-preconditions.
+cuts split a model request and do not license continuation; another 120,969
+are Conditional because a committed oracle result must be served from the
+record without re-execution.  In 121 observed forks, 16,625 retained-prefix
+events have zero structural mismatches, but none crosses an external-effect
+boundary.  A separate public offline conformance fork crosses a committed,
+recorded oracle boundary.  Its generator observes that the inherited result is
+served without a second fixture-oracle call; its verifier checks receipt/log
+consistency and a fork-bound HMAC assertion under a public conformance key.  The
+result reframes cheap forking as a property-indexed semantic contract with
+explicit evidence and environment preconditions.
 \end{abstract}
 
 \noindent\textbf{Artifact status.}
 The code, checked-property suite, conformance vectors, and evidence ledger
-accompany this draft.  The public capsule is revision- and hash-pinned.  The separate bridge
-study now has local source and release-bundle commits, but no public remote.  Its
-quantitative result is therefore retained only as an illustrative local
-finding and is excluded from the abstract until publication supplies external
-source provenance.
+accompany this draft.  The Synthetic Players capsule and the public
+activegraph-bridge v0.2.0 post-oracle fixture are revision- and hash-pinned.
 
 \input{sections/01-introduction}
 \input{sections/02-model}

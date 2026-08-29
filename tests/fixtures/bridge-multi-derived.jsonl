@@ -1,0 +1,2 @@
+{"id":"bridge-start","type":"bridge_run_started","payload":{"reconstruction":"fresh_factory"}}
+{"id":"bridge-verify","type":"bridge_verification","payload":{"ok":true,"effects_served":0,"divergence":null}}

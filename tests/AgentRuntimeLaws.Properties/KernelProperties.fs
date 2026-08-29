@@ -136,6 +136,42 @@ module KernelProperties =
         winner Scheduler.canonical <> winner Scheduler.activationReverse
 
     [<Fact>]
+    let same_trigger_activations_observe_the_same_pre_emission_state () =
+        let starts _ event =
+            match event.Kind with
+            | SignalRaised "start" -> true
+            | _ -> false
+
+        let producer =
+            { Id = BehaviorId "producer"
+              Trigger = starts
+              Fire = fun _ _ -> [ Emit(SetFact("produced", 1)) ]
+              Writes = Set.singleton "produced" }
+
+        let observer =
+            { Id = BehaviorId "observer"
+              Trigger = starts
+              Fire =
+                fun state _ ->
+                    let observed =
+                        Map.tryFind "produced" state.Facts
+                        |> Option.defaultValue 0
+
+                    [ Emit(SetFact("observed", observed)) ]
+              Writes = Set.singleton "observed" }
+
+        let state =
+            Kernel.initialize
+                (RunId "same-trigger-visibility")
+                [ SignalRaised "start" ]
+            |> Kernel.settle 20 [ producer; observer ] Scheduler.canonical
+            |> TestData.outcomeConfiguration
+            |> _.State
+
+        Assert.Equal(1, Map.find "produced" state.Facts)
+        Assert.Equal(0, Map.find "observed" state.Facts)
+
+    [<Fact>]
     let outstanding_external_request_blocks () =
         let behavior =
             { Id = BehaviorId "requester"

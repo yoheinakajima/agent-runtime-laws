@@ -104,6 +104,9 @@ cutoffs AS (
     ON parent_cut.run_id = f.parent_run_id
    AND parent_cut.id = f.forked_at_event_id
 ),
+-- Keep these request/outcome vocabularies synchronized with
+-- Validation.fs isRequest/isResponse. Unknown event types remain unclassified
+-- rather than being silently promoted to external effects.
 retained_requests AS (
   SELECT
     c.child_run_id,
@@ -116,11 +119,13 @@ retained_requests AS (
     ON request_event.run_id = c.parent_run_id
    AND request_event.seq <= c.parent_cut_seq
    AND request_event.type IN (
+     'effect.requested',
      'llm.requested',
      'model.requested',
      'embedding.requested',
      'tool.requested',
-     'human.requested'
+     'retrieval.requested',
+     'external.requested'
    )
 ),
 unresolved_requests AS (
@@ -135,18 +140,14 @@ unresolved_requests AS (
       AND outcome.seq <= c.parent_cut_seq
       AND outcome.caused_by = retained.id
       AND outcome.type IN (
+        'effect.responded',
+        'effect.completed',
         'llm.responded',
-        'llm.failed',
         'model.responded',
-        'model.failed',
         'embedding.responded',
-        'embedding.failed',
         'tool.responded',
-        'tool.returned',
-        'tool.failed',
-        'human.responded',
-        'human.decided',
-        'human.failed'
+        'retrieval.responded',
+        'external.responded'
       )
   )
 )

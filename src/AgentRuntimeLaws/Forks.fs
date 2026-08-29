@@ -14,10 +14,18 @@ type FindingSeverity =
     | Condition
     | Blocker
 
+type ForkObligation =
+    | ServeRecordedResultWithoutReexecution of EffectId
+    | ResolveUnknownInheritedFootprint of EffectId
+    | ReconcileDiscardedEffect of EffectId
+    | ApplyCompensation of EffectId
+    | ReconcileFailedEffect of EffectId
+
 type SafetyFinding =
     { Code: string
       Severity: FindingSeverity
       EffectId: EffectId option
+      Obligation: ForkObligation option
       Message: string }
 
 type ForkVerdict =
@@ -29,7 +37,8 @@ type ForkAssessment =
     { Property: ForkProperty
       Cut: int
       Verdict: ForkVerdict
-      Findings: SafetyFinding list }
+      Findings: SafetyFinding list
+      Obligations: ForkObligation list }
 
 type ForkedLog =
     { ParentRunId: RunId
@@ -140,6 +149,7 @@ module Forks =
 
     let private finding
         (severity: FindingSeverity)
+        (obligation: ForkObligation option)
         (code: string)
         (effectId: EffectId option)
         (message: string)
@@ -147,31 +157,34 @@ module Forks =
         { Code = code
           Severity = severity
           EffectId = effectId
+          Obligation = obligation
           Message = message }
+
+    let private blocker code effectId message =
+        finding Blocker None code effectId message
+
+    let private condition obligation code effectId message =
+        finding Condition (Some obligation) code effectId message
 
     let private integrityFinding fault =
         match fault with
         | DuplicateEffectRequest effectId ->
-            finding
-                Blocker
+            blocker
                 "duplicate-effect-request"
                 (Some effectId)
                 "the same effect identity was requested more than once"
         | ConflictingEffectDescriptor effectId ->
-            finding
-                Blocker
+            blocker
                 "conflicting-effect-descriptor"
                 (Some effectId)
                 "one effect identity has conflicting request descriptors"
         | EffectOutcomeWithoutRequest effectId ->
-            finding
-                Blocker
+            blocker
                 "effect-outcome-without-request"
                 (Some effectId)
                 "an effect outcome has no preceding request"
         | EffectAlreadyTerminal(effectId, lifecycle) ->
-            finding
-                Blocker
+            blocker
                 "effect-already-terminal"
                 (Some effectId)
                 (sprintf
@@ -187,8 +200,7 @@ module Forks =
             |> List.choose (fun (eventId, count) ->
                 if count > 1 then
                     Some(
-                        finding
-                            Blocker
+                        blocker
                             "duplicate-event-id"
                             None
                             (sprintf
@@ -206,8 +218,7 @@ module Forks =
             if actual = expected then
                 []
             else
-                [ finding
-                      Blocker
+                [ blocker
                       "non-contiguous-sequence"
                       None
                       (sprintf
@@ -235,16 +246,14 @@ module Forks =
             match effect.Lifecycle with
             | Requested ->
                 Some(
-                    finding
-                        Blocker
+                    blocker
                         "cut-through-request"
                         (Some effectId)
                         "the cut retains a request without a terminal outcome"
                 )
             | Unknown ->
                 Some(
-                    finding
-                        Blocker
+                    blocker
                         "unknown-effect-at-cut"
                         (Some effectId)
                         "the cut inherits an externally ambiguous effect"
@@ -260,8 +269,7 @@ module Forks =
         |> List.choose (fun (effectId, effect) ->
             if effect.ReplaySource = Uncaptured then
                 Some(
-                    finding
-                        Blocker
+                    blocker
                         "uncaptured-prefix-effect"
                         (Some effectId)
                         "strict replay cannot serve or reproduce this result"
@@ -278,19 +286,19 @@ module Forks =
             match effect.Lifecycle, effect.Footprint with
             | Committed, OneShot ->
                 Some(
-                    finding
-                        Condition
+                    condition
+                        (ServeRecordedResultWithoutReexecution effectId)
                         "inherit-one-shot-without-reexecution"
                         (Some effectId)
                         "the inherited one-shot must not execute again"
                 )
             | Committed, UnknownFootprint ->
                 Some(
-                    finding
-                        Blocker
-                        "unknown-inherited-footprint"
+                    condition
+                        (ResolveUnknownInheritedFootprint effectId)
+                        "unknown-inherited-footprint-requires-policy"
                         (Some effectId)
-                        "the inherited effect footprint is unknown"
+                        "continuation may serve the recorded result, but no world-state claim is licensed until the footprint is resolved"
                 )
             | _ -> None)
 
@@ -299,32 +307,30 @@ module Forks =
         | Pure -> None
         | Idempotent ->
             Some(
-                finding
-                    Condition
+                condition
+                    (ReconcileDiscardedEffect effectId)
                     "discarded-idempotent-world-effect"
                     (Some effectId)
                     "the discarded effect requires reconciliation or overwrite"
             )
         | Compensatable ->
             Some(
-                finding
-                    Condition
+                condition
+                    (ApplyCompensation effectId)
                     "discarded-effect-requires-compensation"
                     (Some effectId)
                     "environmental safety requires successful compensation"
             )
         | OneShot ->
             Some(
-                finding
-                    Blocker
+                blocker
                     "discarded-one-shot-still-happened"
                     (Some effectId)
                     "the omitted irreversible action remains true in the world"
             )
         | UnknownFootprint ->
             Some(
-                finding
-                    Blocker
+                blocker
                     "discarded-effect-footprint-unknown"
                     (Some effectId)
                     "the external footprint of the discarded effect is unknown"
@@ -335,8 +341,7 @@ module Forks =
         | Requested
         | Unknown ->
             Some(
-                finding
-                    Blocker
+                blocker
                     "discarded-request-may-have-executed"
                     (Some effectId)
                     "a discarded request has no trustworthy terminal boundary"
@@ -347,8 +352,8 @@ module Forks =
             | Idempotent
             | Compensatable ->
                 Some(
-                    finding
-                        Condition
+                    condition
+                        (ReconcileFailedEffect effectId)
                         "discarded-failed-effect-needs-reconciliation"
                         (Some effectId)
                         "failure does not establish that the world was unchanged"
@@ -356,8 +361,7 @@ module Forks =
             | OneShot
             | UnknownFootprint ->
                 Some(
-                    finding
-                        Blocker
+                    blocker
                         "discarded-failed-effect-ambiguous"
                         (Some effectId)
                         "a failed irreversible or unknown effect may be partial"
@@ -379,8 +383,7 @@ module Forks =
             |> Option.bind (committedWorldFinding effectId)
         | EffectBecameUnknown effectId ->
             Some(
-                finding
-                    Blocker
+                blocker
                     "discarded-unknown-world-effect"
                     (Some effectId)
                     "the discarded suffix has an ambiguous external result"
@@ -451,11 +454,16 @@ module Forks =
                     @ discardedFindings
 
             let findings = malformed @ propertyFindings
+            let obligations =
+                findings
+                |> List.choose _.Obligation
+                |> List.distinct
 
             { Property = property
               Cut = cut
               Verdict = verdict findings
-              Findings = findings })
+              Findings = findings
+              Obligations = obligations })
 
     let assess
         (property: ForkProperty)

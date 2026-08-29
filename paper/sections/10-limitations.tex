@@ -21,6 +21,14 @@ arbitrary behavior set.  Relation ordering is discussed from source audit but
 not modeled as a separate production activation dimension.  Seeded randomized
 and bounded exhaustive interleaving exploration remain future checks.
 
+\paragraph{Kernel/production read timing.}
+The executable kernel snapshots state for all activations enabled by one
+trigger.  The pinned ActiveGraph source computes the match set once but rebuilds
+each handler view after prior handlers may have emitted and synchronously
+projected events.  The source audit identifies this additional ordering seam;
+the checked kernel properties do not model it, and no production behavior
+inventory establishes whether it changes an observed run.
+
 \paragraph{Adapter assumptions.}
 Real-log classification relies on explicit event names and payload fields.  The
 adapter is deliberately conservative, but mistakes remain possible.  Model
@@ -29,11 +37,27 @@ classify a read-only deterministic local model differently.  A derived content
 hash proves captured bytes, not provider authenticity, commitment, or
 idempotence.
 
+The generic F\# effect descriptor and legacy corpus adapters have no per-effect
+observable-set label.  Their CounterfactualWorld results therefore use the
+selected profile's entire recognized external surface as
+$\Omega_{profile}$.  The public bridge v0.2 receipt records
+observable tags, but we do not retroactively impute them to older corpus events.
+Narrower corpus claims require adapter-supplied tags and new conformance
+vectors.
+
 Unknown footprint fails closed only after the adapter recognizes an event as an
 effect.  Unclassified source events remain reported signals.  The all-cut Sound
 counts therefore depend on an audited profile declaration that those event
 types do not hide external interactions.  A newly introduced effect type can
 make an old verdict false until the adapter is updated.
+
+\paragraph{Partial failure and compensation scope.}
+Failed remote operations may have partially committed before reporting an
+error.  The assessor conservatively conditions or blocks discarded failures by
+footprint, but it cannot inspect the remote system.  Likewise, successful
+compensation does not erase a temporal exposure window or third-party secondary
+effects.  A caller whose $\Omega$ includes those histories needs stronger
+reconciliation evidence than the current effect descriptor records.
 
 \paragraph{Whole-log malformedness policy.}
 The current assessor treats structural malformedness anywhere in the source log
@@ -45,24 +69,24 @@ therefore stated only for well-formed ordered logs.
 \paragraph{Synthetic content.}
 The Synthetic Players capsule contains archived experimental runs, but the
 present analysis concerns runtime traces rather than human ground truth.  The
-bridge study uses deterministic offline mocks and explicitly makes no real-model
-performance claim.  Its agreement numbers illustrate equivalence relations,
-not predictive validity.
+public bridge fixture uses a deterministic offline fixture and explicitly makes
+no real-model performance claim.
 
 \paragraph{Fork coverage.}
 The 121 observed forks are useful positive evidence, but all cut at
 \code{round.played} and retain no classified external request.  No observed
 fork in the public capsule crosses a recorded oracle or irreversible effect
-boundary.  The difficult cases are exercised by all-cut analysis and fixtures,
-not by an actual public fork with a no-reexecution receipt.
-
-\paragraph{Bridge provenance.}
-The bridge artifact is locally content-addressed and now bound to local source
-and release-bundle commits with a standalone verifier.  The repository still
-has no public remote, so a fresh external reviewer cannot fetch those revisions.
-The result remains illustrative and excluded from the abstract until the
-bundle is published.  This limitation is particularly important because
-provenance is part of the paper's thesis.
+boundary, and all 160,076 Sound corpus ExternalContinuation cuts precede the
+first classified effect.  The companion public conformance fixture now covers
+one actual bridge fork after a committed recorded oracle effect.  Its generator
+observes no second fixture-oracle call, while its verifier checks receipt/log
+consistency and a signed, fork-bound caller assertion under a configured trust
+root.  This exercises the previously absent public no-reexecution mechanism,
+but only for one deterministic offline oracle, one child, a process-produced
+counter, and a deliberately published fixture key.  The verifier does not
+inspect the asserted environment.  The result does not establish real-provider
+behavior, production attestor identity, environmental fidelity, or prevalence
+across production forks.
 
 \paragraph{Production behavior inventory.}
 The ActiveGraph source establishes FIFO and registration-order scheduling, but
@@ -72,11 +96,11 @@ non-interference condition.  Static source inspection of the scheduler is not
 production confluence validation.
 
 \paragraph{No external runtime corpus.}
-The public corpus, observed forks, bridge implementation, and local executive
-study all descend from ActiveGraph.  The language-neutral vectors support other
-implementations, but no LangGraph, Temporal, or other independent runtime trace
-has yet been normalized.  Generalization beyond the source family is therefore
-conceptual rather than empirically demonstrated.
+The public corpus, observed forks, and bridge implementation all descend from
+ActiveGraph.  The language-neutral vectors support other implementations, but
+no LangGraph, Temporal, or other independent runtime trace has yet been
+normalized.  Generalization beyond the source family is therefore conceptual
+rather than empirically demonstrated.
 
 \paragraph{No authorization or information-flow result.}
 Effect descriptors classify replay and environmental conditions; they do not

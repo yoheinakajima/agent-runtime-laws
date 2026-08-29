@@ -61,9 +61,24 @@ let validate profile path =
     printfn "source: %s" summary.Source
     printfn "events: %d" summary.InputEvents
     printfn "grade: %A (verified=%b)" summary.Grade.Grade summary.Grade.Verified
-    printfn "projection cuts: %A" summary.ProjectionCuts
-    printfn "external-continuation cuts: %A" summary.ExternalContinuationCuts
-    printfn "counterfactual cuts: %A" summary.CounterfactualCuts
+    printfn
+        "source-boundary cuts: %d (intra-source normalized positions: %d)"
+        summary.SourceBoundaryCuts
+        summary.IntraSourceCuts
+    printfn "all normalized projection cuts: %A" summary.ProjectionCuts
+    printfn
+        "all normalized external-continuation cuts: %A"
+        summary.ExternalContinuationCuts
+    printfn "all normalized counterfactual cuts: %A" summary.CounterfactualCuts
+    printfn
+        "source-boundary projection cuts: %A"
+        summary.SourceBoundaryProjectionCuts
+    printfn
+        "source-boundary external-continuation cuts: %A"
+        summary.SourceBoundaryExternalContinuationCuts
+    printfn
+        "source-boundary counterfactual cuts: %A"
+        summary.SourceBoundaryCounterfactualCuts
     printfn "counterfactual-unsound cuts: %A" summary.CounterfactualUnsoundCuts
     printfn "unclassified source types: %A" summary.UnclassifiedTypes
     0
@@ -88,9 +103,24 @@ let validateDirectory profile path =
     printfn "events: %d -> %d" summary.InputEvents summary.NormalizedEvents
     printfn "grade distribution: %A" summary.GradeDistribution
     printfn "verified runs: %d" summary.VerifiedRuns
-    printfn "projection cuts: %A" summary.ProjectionCuts
-    printfn "external-continuation cuts: %A" summary.ExternalContinuationCuts
-    printfn "counterfactual cuts: %A" summary.CounterfactualCuts
+    printfn
+        "source-boundary cuts: %d (intra-source normalized positions: %d)"
+        summary.SourceBoundaryCuts
+        summary.IntraSourceCuts
+    printfn "all normalized projection cuts: %A" summary.ProjectionCuts
+    printfn
+        "all normalized external-continuation cuts: %A"
+        summary.ExternalContinuationCuts
+    printfn "all normalized counterfactual cuts: %A" summary.CounterfactualCuts
+    printfn
+        "source-boundary projection cuts: %A"
+        summary.SourceBoundaryProjectionCuts
+    printfn
+        "source-boundary external-continuation cuts: %A"
+        summary.SourceBoundaryExternalContinuationCuts
+    printfn
+        "source-boundary counterfactual cuts: %A"
+        summary.SourceBoundaryCounterfactualCuts
     printfn
         "runs with counterfactual-unsound cuts: %d"
         summary.RunsWithCounterfactualUnsoundCuts

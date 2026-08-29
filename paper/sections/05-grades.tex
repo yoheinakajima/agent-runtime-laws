@@ -52,8 +52,11 @@ exact recognized source event types.  An event whose name merely contains
 \code{verification} remains an unclassified domain signal.  A verification
 event must contain an explicit Boolean verdict.  The bridge-specific Boundary
 derivation additionally requires an effects-served count and an explicit null
-divergence.  These requirements prevent an event-name coincidence from raising
-the grade.
+divergence: the source payload's \code{divergence} field must be present and its
+JSON value must be \code{null}, asserting that the bridge verifier detected no
+unresolved reconstruction divergence.  This is logged evidence, not an
+independent proof of equivalence.  These requirements prevent an event-name
+coincidence from raising the grade.
 
 \subsection{Grades are not monotone in time}
 
@@ -63,7 +66,8 @@ incorrect for evidence predicates.
 \begin{counterexample}[Hazard downgrade]
 A prefix records a faithful envelope, completion, mediated boundary, clean
 reconstruction, and successful verification.  It grades Boundary.  Appending a
-hazard event adds a blocker, so the extended log grades Envelope.
+\code{EvidenceRecorded(HazardDetected detail)} event adds an explicit blocker,
+so the extended log grades Envelope.
 \end{counterexample}
 
 The grade of a \emph{fixed log or prefix} licenses questions about that evidence.

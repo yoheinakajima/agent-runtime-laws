@@ -43,6 +43,10 @@
       Link="tests/fixtures/activegraph-recorded.jsonl"
       CopyToOutputDirectory="PreserveNewest" />
     <None
+      Include="../fixtures/bridge-multi-derived.jsonl"
+      Link="tests/fixtures/bridge-multi-derived.jsonl"
+      CopyToOutputDirectory="PreserveNewest" />
+    <None
       Include="../../evidence/manifest.json"
       Link="evidence/manifest.json"
       CopyToOutputDirectory="PreserveNewest" />

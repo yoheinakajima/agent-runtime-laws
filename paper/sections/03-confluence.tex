@@ -74,7 +74,12 @@ pairwise disjoint.  That condition works for a deliberately restricted family:
 single-trigger behaviors that each unconditionally write a distinct key and do
 not read other behaviors' regions or emit cross-triggering signals.  The suite
 generates up to eight such writers and checks all four scheduler policies; their
-projected states agree.
+projected states agree.  The structural reason is stronger than those four
+samples: every generated key has exactly one unconditional writer, and no
+writer reads or triggers another, so any permutation applies the same set of
+commuting updates to distinct map entries.  The four policies are executable
+regression coverage for that restricted family, not an enumeration of arbitrary
+runtime interleavings.
 
 Declared disjointness is not sufficient in general.
 
@@ -121,13 +126,22 @@ the same delayed tick remains FIFO.  This supplies a reproducible
 contract.  It is not evidence that alternate legal orders have the same normal
 form.
 
-The distinction is practical.  Projection occurs before scheduler
-notification, so an earlier registered behavior can emit an event whose
-projection changes the state read by a later behavior handling the same
-original event.  Relation enumeration introduces another ordering seam when a
-backend query does not specify a canonical order.  A stable FIFO queue can hide
-both effects in ordinary replay tests.  Our scheduler tests bypass the
-production policy and vary event and activation order directly.
+The distinction is practical.  ActiveGraph computes the match set before the
+handler loop, so an earlier handler cannot change which behaviors are already
+enabled by that trigger.  It does, however, rebuild each handler's view against
+the current graph.  An earlier registered handler can emit an event whose
+projection is applied synchronously and changes state read by a later handler
+of the same original event; behavior matching for the emitted event occurs at a
+later FIFO step.  Relation enumeration adds another ordering seam when a
+backend query does not specify a canonical order.
+
+The executable kernel deliberately snapshots state across activations enabled
+by one trigger, so it does not reproduce this per-invocation production read
+timing.  Its tests vary event and activation order directly, and its
+read/trigger witness uses distinct later events.  The production seam is a
+source-audited limit on generalization, not a property claimed as validated by
+the kernel.  A stable FIFO queue can hide either form of dependence in ordinary
+replay tests.
 
 \paragraph{Result.}
 The strongest supported conclusion is negative and conditional.  General
