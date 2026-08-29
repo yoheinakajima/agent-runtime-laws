@@ -60,3 +60,18 @@ and PDF QA pass. It is not publication-ready until at least the critical bridge
 provenance decision is resolved. The established four-model review bundle also
 lacks a preserved fresh Codex review, and the empirical hard cases above remain
 open rather than silently promoted to claims.
+
+## Post-review hardening addendum — 2026-08-28
+
+The “public hard effect-boundary fork” item above is now discharged for a
+bounded conformance case by public activegraph-bridge revision
+`8855d3a9e779362f713b08bceb58d7d5db671c7d` (PR #2). The fixture records an
+actual child fork after one committed `one_shot + recorded` offline oracle
+effect. Its hash-bound receipt verifies the inherited recorded outcome, zero
+inherited external calls, and an HMAC-authenticated fixture environment under a
+configured trust root. The published key is a conformance key, so this does not
+establish provider authenticity or production attestor identity.
+
+This addendum does not rewrite the historical review. The separate 24-run
+migration-lab study still needs an owner publish-or-cut decision, and a fresh
+independent Codex review remains a release-protocol gate.

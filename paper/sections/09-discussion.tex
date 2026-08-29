@@ -5,12 +5,15 @@
 
 Figure~\ref{fig:replay-family} states the hierarchy early because it is the
 paper's organizing claim.  None of its relations automatically implies all the
-others.  The local bridge study has equal decisions in two thirds of pairs and
+others.  The local executive study has equal decisions in two thirds of pairs and
 equal ordered paths in none.  The Synthetic Players capsule passes an external
 byte-exact verifier but its individual logs contain no verification
 attestation, so they remain Observed under a log-alone grade.  Every prefix
-projects, but cuts through requests fail execution continuation.  These are not
-contradictions; they are different predicates.
+projects, but cuts through requests fail execution continuation.  The public
+bridge fixture then shows a different predicate again: one committed recorded
+oracle result is inherited across a fork with zero new calls under a verified
+fixture environment.  These are not contradictions; they are different
+predicates.
 
 \subsection{Cheap fork is semantic before it is fast}
 
@@ -57,12 +60,14 @@ union
 \end{align}
 
 The proposed receipt binds the parent, cut, observation $P$, prefix hash,
-caller-supplied environment premise, inherited effect identities, and the
-typed obligation set.  The current F\# assessor computes findings and this
-obligation set; it does not yet implement a receipt-authenticating production
-fork endpoint or verify the environment premise.  In particular, a cut through
-Requested is refused unless an explicit recovery policy changes the requested
-property.
+environment premise, inherited effect identities, and the typed obligation
+set.  The F\# assessor computes findings and this obligation set.  The companion
+activegraph-bridge v0.2 implementation now emits a hash-bound receipt and
+verifies an HMAC-authenticated target-environment claim under a caller-configured
+trust root; the public post-oracle fixture exercises that path.  This is a
+conformance discharge mechanism, not a production identity or provider
+attestation.  In particular, a cut through Requested is refused unless an
+explicit recovery policy changes the requested property.
 
 \subsection{Deterministic ordering can conceal non-confluence}
 
@@ -92,9 +97,12 @@ failure evidence, reconstruction method, and verification result.
 This does not require every event to be trusted merely because it is present.
 The event type must be recognized, the producer or signature may need
 authentication, and cross-event integrity must be checked.  The present
-artifact enforces structural integrity and exact recognized types but does not
-implement cryptographic attestation.  A future signed evidence capsule could
-make grade computation portable across implementations.
+F\# artifact enforces structural integrity and exact recognized types; the
+companion bridge adds an HMAC-signed sidecar under a configured trust root.
+Production use still needs an operationally protected key, authoritative
+environment identity, rotation and revocation policy, and a freshness contract.
+A future asymmetric or transparency-backed evidence capsule could make that
+trust portable across implementations and organizations.
 
 \subsection{The graph may be a projection, but the scheduler remains real}
 

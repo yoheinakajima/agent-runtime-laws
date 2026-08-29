@@ -29,10 +29,12 @@ classify a read-only deterministic local model differently.  A derived content
 hash proves captured bytes, not provider authenticity, commitment, or
 idempotence.
 
-The v0 effect descriptor has no per-effect observable-set label.  Its
-CounterfactualWorld result therefore uses the selected profile's entire
-recognized external surface as $\Omega_{profile}$.  Narrower claims require
-adapter-supplied observable tags and new conformance vectors.
+The generic F\# effect descriptor and legacy corpus adapters have no per-effect
+observable-set label.  Their CounterfactualWorld results therefore use the
+selected profile's entire recognized external surface as
+$\Omega_{profile}$.  The public bridge v0.2 receipt records observable tags,
+but we do not retroactively impute them to older corpus events.  Narrower corpus
+claims require adapter-supplied tags and new conformance vectors.
 
 Unknown footprint fails closed only after the adapter recognizes an event as an
 effect.  Unclassified source events remain reported signals.  The all-cut Sound
@@ -58,28 +60,33 @@ therefore stated only for well-formed ordered logs.
 \paragraph{Synthetic content.}
 The Synthetic Players capsule contains archived experimental runs, but the
 present analysis concerns runtime traces rather than human ground truth.  The
-bridge study uses deterministic offline mocks and explicitly makes no real-model
-performance claim.  Its agreement numbers illustrate equivalence relations,
-not predictive validity.
+public bridge fixture and local executive study use deterministic offline
+fixtures or mocks and explicitly make no real-model performance claim.  The
+executive-study agreement numbers illustrate equivalence relations, not
+predictive validity.
 
 \paragraph{Fork coverage.}
 The 121 observed forks are useful positive evidence, but all cut at
 \code{round.played} and retain no classified external request.  No observed
 fork in the public capsule crosses a recorded oracle or irreversible effect
-boundary.  The difficult cases are exercised by all-cut analysis and fixtures,
-not by an actual public fork with a no-reexecution receipt.  Moreover, all
-160,076 Sound public ExternalContinuation cuts precede the first classified
-effect.  The current target-environment premise is caller-supplied and has no
-implemented attestation-discharge path, so neither observed forks nor those
-Sound counts validate one.
+boundary, and all 160,076 Sound corpus ExternalContinuation cuts precede the
+first classified effect.  The companion public conformance fixture now covers
+one actual bridge fork after a committed recorded oracle effect.  Its receipt
+verifies zero inherited external calls and an HMAC-authenticated fixture
+environment under a configured trust root.  This closes the prior absence of a
+public no-reexecution mechanism test, but only for one deterministic offline
+oracle, one child, and a deliberately published fixture key.  It does not
+establish real-provider behavior, production attestor identity, environmental
+fidelity, or prevalence across production forks.
 
-\paragraph{Bridge provenance.}
-The bridge artifact is locally content-addressed and now bound to local source
-and release-bundle commits with a standalone verifier.  The repository still
-has no public remote, so a fresh external reviewer cannot fetch those revisions.
-The result remains illustrative and excluded from the abstract until the
-bundle is published.  This limitation is particularly important because
-provenance is part of the paper's thesis.
+\paragraph{Executive-study provenance.}
+The separate 24-run executive-study artifact is locally content-addressed and
+bound to local source and release-bundle commits with a standalone verifier.
+Its migration-lab repository still has no public remote, so a fresh external
+reviewer cannot fetch those revisions.  The result remains illustrative and
+excluded from the abstract until the bundle is published.  This limitation is
+particularly important because provenance is part of the paper's thesis; it
+does not apply to the public post-oracle bridge fixture above.
 
 \paragraph{Production behavior inventory.}
 The ActiveGraph source establishes FIFO and registration-order scheduling, but

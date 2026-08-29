@@ -123,9 +123,10 @@ A separate ordinal query confirms that all 160,076 Sound
 ExternalContinuation cuts occur before the first classified external request;
 617 runs contain no classified request at all. The public corpus therefore does
 not empirically validate a post-oracle continuation, a target-environment
-attestation, or a zero-reexecution receipt. The v0 assessor takes the target
-environment as a caller-supplied premise and does not implement an attestation
-discharge path.
+attestation, or a zero-reexecution receipt. The F# assessor takes the target
+environment as a supplied premise and computes typed obligations; the companion
+bridge fixture below separately implements and tests a deployment-side
+attestation discharge path.
 
 The confirming read-only SQLite query was:
 
@@ -191,6 +192,56 @@ the current external-continuation precondition, but they do not validate cuts
 through external effects because none of the 121 retained prefixes contains
 one.
 
+## Public activegraph-bridge post-oracle fork receipt
+
+### Provenance
+
+| Field | Value |
+|---|---|
+| Repository | https://github.com/yoheinakajima/activegraph-bridge |
+| Pull request | https://github.com/yoheinakajima/activegraph-bridge/pull/2 |
+| Revision | `8855d3a9e779362f713b08bceb58d7d5db671c7d` |
+| Fixture | `evidence/post-oracle-fork-v1` |
+| Publication status | public review branch, immutable revision pinned |
+
+The fixture records an actual bridge fork after one committed recorded
+fixture-oracle call. The inherited effect is classified `one_shot + recorded`
+with `provider.cost` and `provider.oracle` observables. The parent makes one
+deterministic offline oracle call. Verification and the child serve request
+`evt_008` from recorded outcome `evt_009`; the measured inherited-prefix
+external-call count is zero. A changed tool result creates a divergent child
+tail.
+
+| File or field | SHA-256 / value |
+|---|---|
+| `parent.jsonl` | `884e8ae3429604b2d7a24dd7fff56c05f8d471427256faeadda18047d5c7c176` |
+| `child.jsonl` | `747305a6774a3a505820a4b6a2ccbaf3556fb40d76dbef4d83873b9a483faaa6` |
+| `receipt.json` | `da5503a80b9276f13f0fe37ce4cbf61a3ddb2416a7ec64c664084ca1f7883164` |
+| `environment-attestation.json` | `43a0e7bb6dec6ba9bca578f87b169ecb02224dcf8e82702ea0860a6678ccc584` |
+| `manifest.json` | `dac48a19b35b6c72756ee3cb38a923670685c01a70ac2216d4880fe891f82f07` |
+| canonical prefix hash | `3de3251368f20c4da2d234ac101e8a31b7b3142ede845157d9dcf39d69ccd8e4` |
+| canonical receipt hash | `5d36df7dc177a9801fa8ff6a4b070612fd0b16e4c45207825498fda03af3d3f0` |
+| source oracle calls | 1 |
+| inherited external calls in fork | 0 |
+
+The receipt binds parent and child identities, the cut, source/prefix/child-log
+hashes, inherited request and outcome identities, source and target runtime
+fingerprints, and target-environment claims. The verifier rejects receipt,
+attestation, or log tampering; verifies an HMAC-SHA256 signature using a
+configured trust root; binds the attestation to the child, cut, prefix, and
+target fingerprint; and checks the measured zero-call counter.
+
+~~~bash
+./evidence/post-oracle-fork-v1/verify.sh
+# POST-ORACLE FORK RECEIPT PASS — committed oracle served from record;
+# 0 inherited external calls
+~~~
+
+The HMAC key is deliberately published as a conformance trust root. This is
+evidence for the receipt protocol and zero-reexecution mechanism, not for a real
+provider, production identity, model quality, or production environmental
+fidelity.
+
 ## activegraph-bridge synthetic-executive-demo-v1
 
 ### Provenance and limitation
@@ -209,8 +260,8 @@ illustrative.
 The redacted bundle lives at
 `activegraph-model-migration-lab/releases/synthetic-executive-demo-v1` and
 contains the manifest, metrics, paired results, compressed run store, source and
-bundle checksum ledgers, and verifier. The public `activegraph-bridge` checkout
-had unrelated local changes and was deliberately left untouched.
+bundle checksum ledgers, and verifier. It remains distinct from the public
+post-oracle conformance fixture above.
 
 | File | SHA-256 |
 |---|---|
@@ -258,7 +309,9 @@ cut supports an unconditional claim that the external world is as if the run
 never happened: before the effect, it appears in the discarded suffix; after
 the effect, continuation is conditional on not executing it again. The world
 verdict uses the adapter profile's entire recognized external surface as
-`Omega_profile`; v0 has no per-effect observable tags for a narrower claim.
+`Omega_profile`. The public bridge v0.2 receipt has per-effect observable tags,
+but the legacy executive-study adapter does not expose them to this analysis;
+no narrower result is reported.
 
 ## Interpretation limits
 

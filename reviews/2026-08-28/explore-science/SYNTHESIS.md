@@ -78,3 +78,19 @@ discharged.
 - validate an independent non-ActiveGraph runtime corpus;
 - preserve a fresh independent Codex review if the established four-model
   review protocol is still required.
+
+## Post-review hardening addendum — 2026-08-28
+
+The first and third implementation gaps above are now discharged for a bounded
+public conformance case by activegraph-bridge revision
+`8855d3a9e779362f713b08bceb58d7d5db671c7d` (PR #2). The bridge emits a
+hash-bound fork receipt after a committed recorded offline oracle call, verifies
+zero inherited external calls, and authenticates target-environment claims with
+HMAC-SHA256 under a configured fixture trust root. Its tests reject tampered
+receipts, attestations, logs, and attestations bound to another fork.
+
+The paper now reports this as mechanism-level conformance evidence and retains
+the correct limit: the deliberately published fixture key does not authenticate
+a real provider or production environment. The legacy corpus adapter still
+lacks per-effect observable tags, the separate 24-run study is not public, and
+the independent Codex review gate remains open.

@@ -123,14 +123,17 @@ checked at every cut. Its public verifier covers 4,919 of those runs; the exact
 reconciliation is 4,919 verifier-covered, 586 other completed runs, and 35
 incomplete runs. The 121 observed forks have zero structural mismatches across
 16,625 retained-prefix events after excluding child run identity and the
-store's database-global `events.seq`. The separate 24-run bridge study was also checked. Its
-source and a redacted release bundle are now commit-bound locally and the bundle
-verifier passes, but no public remote exists, so the result remains illustrative
-rather than externally reproducible. Bridge results now distinguish 2,616
-physically meaningful source-event-boundary cuts from 48 diagnostic positions
-between co-derived normalized facts. No private trace payloads were copied into
-this repository. See EVIDENCE.md for exact revisions, hashes, counts, commands,
-and limitations.
+store's database-global `events.seq`. A public activegraph-bridge conformance
+fixture now records an actual fork after a committed recorded fixture-oracle
+effect; its hash-bound receipt verifies one source oracle call, zero inherited
+external calls, and an HMAC-authenticated fixture environment. The separate
+24-run executive study was also checked. Its source and a redacted release
+bundle are commit-bound locally and the bundle verifier passes, but no public
+remote exists, so that result remains illustrative rather than externally
+reproducible. Executive-study results distinguish 2,616 physically meaningful
+source-event-boundary cuts from 48 diagnostic positions between co-derived
+normalized facts. No private trace payloads were copied into this repository.
+See EVIDENCE.md for exact revisions, hashes, counts, commands, and limitations.
 
 ## Scope
 
@@ -152,6 +155,7 @@ evidence over its generators and fixtures, not a universal proof.
 Research v0. Kernel contracts, 50 tests, conformance vectors, and deployed-trace
 validation are implemented. A three-model review round and a subsequent
 ExploreScience review are archived with separate source and disposition files.
-Claims remain provisional pending owner acceptance, publication of the bridge
-artifact provenance, and validation of a public fork that crosses an
-external-effect boundary.
+The public post-oracle conformance and attestation mechanism test is complete.
+Claims remain provisional pending owner acceptance, an explicit publish-or-cut
+decision for the separate local executive study, public release of this
+currently private repository, and the final independent-review gate.

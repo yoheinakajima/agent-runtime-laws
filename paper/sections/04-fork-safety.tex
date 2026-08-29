@@ -76,8 +76,11 @@ again.  A committed Recorded effect with Unknown footprint is Conditional: it
 may be served without a live call, but no stronger world-state claim is licensed
 until its footprint is resolved.  The v0 assessor takes the target-environment
 premise as an input assumption; it does not verify a snapshot or
-fresh-environment attestation.  This property deliberately does not assert that
-a retrospectively discarded source suffix left the original world unchanged.
+fresh-environment attestation.  The companion bridge implementation supplies a
+concrete authenticated discharge path for the public conformance case in
+Section~\ref{sec:validation}; the language-neutral assessor remains
+verifier-agnostic.  This property deliberately does not assert that a
+retrospectively discarded source suffix left the original world unchanged.
 \end{definition}
 
 \begin{definition}[CounterfactualWorld$(\Omega)$]
@@ -98,7 +101,9 @@ the stated footprint-coverage assumption.  The current effect descriptor does
 not carry per-effect observable labels, so the executable v0 instantiates
 $\Omega$ as the entire external surface recognized by the selected adapter
 profile.  Every classified non-Pure effect is therefore conservatively in
-scope.  Supporting a narrower $\Omega$ requires explicit observable tags; the
+scope.  The companion bridge receipt can carry explicit observable tags, but
+the reported corpus counts do not retroactively use them.  Supporting a
+narrower $\Omega$ in the generic assessor requires adapter-supplied tags; the
 reported counts are not claims about such a narrower set.  Even a Sound verdict
 is a contract-relative license, not an empirical observation that two worlds
 are identical.

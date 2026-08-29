@@ -180,8 +180,9 @@ runs end at an unmatched request and contribute one cut each.
 
 All 160,076 Sound ExternalContinuation cuts occur before the first classified
 external request. They validate only the no-inherited-effect case. No public
-trace in the corpus validates post-oracle continuation, a target-environment
-attestation, or a zero-reexecution receipt.
+trace in the Synthetic Players corpus validates post-oracle continuation, a
+target-environment attestation, or a zero-reexecution receipt. The separate
+public bridge conformance fixture described under V2 now exercises that case.
 
 The local bridge study contains 24 explicitly verified offline mock runs. All
 24 grade Boundary because the run logs themselves record fresh
@@ -206,6 +207,16 @@ round.played, and every retained prefix contains zero classified external
 requests. The actual forks therefore satisfy the current external-continuation
 precondition, but only for this domain-only cut family.
 
+A separate public activegraph-bridge fixture at revision
+`8855d3a9e779362f713b08bceb58d7d5db671c7d` records an actual child fork after
+one committed `one_shot + recorded` fixture-oracle effect. Its hash-bound
+receipt verifies that inherited request `evt_008` was served from recorded
+outcome `evt_009`, with one source oracle call and zero inherited external calls
+in the fork. An HMAC-SHA256 attestation binds the child, cut, prefix hash, and
+target fingerprint under a configured conformance trust root. This closes the
+public mechanism-test gap, but does not establish real-provider behavior or a
+production identity or attestation system.
+
 The all-cuts counterfactual is much stricter: 4,923 of 5,540 runs contain at
 least one cut assessed Unsound because an oracle call in the discarded suffix
 already occurred.
@@ -228,18 +239,20 @@ Exact revisions, hashes, commands, counts, and limitations are in EVIDENCE.md.
 
 ## V4 — Review and release provenance
 
-Status: locally commit-bound; public release pending owner decision.
+Status: review archive preserved; executive-study publication pending owner
+decision.
 
 Three supplied model reviews and the later ExploreScience review are preserved
 under `reviews/2026-08-28`, with their consensus and dispositions recorded
 separately from the raw reports. The
 bridge study source and redacted release bundle are committed in the separate
 local `activegraph-model-migration-lab` repository, and the bundle verifier
-passes. That repository has no public remote, so the bridge result remains
-illustrative and is excluded from the abstract.
+passes. That repository has no public remote, so the executive-study result
+remains illustrative and is excluded from the abstract.
 
 ExploreScience reported 96/100 with 14 minor and zero major issues. That is a
 review result, not publication authorization. The review corpus still does not
-include a preserved fresh Codex report, a public effect-boundary fork, a
-production behavior-dependency inventory, or an external runtime corpus. Those
-are open evidence items, not accepted claims.
+include a preserved fresh Codex report, a production behavior-dependency
+inventory, or an external runtime corpus. A public effect-boundary conformance
+fork is now preserved at the bridge revision above. The remaining items are
+open evidence limits, not accepted claims.

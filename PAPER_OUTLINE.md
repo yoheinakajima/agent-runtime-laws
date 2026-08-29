@@ -30,7 +30,10 @@ falsification and bounded evidence.
      source, and lifecycle;
   3. a fail-closed replay-grade computation from retained evidence;
   4. exhaustive cut assessment over 5,540 public store runs plus 121 observed
-     forks; a separate 24-run local study remains illustrative.
+     forks; and
+  5. a public post-oracle conformance fork with a hash-bound authenticated
+     receipt showing zero inherited external calls. A separate 24-run local
+     study remains illustrative.
 
 ## 2. Executable runtime model
 
@@ -137,7 +140,22 @@ The observed forks all cut at `round.played` and retain no classified external
 request. They validate cheap trace branching for that cut family, not arbitrary
 oracle/effect boundaries.
 
-### activegraph-bridge offline study
+### activegraph-bridge public post-oracle conformance fork
+
+- Pin the fixture to bridge revision
+  `8855d3a9e779362f713b08bceb58d7d5db671c7d`.
+- Report the parent, child, receipt, environment-attestation, manifest, prefix,
+  and canonical-receipt hashes from `EVIDENCE.md`.
+- The child inherits a committed recorded offline oracle outcome, serves it
+  from the record, and records zero inherited external calls.
+- The HMAC-SHA256 attestation is verified under a configured fixture trust
+  root and is bound to the child, cut, and retained prefix.
+- Bound the claim: this validates the mechanism for a deterministic offline
+  oracle. The published fixture key is not a production credential and does
+  not establish provider identity, model quality, or production-environment
+  fidelity.
+
+### activegraph-bridge local executive study
 
 | Measure | Result |
 |---|---:|
@@ -170,8 +188,9 @@ Algebra name collision.
 - Deterministic production ordering can mask non-confluence rather than solve
   it.
 - A log can be externally verified yet self-license only Observed replay.
-- The v0 assessor assumes a caller-supplied target environment; it does not
-  implement an attestation-discharge pathway.
+- The language-neutral F# assessor remains verifier-agnostic; the companion
+  bridge implements one bounded attestation-discharge mechanism and emits a
+  hash-bound, zero-reexecution receipt.
 - Runtime contracts should record canonical ordering, effect footprint,
   request/outcome linkage, receipt provenance, and verification attestations.
 
@@ -180,9 +199,13 @@ Algebra name collision.
 - No mechanized proof or minimal side condition.
 - No real-model inference in the bridge study.
 - No complete production read/write/trigger inventory.
-- No actual fork in the public capsule crosses an external-effect boundary.
-- Bridge source provenance must be publicly fetchable before its quantitative
-  result can support a publication claim.
+- The 121 observed production forks do not cross an external-effect boundary;
+  the public post-oracle fork is a deterministic offline conformance case.
+- The conformance trust root is deliberately published and therefore does not
+  authenticate a real provider, production attestor, or production
+  environment.
+- The separate 24-run local executive study remains unpublished and must be
+  published or removed before submission.
 - Future work: mechanize selected properties after the empirical contracts stabilize,
-  add production behavior dependency extraction, and validate a fork containing
-  a recorded oracle boundary without re-execution.
+  add production behavior dependency extraction, and validate post-oracle forks
+  against production provider and attestor identities.
