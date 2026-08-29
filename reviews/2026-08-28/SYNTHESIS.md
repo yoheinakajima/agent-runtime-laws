@@ -106,3 +106,29 @@ The independent reviewer then checked the disposition delta at exact commit
 `59796ee00f0e4d2a71b9961208f61f818216282d` and found all five scoped technical
 findings closed with no residual technical blocker; that closure report is
 preserved as `codex-closure.md`.
+
+## Owner disposition addendum — 2026-08-28
+
+The owner chose the cut option for the unpublished 24-run migration-lab study.
+It has been removed from the submission manuscript, current evidence ledger,
+findings claims, outline, and release-facing README. The raw review reports and
+their historical disposition text remain unchanged. The local source and
+redacted bundle were not deleted; they are simply outside the submitted claim
+set.
+
+## Submission-freeze QA addendum — 2026-08-28
+
+The companion bridge hardening was squash-merged to public `main` at
+`843824a44d48d816779fc0c08580ae06108fe7b6`, passed its post-merge Python
+3.11--3.13 matrix, and was frozen as the public `v0.2.0` source release. The
+manuscript and evidence ledger pin that exact revision.
+
+After the owner-directed cut, the release candidate passed the complete local
+gate: the F# solution built with zero warnings and errors; 50/50 tests and all
+language-neutral vectors passed; the sealed capsule verifier passed 4,919
+archived runs; all 5,540 public logs and 317,296 cuts reproduced the reported
+tables; and the 121-fork audit again found zero mismatches across 16,625 retained
+events. The public bridge receipt verifier also passed. Tectonic emitted no
+warnings, every font is embedded, and all 26 pages passed visual inspection.
+The final PDF SHA-256 is
+`551fbf3932d7e50becfcf4672ad0377fb0367b664119ccfae97566ea7dfb36e7`.

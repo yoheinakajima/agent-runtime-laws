@@ -2,15 +2,12 @@
 \label{sec:validation}
 
 We evaluate the contracts against one public trace corpus and one public
-post-oracle conformance fork, and retain one local instrumented study as
-illustrative evidence.  The public, sealed Synthetic Players capsule contains
-an ActiveGraph SQLite store.  The public activegraph-bridge fixture executes an
-actual bridge fork after a committed recorded fixture-oracle effect.  The local
-executive study records explicit boundary verification but has no public source
-remote.  All three contain synthetic experimental content; ``real'' here means
-actual runtime artifacts rather than invented shape fixtures.  None is
-independent of the ActiveGraph family, and we do not claim human behavioral
-validity or real-model performance.
+post-oracle conformance fork.  The sealed Synthetic Players capsule contains an
+ActiveGraph SQLite store.  The activegraph-bridge fixture executes an actual
+bridge fork after a committed recorded fixture-oracle effect.  Both contain
+synthetic experimental content; ``real'' here means actual runtime artifacts
+rather than invented shape fixtures.  Neither is independent of the ActiveGraph
+family, and we do not claim human behavioral validity or real-model performance.
 
 \subsection{Synthetic Players capsule}
 
@@ -118,9 +115,9 @@ does not contain one.
 
 \subsection{Public post-oracle conformance fork}
 
-The companion activegraph-bridge artifact is public on an open draft pull
-request at revision \code{42792a2005db}.  The complete
-\href{https://github.com/yoheinakajima/activegraph-bridge/tree/42792a2005dbfbcb3db933246101ca0a21c70f95/evidence/post-oracle-fork-v1}{public post-oracle fixture and verifier}
+The companion activegraph-bridge artifact is public in the v0.2.0 release and
+on the default branch at revision \code{843824a44d48}.  The complete
+\href{https://github.com/yoheinakajima/activegraph-bridge/tree/843824a44d48d816779fc0c08580ae06108fe7b6/evidence/post-oracle-fork-v1}{public post-oracle fixture and verifier}
 are revision-pinned.
 It records an actual bridge child fork after a committed effect classified as
 OneShot footprint plus Recorded replay source.  The source run makes one
@@ -159,88 +156,13 @@ deliberately published as a fixture key.  The result does not attest a real
 provider, production identity, model quality, or production environmental
 fidelity.
 
-\subsection{Illustrative local executive study}
-
-The second artifact contains 12 synthetic vendor due-diligence cases evaluated
-under two deterministic offline mock strategies, for 24 runs and 2,592 source
-events.  The manifest states that no real LLM or external provider was used and
-limits the claim to instrumentation feasibility.  It records fresh-factory
-reconstruction and enables boundary verification.
-
-The artifact files are hash-bound.  In the source checksum ledger, the
-uncompressed store and manifest hashes begin \code{7a38a1e8} and
-\code{da1cbc3b}; metrics and pairs begin \code{9f9242e1} and
-\code{f4d95dbb}.  In the redacted-release ledger, the rewritten manifest and
-compressed store begin \code{f0ad6c30} and \code{816648d8}; metrics and pairs
-are byte-identical.  The evidence ledger records the complete hashes and
-namespaces.  Review exposed that the containing migration-lab had no commit or
-remote.  We repaired the local half of that defect.  The source and release
-revisions are \code{54dfde4d} and \code{201efa7}, respectively.  The repository
-still has no configured remote.  This result remains illustrative, is excluded
-from the abstract, and is not externally source-reproducible until those
-revisions are published.
-
-\subsubsection{Decision and path equivalence}
-
-The paired artifact reports 66.6667\% final-decision agreement and 0\% ordered
-tool-path agreement.  Eight of twelve pairs reach the same decision via
-different paths, yielding 66.6667\% same-decision/different-path.  This is not a
-model-quality result---both strategies are deterministic mocks.  It is an
-instrumented witness that decision equivalence and trace equivalence answer
-different questions.  A system that reports only agreement can hide total path
-divergence; a system that requires exact paths can reject decisions that are
-equal under a task-level observation.
-
-\subsubsection{Grades and cuts}
-
-Each run's source events normalize to two additional evidence facts: fresh
-reconstruction and mediated boundary.  The 2,592 source events therefore become
-2,640 normalized events.  All 24 logs grade Boundary and all 24 are verified
-from explicit log facts.  The 48 additional facts create 48 diagnostic
-intra-source positions that cannot be selected as cuts in the atomic source
-log.  We therefore report source-event-boundary verdicts as the primary bridge
-result and retain every-normalized-position counts as a transformation check.
-
-\begin{table}[ht]
-\centering
-\small
-\begin{tabular}{@{}lrrr@{}}
-\toprule
-Property & Sound & Conditional & Unsound \\
-\midrule
-ProjectionReplay & 2,616 & 0 & 0 \\
-ExternalContinuation & 1,968 & 264 & 384 \\
-CounterfactualWorld & 0 & 264 & 2,352 \\
-\bottomrule
-\end{tabular}
-\caption{Source-event-boundary verdicts for 24 bridge logs.}
-\label{tab:bridgecuts}
-\end{table}
-
-All 2,616 source-boundary ProjectionReplay cuts are Sound; the diagnostic over
-every normalized position is 2,664 Sound.  For completeness, the normalized
-ExternalContinuation totals are 1,992 Sound, 288 Conditional, and 384 Unsound;
-the CounterfactualWorld totals are 0 Sound, 288 Conditional, and 2,376 Unsound.
-Every run contains a OneShot
-\code{submit\_recommendation} effect.  No cut is unconditionally Sound for
-CounterfactualWorld: before the commit, the effect lies in the discarded
-suffix; after the commit, continuation is Conditional on not executing it
-again.  The result demonstrates why Boundary grade licenses effect-boundary
-operations but cannot promise a world in which discarded actions never
-happened.  These counts use the adapter-wide $\Omega_{profile}$, under which
-\code{submit\_recommendation} is in scope.  The public unreleased bridge v0.2
-draft-PR receipt records per-effect observable tags, but the legacy
-executive-study adapter does not expose such tags to this analysis.  A narrower
-observable set could change the world verdicts; we do not report that unmeasured
-result.
-
 \subsection{Validation status}
 
 \paragraph{V1: compute grade distributions.}
-Completed.  The public capsule yields Observed for 5,540 logs because
-verification is external to the log; the bridge yields Boundary for 24 logs
-because the necessary evidence is explicit.  The contrast supports log-derived
-grading rather than profile-derived labels.
+Completed for the public corpus.  The capsule yields Observed for 5,540 logs
+because verification is external to each run log.  The result supports
+log-derived grading rather than profile-derived labels and separates a sealed
+artifact's verification from evidence carried by an individual run.
 
 \paragraph{V2: inspect real forks and their preconditions.}
 Completed for the public capsule and the public conformance fixture.  All 121

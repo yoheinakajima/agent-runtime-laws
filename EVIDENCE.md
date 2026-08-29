@@ -208,12 +208,13 @@ one.
 | Field | Value |
 |---|---|
 | Repository | https://github.com/yoheinakajima/activegraph-bridge |
-| Pull request | https://github.com/yoheinakajima/activegraph-bridge/pull/2 |
-| Revision | `42792a2005dbfbcb3db933246101ca0a21c70f95` |
+| Pull request | https://github.com/yoheinakajima/activegraph-bridge/pull/2 (merged) |
+| Release | https://github.com/yoheinakajima/activegraph-bridge/releases/tag/v0.2.0 |
+| Revision | `843824a44d48d816779fc0c08580ae06108fe7b6` |
 | Fixture | `evidence/post-oracle-fork-v1` |
-| Publication status | public review branch, immutable revision pinned |
+| Publication status | public v0.2.0 source release, immutable revision pinned |
 
-The fixture, on an open draft pull request, records an actual bridge fork after one committed recorded
+The fixture, merged to the public default branch, records an actual bridge fork after one committed recorded
 fixture-oracle call. The inherited effect is classified `one_shot + recorded`
 with `provider.cost` and `provider.oracle` observables. The parent makes one
 deterministic offline oracle call. The generator directly observes the call
@@ -253,90 +254,6 @@ The HMAC key is deliberately published as a conformance trust root. This is
 evidence for the receipt protocol and zero-reexecution mechanism, not for a real
 provider, production identity, model quality, or production environmental
 fidelity.
-
-## activegraph-bridge synthetic-executive-demo-v1
-
-### Provenance and limitation
-
-The source study was recovered from the separate local
-`activegraph-model-migration-lab` checkout. It is not part of the public
-`activegraph-bridge` repository. Source provenance is now bound to local commit
-`54dfde4d7379f909eb04e32b9ae0d8f503fc34c1`; a deliberate redacted release
-bundle is bound to subsequent local commit
-`201efa7853b4e5e04b611ad57e8c2fd8aaa81fa5`. The bundle passes its offline
-`verify.sh`, including checksum and
-publication-policy checks. The repository still has no configured remote, so an
-external reviewer cannot fetch these commits and the result remains
-illustrative.
-
-The redacted bundle lives at
-`activegraph-model-migration-lab/releases/synthetic-executive-demo-v1` and
-contains the manifest, metrics, paired results, compressed run store, source and
-bundle checksum ledgers, and verifier. It remains distinct from the public
-post-oracle conformance fixture above.
-
-### Source artifact hashes (`SOURCE_SHA256SUMS`)
-
-| Source file | SHA-256 |
-|---|---|
-| `runs.db` | `7a38a1e8dce58bbc7a82ce019c7d05fde815f4bf81cfbd73f2d8eb0bc8d0730c` |
-| `manifest.json` | `da1cbc3bd8ba6c9662e6daba10cdc79ec16a721923e9be929a746f7a46107af6` |
-| `metrics.json` | `9f9242e1d064aa5f211cf8976c97c8594364ae5cb221081743fc08a877ee008c` |
-| `pairs.json` | `f4d95dbb413936d59685b16133698617c6a7fed3e16a335ea26dd3bf4ca55110` |
-| `report.md` | `56b462abb23a9dae22ab1e3079349f38cda7d3eba3469bcaab56227f66fa16b3` |
-
-### Redacted release payload hashes (`SHA256SUMS`)
-
-| Release file | SHA-256 |
-|---|---|
-| `manifest.json` | `f0ad6c30584c955b698f6d648afc269a6391caf093eca04c00ccb3ab7e81038c` |
-| `metrics.json` | `9f9242e1d064aa5f211cf8976c97c8594364ae5cb221081743fc08a877ee008c` |
-| `pairs.json` | `f4d95dbb413936d59685b16133698617c6a7fed3e16a335ea26dd3bf4ca55110` |
-| `report.md` | `56b462abb23a9dae22ab1e3079349f38cda7d3eba3469bcaab56227f66fa16b3` |
-| `runs.db.xz` | `816648d8b7e79aa6adf6b6c8e123783574fdb240221b4cc1085f4ca7d496249e` |
-
-The manifest records 12 synthetic cases, two deterministic offline mock
-strategies, 24 runs, no real model, and verification enabled. Its stated claim
-scope is instrumentation feasibility only. The paired metrics recover 66.6667%
-decision agreement, 0% ordered path agreement, and 66.6667%
-same-decision/different-path cases.
-
-### Cut property results
-
-| Measure | Result |
-|---|---:|
-| Runs | 24 |
-| Source / normalized events | 2,592 / 2,640 |
-| Grade distribution | Boundary: 24 |
-| Verified from log alone | 24 |
-| Source-event-boundary cuts | 2,616 |
-| Intra-source normalized positions | 48 |
-| Source-boundary Projection cuts | Sound 2,616; Conditional 0; Unsound 0 |
-| Source-boundary External-continuation cuts | Sound 1,968; Conditional 264; Unsound 384 |
-| Source-boundary Counterfactual-world cuts | Sound 0; Conditional 264; Unsound 2,352 |
-| All-normalized Projection cuts | Sound 2,664; Conditional 0; Unsound 0 |
-| All-normalized External-continuation cuts | Sound 1,992; Conditional 288; Unsound 384 |
-| All-normalized Counterfactual-world cuts | Sound 0; Conditional 288; Unsound 2,376 |
-| Runs with a counterfactual-unsound cut | 24 |
-
-Boundary grade is derived only when a run log explicitly records fresh-factory
-reconstruction and a successful verification event with an effects-served
-count and null divergence. Here null divergence means that the source payload's
-`divergence` field is present with JSON `null`, an assertion by the bridge
-verifier that it detected no unresolved reconstruction divergence. The
-normalized count is 48 events higher because 48 source events each establish
-one additional evidence fact. Cuts between co-derived facts are useful for
-testing normalization but are not physically selectable source-log forks, so
-source boundaries are the primary denominator.
-
-Every run contains a one-shot `submit_recommendation` effect. Consequently, no
-cut supports an unconditional claim that the external world is as if the run
-never happened: before the effect, it appears in the discarded suffix; after
-the effect, continuation is conditional on not executing it again. The world
-verdict uses the adapter profile's entire recognized external surface as
-`Omega_profile`. The public unreleased bridge v0.2 draft-PR receipt has
-per-effect observable tags, but the legacy executive-study adapter does not
-expose them to this analysis; no narrower result is reported.
 
 ## Interpretation limits
 

@@ -33,8 +33,7 @@ falsification and bounded evidence.
      forks; and
   5. a public post-oracle conformance fork whose generator observes no second
      fixture-oracle call and whose verifier checks a hash-bound receipt plus a
-     fork-bound caller assertion. A separate 24-run local study remains
-     illustrative.
+     fork-bound caller assertion.
 
 ## 2. Executable runtime model
 
@@ -149,7 +148,7 @@ oracle/effect boundaries.
 ### activegraph-bridge public post-oracle conformance fork
 
 - Pin the fixture to bridge revision
-  `42792a2005dbfbcb3db933246101ca0a21c70f95`.
+  `843824a44d48d816779fc0c08580ae06108fe7b6`.
 - Report the parent, child, receipt, environment-attestation, manifest, prefix,
   and canonical-receipt hashes from `EVIDENCE.md`.
 - The child inherits a committed recorded offline oracle outcome; the generator
@@ -161,23 +160,6 @@ oracle/effect boundaries.
   oracle. The published fixture key is not a production credential and does
   not establish provider identity, model quality, or production-environment
   fidelity.
-
-### activegraph-bridge local executive study
-
-| Measure | Result |
-|---|---:|
-| Runs / source events | 24 / 2,592 |
-| Log-alone grade | Boundary: 24 |
-| Decision / ordered-path agreement | 66.6667% / 0% |
-| Source-boundary cuts / intra-source diagnostics | 2,616 / 48 |
-| Source-boundary Projection cuts | 2,616 sound; 0 unsound |
-| Source-boundary ExternalContinuation cuts | 1,968 sound; 264 conditional; 384 unsound |
-| Source-boundary Counterfactual cuts | 0 sound; 264 conditional; 2,352 unsound |
-
-Use the 66.7% decision agreement with 0% path agreement only as an illustrative
-motivation for distinct equivalence relations. State prominently that this is a
-deterministic offline mock instrumentation study whose source and redacted
-bundle are commit-bound locally but not available from a public remote.
 
 ## 8. Related work
 
@@ -204,7 +186,7 @@ Algebra name collision.
 ## 10. Limitations and future work
 
 - No mechanized proof or minimal side condition.
-- No real-model inference in the bridge study.
+- No real-model inference in the public bridge fixture.
 - No complete production read/write/trigger inventory.
 - The kernel does not model ActiveGraph's per-invocation same-trigger view
   refresh; no production behavior inventory establishes its observed impact.
@@ -213,8 +195,6 @@ Algebra name collision.
 - The conformance trust root is deliberately published and therefore does not
   authenticate a real provider, production attestor, or production
   environment.
-- The separate 24-run local executive study remains unpublished and must be
-  published or removed before submission.
 - Future work: mechanize selected properties after the empirical contracts stabilize,
   add production behavior dependency extraction, and validate post-oracle forks
   against production provider and attestor identities.

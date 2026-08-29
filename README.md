@@ -123,18 +123,13 @@ checked at every cut. Its public verifier covers 4,919 of those runs; the exact
 reconciliation is 4,919 verifier-covered, 586 other completed runs, and 35
 incomplete runs. The 121 observed forks have zero structural mismatches across
 16,625 retained-prefix events after excluding child run identity and the
-store's database-global `events.seq`. A public activegraph-bridge conformance
-fixture on open draft PR #2 records an actual fork after a committed recorded
+store's database-global `events.seq`. The public activegraph-bridge v0.2.0
+release records an actual fork after a committed recorded
 fixture-oracle effect. Its generator observes one source call and no second
 fixture-oracle call in the child; its verifier checks receipt/log consistency
-and a fork-bound caller assertion under a public conformance key. The separate
-24-run executive study was also checked. Its source and a redacted release
-bundle are commit-bound locally and the bundle verifier passes, but no public
-remote exists, so that result remains illustrative rather than externally
-reproducible. Executive-study results distinguish 2,616 physically meaningful
-source-event-boundary cuts from 48 diagnostic positions between co-derived
-normalized facts. No private trace payloads were copied into this repository.
-See EVIDENCE.md for exact revisions, hashes, counts, commands, and limitations.
+and a fork-bound caller assertion under a public conformance key. No private
+trace payloads were copied into this repository. See EVIDENCE.md for exact
+revisions, hashes, counts, commands, and limitations.
 
 ## Scope
 
@@ -158,6 +153,5 @@ validation are implemented. Claude, Gemini, Grok, and a later independent Codex
 review are archived with provenance and dispositions; the subsequent
 ExploreScience review is preserved separately. The public post-oracle
 conformance mechanism test is complete under the bounded claim stated above.
-Claims remain provisional pending owner acceptance, an explicit publish-or-cut
-decision for the separate local executive study, and public release and freeze
-of this currently private repository.
+The owner excluded the unpublished local executive study from the submission
+and authorized the public release and submission workflow on 2026-08-28.

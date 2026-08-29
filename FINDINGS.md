@@ -188,13 +188,6 @@ trace in the Synthetic Players corpus validates post-oracle continuation, a
 target-environment attestation, or a zero-reexecution receipt. The separate
 public bridge conformance fixture described under V2 now exercises that case.
 
-The local bridge study contains 24 explicitly verified offline mock runs. All
-24 grade Boundary because the run logs themselves record fresh
-reconstruction and a successful mediated-boundary verification with no
-divergence. Its primary denominator is now 2,616 atomic source-event-boundary
-cuts; 48 additional normalized positions are retained only as transformation
-diagnostics.
-
 Finding: replay grade is a property of retained evidence, not a property of an
 external claim about the artifact.
 
@@ -212,7 +205,7 @@ requests. The actual forks therefore satisfy the current external-continuation
 precondition, but only for this domain-only cut family.
 
 A separate public activegraph-bridge fixture at revision
-`42792a2005dbfbcb3db933246101ca0a21c70f95` records an actual child fork after
+`843824a44d48d816779fc0c08580ae06108fe7b6` records an actual child fork after
 one committed `one_shot + recorded` fixture-oracle effect. The generator
 directly observes one source call and no second fixture-oracle call in the
 child. Its hash-bound receipt records that inherited request `evt_008` was
@@ -221,8 +214,8 @@ signature-checks a caller assertion bound to the child, cut, prefix hash, and
 target fingerprint under a public conformance trust root. It does not validate
 the assertion's environmental contents. This closes the public mechanism-test
 gap, but does not establish real-provider behavior or a production identity or
-attestation system. The implementation is pinned on open draft PR #2 rather
-than a release or the default branch.
+attestation system. The implementation is pinned on the public v0.2.0 release
+and default branch.
 
 The all-cuts counterfactual is much stricter: 4,923 of 5,540 runs contain at
 least one cut assessed Unsound because an oracle call in the discarded suffix
@@ -246,20 +239,17 @@ Exact revisions, hashes, commands, counts, and limitations are in EVIDENCE.md.
 
 ## V4 — Review and release provenance
 
-Status: review archive preserved; executive-study publication pending owner
-decision.
+Status: review archive preserved; unpublished study excluded by owner decision.
 
 Three supplied model reviews and the later ExploreScience review are preserved
 under `reviews/2026-08-28`, with their consensus and dispositions recorded
-separately from the raw reports. The
-bridge study source and redacted release bundle are committed in the separate
-local `activegraph-model-migration-lab` repository, and the bundle verifier
-passes. That repository has no public remote, so the executive-study result
-remains illustrative and is excluded from the abstract.
+separately from the raw reports. On 2026-08-28, the owner chose to exclude the
+unpublished local executive study from the submission. It is not used as
+evidence or cited by the manuscript; the historical review archive remains
+unchanged.
 
-ExploreScience reported 96/100 with 14 minor and zero major issues. That is a
-review result, not publication authorization. The review corpus still does not
-include a preserved fresh Codex report, a production behavior-dependency
-inventory, or an external runtime corpus. A public effect-boundary conformance
-fork is now preserved at the bridge revision above. The remaining items are
-open evidence limits, not accepted claims.
+ExploreScience reported 96/100 with 14 minor and zero major issues. A fresh
+independent Codex report and closure review are also preserved. A production
+behavior-dependency inventory and an external runtime corpus remain absent. A
+public effect-boundary conformance fork is preserved at the bridge revision
+above. These are stated evidence limits rather than accepted claims.

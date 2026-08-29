@@ -97,3 +97,10 @@ a real provider or production environment. The legacy corpus adapter still
 lacks per-effect observable tags, the separate 24-run study is not public, and
 the independent Codex review and its dispositions are preserved separately in
 the parent review directory.
+
+## Owner disposition addendum — 2026-08-28
+
+The owner subsequently chose to exclude the unpublished 24-run study from the
+submission. Its source was not deleted, and the historical review above remains
+unaltered; the study is no longer part of the manuscript or current evidence
+claim set.
