@@ -126,13 +126,22 @@ the same delayed tick remains FIFO.  This supplies a reproducible
 contract.  It is not evidence that alternate legal orders have the same normal
 form.
 
-The distinction is practical.  Projection occurs before scheduler
-notification, so an earlier registered behavior can emit an event whose
-projection changes the state read by a later behavior handling the same
-original event.  Relation enumeration introduces another ordering seam when a
-backend query does not specify a canonical order.  A stable FIFO queue can hide
-both effects in ordinary replay tests.  Our scheduler tests bypass the
-production policy and vary event and activation order directly.
+The distinction is practical.  ActiveGraph computes the match set before the
+handler loop, so an earlier handler cannot change which behaviors are already
+enabled by that trigger.  It does, however, rebuild each handler's view against
+the current graph.  An earlier registered handler can emit an event whose
+projection is applied synchronously and changes state read by a later handler
+of the same original event; behavior matching for the emitted event occurs at a
+later FIFO step.  Relation enumeration adds another ordering seam when a
+backend query does not specify a canonical order.
+
+The executable kernel deliberately snapshots state across activations enabled
+by one trigger, so it does not reproduce this per-invocation production read
+timing.  Its tests vary event and activation order directly, and its
+read/trigger witness uses distinct later events.  The production seam is a
+source-audited limit on generalization, not a property claimed as validated by
+the kernel.  A stable FIFO queue can hide either form of dependence in ordinary
+replay tests.
 
 \paragraph{Result.}
 The strongest supported conclusion is negative and conditional.  General

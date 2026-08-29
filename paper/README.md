@@ -18,11 +18,12 @@ scratch renders are intentionally excluded from version control.
 
 The draft is not publication-approved. Before submission:
 
-1. **Completed:** publish and pin a post-oracle bridge fork with a hash-bound,
-   zero-reexecution receipt and authenticated conformance environment;
+1. **Completed:** publish and pin, on a public draft PR, a post-oracle bridge
+   fixture whose generator observes no second fixture-oracle call and whose
+   verifier checks a hash-bound receipt plus fork-bound caller assertion;
 2. make an owner decision on the separate 24-run executive study: publish its
    migration-lab bundle or remove the illustrative study from the submission;
 3. make `agent-runtime-laws` public and freeze the submission revision;
 4. rerun the capsule, all-cut tables, code gate, and PDF QA from that revision;
-5. complete final author approval and the preserved independent technical
-   review required by the project protocol.
+5. **Review preserved:** resolve the independent technical review dispositions,
+   then obtain final author approval.

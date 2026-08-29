@@ -36,14 +36,22 @@ language-neutral vectors have a JSON Schema at
 The production scheduler is FIFO, matches behaviors in registration order, and
 dispatches sequentially. Delayed work at the same tick retains FIFO order.
 This is a deterministic policy for one schedule, not evidence of confluence
-under other legal schedules. Projection occurs before notification, so an
-event's own state is visible before its handlers run. The source audit does not
-establish that an event emitted by one handler is projected before a later
-handler of that same triggering event. The executable kernel makes the narrower
-choice explicit: activations for one trigger read the same state, while emitted
-events become visible at later event-processing steps. Relation enumeration has
-no documented canonical ordering. The kernel therefore treats ProductionOrder
-as one policy and separately permutes event order and activation order.
+under other legal schedules. `Registry.match` fixes the enabled behaviors and
+their relation/pattern matches before the handler loop. Each invocation then
+calls `build_view` against the current graph. A handler's `BehaviorGraph.emit`
+calls `Graph.emit`, which appends and projects synchronously before the emitted
+event is queued for later behavior matching. An earlier handler can therefore
+change state read by a later handler of the same triggering event, even though
+it cannot change that trigger's already-computed activation set. Relation
+enumeration has no documented canonical ordering.
+
+The executable kernel deliberately chooses a narrower snapshot semantics:
+activations for one trigger read the same state, while emitted events become
+visible at later event-processing steps. Its properties therefore check the
+kernel contract rather than reproducing ActiveGraph's per-invocation view
+refresh. The later-event read/trigger counterexample remains applicable, and
+the production source audit supplies an additional reason not to infer
+schedule independence from one stable ProductionOrder.
 
 The public repository has a deterministic nine-event golden log and an offline
 quickstart fixture, but no committed production capsule or production SQLite
@@ -126,7 +134,8 @@ not empirically validate a post-oracle continuation, a target-environment
 attestation, or a zero-reexecution receipt. The F# assessor takes the target
 environment as a supplied premise and computes typed obligations; the companion
 bridge fixture below separately implements and tests a deployment-side
-attestation discharge path.
+receipt path that signature-checks and fork-binds a caller-issued environment
+assertion without independently validating its contents.
 
 The confirming read-only SQLite query was:
 
@@ -204,13 +213,14 @@ one.
 | Fixture | `evidence/post-oracle-fork-v1` |
 | Publication status | public review branch, immutable revision pinned |
 
-The fixture records an actual bridge fork after one committed recorded
+The fixture, on an open draft pull request, records an actual bridge fork after one committed recorded
 fixture-oracle call. The inherited effect is classified `one_shot + recorded`
 with `provider.cost` and `provider.oracle` observables. The parent makes one
-deterministic offline oracle call. Verification and the child serve request
-`evt_008` from recorded outcome `evt_009`; the measured inherited-prefix
-external-call count is zero. A changed tool result creates a divergent child
-tail.
+deterministic offline oracle call. The generator directly observes the call
+counter before and after the child operation. Verification and the child serve
+request `evt_008` from recorded outcome `evt_009`; that process-produced
+inherited-prefix external-call count is zero. A changed tool result creates a
+divergent child tail.
 
 | File or field | SHA-256 / value |
 |---|---|
@@ -228,8 +238,10 @@ The receipt binds parent and child identities, the cut, source/prefix/child-log
 hashes, inherited request and outcome identities, source and target runtime
 fingerprints, and target-environment claims. The verifier rejects receipt,
 attestation, or log tampering; verifies an HMAC-SHA256 signature using a
-configured trust root; binds the attestation to the child, cut, prefix, and
-target fingerprint; and checks the measured zero-call counter.
+configured trust root; binds the caller-issued assertion to the child, cut,
+prefix, and target fingerprint; and checks receipt/log consistency around the
+process-produced zero-call counter. It does not inspect or independently
+establish the asserted environment contents.
 
 ~~~bash
 ./evidence/post-oracle-fork-v1/verify.sh
@@ -263,12 +275,25 @@ contains the manifest, metrics, paired results, compressed run store, source and
 bundle checksum ledgers, and verifier. It remains distinct from the public
 post-oracle conformance fixture above.
 
-| File | SHA-256 |
+### Source artifact hashes (`SOURCE_SHA256SUMS`)
+
+| Source file | SHA-256 |
 |---|---|
 | `runs.db` | `7a38a1e8dce58bbc7a82ce019c7d05fde815f4bf81cfbd73f2d8eb0bc8d0730c` |
 | `manifest.json` | `da1cbc3bd8ba6c9662e6daba10cdc79ec16a721923e9be929a746f7a46107af6` |
 | `metrics.json` | `9f9242e1d064aa5f211cf8976c97c8594364ae5cb221081743fc08a877ee008c` |
 | `pairs.json` | `f4d95dbb413936d59685b16133698617c6a7fed3e16a335ea26dd3bf4ca55110` |
+| `report.md` | `56b462abb23a9dae22ab1e3079349f38cda7d3eba3469bcaab56227f66fa16b3` |
+
+### Redacted release payload hashes (`SHA256SUMS`)
+
+| Release file | SHA-256 |
+|---|---|
+| `manifest.json` | `f0ad6c30584c955b698f6d648afc269a6391caf093eca04c00ccb3ab7e81038c` |
+| `metrics.json` | `9f9242e1d064aa5f211cf8976c97c8594364ae5cb221081743fc08a877ee008c` |
+| `pairs.json` | `f4d95dbb413936d59685b16133698617c6a7fed3e16a335ea26dd3bf4ca55110` |
+| `report.md` | `56b462abb23a9dae22ab1e3079349f38cda7d3eba3469bcaab56227f66fa16b3` |
+| `runs.db.xz` | `816648d8b7e79aa6adf6b6c8e123783574fdb240221b4cc1085f4ca7d496249e` |
 
 The manifest records 12 synthetic cases, two deterministic offline mock
 strategies, 24 runs, no real model, and verification enabled. Its stated claim
@@ -309,9 +334,9 @@ cut supports an unconditional claim that the external world is as if the run
 never happened: before the effect, it appears in the discarded suffix; after
 the effect, continuation is conditional on not executing it again. The world
 verdict uses the adapter profile's entire recognized external surface as
-`Omega_profile`. The public bridge v0.2 receipt has per-effect observable tags,
-but the legacy executive-study adapter does not expose them to this analysis;
-no narrower result is reported.
+`Omega_profile`. The public unreleased bridge v0.2 draft-PR receipt has
+per-effect observable tags, but the legacy executive-study adapter does not
+expose them to this analysis; no narrower result is reported.
 
 ## Interpretation limits
 

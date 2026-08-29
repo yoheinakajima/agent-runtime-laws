@@ -58,11 +58,15 @@ Reversing event order changes the observed value from 0 to 1.
 The general restoring condition must constrain reads, writes, emitted triggers,
 and activation eligibility. A minimal condition has not been established.
 
-Scheduler-semantics clarification: activations enabled by one triggering event
-read the same projected state. Emissions from one activation become visible
-only after a later event-processing step. A dedicated regression locks this
-boundary; the read/trigger counterexample uses distinct later events and is
-unchanged.
+Scheduler-semantics clarification: in the executable F# kernel, activations
+enabled by one triggering event read the same projected state, and emissions
+become visible only after a later event-processing step. A dedicated regression
+locks this kernel boundary; the read/trigger counterexample uses distinct later
+events and is unchanged. ActiveGraph's pinned production source is different in
+one relevant respect: it computes the match set once, but rebuilds each
+handler's view against the current graph after prior handlers may have emitted
+and synchronously projected events. The kernel result must therefore not be
+reported as evidence that production same-trigger reads are snapshot-isolated.
 
 Fixture: tests/fixtures/counterexamples.json, keys writeConflict and
 readTriggerInterference.
@@ -209,13 +213,16 @@ precondition, but only for this domain-only cut family.
 
 A separate public activegraph-bridge fixture at revision
 `8855d3a9e779362f713b08bceb58d7d5db671c7d` records an actual child fork after
-one committed `one_shot + recorded` fixture-oracle effect. Its hash-bound
-receipt verifies that inherited request `evt_008` was served from recorded
-outcome `evt_009`, with one source oracle call and zero inherited external calls
-in the fork. An HMAC-SHA256 attestation binds the child, cut, prefix hash, and
-target fingerprint under a configured conformance trust root. This closes the
-public mechanism-test gap, but does not establish real-provider behavior or a
-production identity or attestation system.
+one committed `one_shot + recorded` fixture-oracle effect. The generator
+directly observes one source call and no second fixture-oracle call in the
+child. Its hash-bound receipt records that inherited request `evt_008` was
+served from outcome `evt_009`; the verifier checks receipt/log consistency and
+signature-checks a caller assertion bound to the child, cut, prefix hash, and
+target fingerprint under a public conformance trust root. It does not validate
+the assertion's environmental contents. This closes the public mechanism-test
+gap, but does not establish real-provider behavior or a production identity or
+attestation system. The implementation is pinned on open draft PR #2 rather
+than a release or the default branch.
 
 The all-cuts counterfactual is much stricter: 4,923 of 5,540 runs contain at
 least one cut assessed Unsound because an oracle call in the discarded suffix

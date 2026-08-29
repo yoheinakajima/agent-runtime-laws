@@ -118,8 +118,8 @@ does not contain one.
 
 \subsection{Public post-oracle conformance fork}
 
-The companion activegraph-bridge artifact is public at revision
-\code{8855d3a9e779}.  The complete
+The companion activegraph-bridge artifact is public on an open draft pull
+request at revision \code{8855d3a9e779}.  The complete
 \href{https://github.com/yoheinakajima/activegraph-bridge/tree/8855d3a9e779362f713b08bceb58d7d5db671c7d/evidence/post-oracle-fork-v1}{public post-oracle fixture and verifier}
 are revision-pinned.
 It records an actual bridge child fork after a committed effect classified as
@@ -131,9 +131,11 @@ changed tool result.
 The receipt binds the parent and child run identities, cut boundary, parent log
 hash, exact retained-prefix hash, child log hash before receipt emission,
 inherited request and outcome identities, response hash, source and target
-runtime fingerprints, and target-environment claims.  Its verifier checks those
-hashes, the zero-call counter, and an HMAC-SHA256 signature under a configured
-trust root whose claims include the child, cut, prefix, and target fingerprint.
+runtime fingerprints, and target-environment claims.  The fixture generator
+directly observes the oracle-call counter before and after the child operation.
+The verifier checks that process-produced counter, the receipt/log hashes, and
+an HMAC-SHA256 signature under a configured trust root whose caller-issued
+claims include the child, cut, prefix, and target fingerprint.
 The published command reports:
 
 \begin{quote}
@@ -147,12 +149,14 @@ canonical internal receipt hash begins \code{5d36df7dc177}.  The verified receip
 \code{evt\_008}, its recorded outcome \code{evt\_009}, one source oracle call,
 and zero inherited external calls in the fork.
 
-This discharges the prior implementation gap for a public conformance case.  An
-inherited recorded oracle outcome can cross a fork boundary without a second
-call, and the target environment premise can be authenticated against a
-configured trust root.  The oracle is deterministic and offline, and the HMAC
-key is deliberately published as a fixture key.  The result does not attest a
-real provider, production identity, model quality, or production environmental
+This exercises the previously missing implementation path for a public
+conformance case.  In this deterministic offline fixture, an inherited recorded
+oracle outcome crosses a fork boundary with no second observed fixture-oracle
+call.  A caller-issued target-environment assertion is signature-checked and
+bound to that fork under a configured trust root; the verifier does not inspect
+or independently establish the asserted environment contents.  The HMAC key is
+deliberately published as a fixture key.  The result does not attest a real
+provider, production identity, model quality, or production environmental
 fidelity.
 
 \subsection{Illustrative local executive study}
@@ -163,16 +167,18 @@ events.  The manifest states that no real LLM or external provider was used and
 limits the claim to instrumentation feasibility.  It records fresh-factory
 reconstruction and enables boundary verification.
 
-The artifact files are hash-bound.  Hash prefixes for the run store, manifest,
-metrics, and paired results are \code{7a38a1e8}, \code{da1cbc3b},
-\code{9f9242e1}, and \code{f4d95dbb}, respectively; the evidence ledger records
-the complete hashes.  Review exposed that the containing migration-lab had no
-commit or remote.  We repaired the local half of that defect: source revision
-\code{54dfde4d7379} and release-bundle revision \code{201efa7} bind a redacted
-manifest, metrics, pairs, report, compressed run store, and verifier.  The
-repository still has no configured remote.  This result remains illustrative,
-is excluded from the abstract, and is not externally source-reproducible until
-those revisions are published.
+The artifact files are hash-bound.  In the source checksum ledger, the
+uncompressed store and manifest hashes begin \code{7a38a1e8} and
+\code{da1cbc3b}; metrics and pairs begin \code{9f9242e1} and
+\code{f4d95dbb}.  In the redacted-release ledger, the rewritten manifest and
+compressed store begin \code{f0ad6c30} and \code{816648d8}; metrics and pairs
+are byte-identical.  The evidence ledger records the complete hashes and
+namespaces.  Review exposed that the containing migration-lab had no commit or
+remote.  We repaired the local half of that defect.  The source and release
+revisions are \code{54dfde4d} and \code{201efa7}, respectively.  The repository
+still has no configured remote.  This result remains illustrative, is excluded
+from the abstract, and is not externally source-reproducible until those
+revisions are published.
 
 \subsubsection{Decision and path equivalence}
 
@@ -222,10 +228,11 @@ suffix; after the commit, continuation is Conditional on not executing it
 again.  The result demonstrates why Boundary grade licenses effect-boundary
 operations but cannot promise a world in which discarded actions never
 happened.  These counts use the adapter-wide $\Omega_{profile}$, under which
-\code{submit\_recommendation} is in scope.  The public bridge v0.2 receipt
-records per-effect observable tags, but the legacy executive-study adapter does
-not expose such tags to this analysis.  A narrower observable set could change
-the world verdicts; we do not report that unmeasured result.
+\code{submit\_recommendation} is in scope.  The public unreleased bridge v0.2
+draft-PR receipt records per-effect observable tags, but the legacy
+executive-study adapter does not expose such tags to this analysis.  A narrower
+observable set could change the world verdicts; we do not report that unmeasured
+result.
 
 \subsection{Validation status}
 
@@ -239,9 +246,10 @@ grading rather than profile-derived labels.
 Completed for the public capsule and the public conformance fixture.  All 121
 observed corpus forks preserve the compared prefix fields and retain no
 classified external request.  The companion fixture tests one actual bridge
-fork after a committed recorded oracle call and verifies zero inherited
-external calls plus an authenticated fixture-environment premise.  It is
-conformance evidence, not a real-provider or production-attestor result.
+fork after a committed recorded oracle call.  Its generator observes no second
+fixture-oracle call; its verifier checks receipt/log consistency and a
+fork-bound caller assertion under a public conformance key.  It is conformance
+evidence, not a real-provider or production-attestor result.
 
 \paragraph{V3: test production confluence conditions.}
 Partially completed.  Source audit confirms that ActiveGraph imposes FIFO plus
@@ -252,8 +260,8 @@ cannot certify or falsify a general production non-interference contract.
 
 \paragraph{Combined interpretation.}
 The evidence supports deterministic projection, structurally correct observed
-prefix copying, and one public post-oracle continuation under a verified
-conformance environment.  It does not support an unrestricted claim that any
-historical cut is safely executable or environmentally counterfactual.  Those
-stronger claims require effect-complete evidence and a property-specific
-precondition.
+prefix copying, and one public offline post-oracle fixture in which no second
+fixture-oracle call was observed and a caller environment assertion was
+fork-bound.  It does not support an unrestricted claim that any historical cut
+is safely executable or environmentally counterfactual.  Those stronger claims
+require effect-complete evidence and a property-specific precondition.

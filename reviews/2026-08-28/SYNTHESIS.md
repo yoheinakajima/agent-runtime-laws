@@ -67,11 +67,38 @@ The “public hard effect-boundary fork” item above is now discharged for a
 bounded conformance case by public activegraph-bridge revision
 `8855d3a9e779362f713b08bceb58d7d5db671c7d` (PR #2). The fixture records an
 actual child fork after one committed `one_shot + recorded` offline oracle
-effect. Its hash-bound receipt verifies the inherited recorded outcome, zero
-inherited external calls, and an HMAC-authenticated fixture environment under a
-configured trust root. The published key is a conformance key, so this does not
-establish provider authenticity or production attestor identity.
+effect. Its generator observes no second fixture-oracle call. The verifier
+checks the inherited recorded outcome, receipt/log consistency, and a
+fork-bound caller assertion under a configured public conformance key. It does
+not validate the asserted environment contents or establish provider
+authenticity or production attestor identity.
 
 This addendum does not rewrite the historical review. The separate 24-run
-migration-lab study still needs an owner publish-or-cut decision, and a fresh
-independent Codex review remains a release-protocol gate.
+migration-lab study still needs an owner publish-or-cut decision. A fresh
+independent Codex report is now preserved as `codex.md`; its disposition appears
+in the later addendum below.
+
+## Independent Codex disposition addendum — 2026-08-28
+
+The independent Codex review targeted exact commit
+`768a30542b61951a047b80f0c8186a099634b3a4`. It found no Critical defect or
+numerical invalidation, but identified two Major claim-discipline problems and
+three Minor reporting inconsistencies. The raw report remains unchanged in
+`codex.md`.
+
+| Finding | Disposition in the submission candidate |
+|---|---|
+| Kernel snapshot semantics contradicted the production-source account in the authoritative ledgers | Accepted. `EVIDENCE.md`, `FINDINGS.md`, the confluence section, the limitations, and the outline now distinguish fixed same-trigger eligibility from per-handler state refresh, and kernel semantics from production semantics. |
+| Bridge headline treated a signed caller assertion as verified environment truth | Accepted. The abstract, contributions, validation, discussion, limitations, conclusion, ledgers, and READMEs now attribute the zero-call observation to the fixture generator and describe the verifier as checking receipt/log consistency plus a fork-bound caller assertion. |
+| Bridge artifact could read as released v0.2 | Accepted. The manuscript and ledgers now identify the implementation as an unreleased open draft-PR revision. |
+| Local-study source and redacted-release hashes were conflated | Accepted. The two checksum namespaces are labeled separately in the evidence ledger and manuscript. |
+| Fork-audit SQL vocabulary differed from the normalizer | Accepted. The SQL now mirrors the normalizer's request/response vocabulary and the method states that contract. |
+| Private paper repository and unpublished local study | Open owner gates. The repository must be made public and frozen; the 24-run study must be published or removed before submission. |
+
+Disposition QA passed on the corrected candidate: the F# build has zero
+warnings and errors; 50/50 tests, conformance vectors, evidence manifest,
+public-corpus analysis, 121-fork SQL audit, 24-run local analysis, public bridge
+fixture verifier, and local release-bundle verifier all pass with unchanged
+reported counts. Tectonic emits no warnings, all fonts are embedded, and all 27
+PDF pages passed visual inspection. The resulting PDF SHA-256 is
+`4f0fe99130f9e78f7f499e6c9318d4711e8393c617fe039be5deae1f4185b084`.

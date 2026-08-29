@@ -109,7 +109,9 @@ each trace and excluded from equality because copied child events receive new
 store positions.  The normalizer then assigns the contiguous per-run sequence
 used by Equation~\ref{eq:event-envelope}; that derived ordinal is not a second physical field in the
 fork audit.  Child run ID is also excluded.  The audit separately counts
-retained external requests and unresolved boundaries.
+retained external requests and unresolved boundaries using the same explicit
+request/outcome vocabulary as the normalizer; unknown event types remain
+unclassified rather than being inferred as effects.
 
 \subsection{Reproducibility discipline}
 

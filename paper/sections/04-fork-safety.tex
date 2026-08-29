@@ -77,8 +77,9 @@ may be served without a live call, but no stronger world-state claim is licensed
 until its footprint is resolved.  The v0 assessor takes the target-environment
 premise as an input assumption; it does not verify a snapshot or
 fresh-environment attestation.  The companion bridge implementation supplies a
-concrete authenticated discharge path for the public conformance case in
-Section~\ref{sec:validation}; the language-neutral assessor remains
+concrete conformance path in Section~\ref{sec:validation}: it authenticates and
+fork-binds a caller-issued environment assertion, but does not independently
+validate the assertion's contents.  The language-neutral assessor remains
 verifier-agnostic.  This property deliberately does not assert that a
 retrospectively discarded source suffix left the original world unchanged.
 \end{definition}

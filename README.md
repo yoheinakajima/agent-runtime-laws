@@ -124,9 +124,10 @@ reconciliation is 4,919 verifier-covered, 586 other completed runs, and 35
 incomplete runs. The 121 observed forks have zero structural mismatches across
 16,625 retained-prefix events after excluding child run identity and the
 store's database-global `events.seq`. A public activegraph-bridge conformance
-fixture now records an actual fork after a committed recorded fixture-oracle
-effect; its hash-bound receipt verifies one source oracle call, zero inherited
-external calls, and an HMAC-authenticated fixture environment. The separate
+fixture on open draft PR #2 records an actual fork after a committed recorded
+fixture-oracle effect. Its generator observes one source call and no second
+fixture-oracle call in the child; its verifier checks receipt/log consistency
+and a fork-bound caller assertion under a public conformance key. The separate
 24-run executive study was also checked. Its source and a redacted release
 bundle are commit-bound locally and the bundle verifier passes, but no public
 remote exists, so that result remains illustrative rather than externally
@@ -153,9 +154,10 @@ evidence over its generators and fixtures, not a universal proof.
 ## Status
 
 Research v0. Kernel contracts, 50 tests, conformance vectors, and deployed-trace
-validation are implemented. A three-model review round and a subsequent
-ExploreScience review are archived with separate source and disposition files.
-The public post-oracle conformance and attestation mechanism test is complete.
+validation are implemented. Claude, Gemini, Grok, and a later independent Codex
+review are archived with provenance and dispositions; the subsequent
+ExploreScience review is preserved separately. The public post-oracle
+conformance mechanism test is complete under the bounded claim stated above.
 Claims remain provisional pending owner acceptance, an explicit publish-or-cut
-decision for the separate local executive study, public release of this
-currently private repository, and the final independent-review gate.
+decision for the separate local executive study, and public release and freeze
+of this currently private repository.

@@ -62,12 +62,13 @@ union
 The proposed receipt binds the parent, cut, observation $P$, prefix hash,
 environment premise, inherited effect identities, and the typed obligation
 set.  The F\# assessor computes findings and this obligation set.  The companion
-activegraph-bridge v0.2 implementation now emits a hash-bound receipt and
-verifies an HMAC-authenticated target-environment claim under a caller-configured
-trust root; the public post-oracle fixture exercises that path.  This is a
-conformance discharge mechanism, not a production identity or provider
-attestation.  In particular, a cut through Requested is refused unless an
-explicit recovery policy changes the requested property.
+unreleased activegraph-bridge v0.2 draft-PR implementation emits a hash-bound
+receipt and signature-checks a fork-bound, caller-issued target-environment
+claim under a configured trust root; it does not validate the claim's contents.
+The public post-oracle fixture exercises that path.  This is a conformance
+mechanism, not a production identity, provider attestation, or environmental
+proof.  In particular, a cut through Requested is refused unless an explicit
+recovery policy changes the requested property.
 
 \subsection{Deterministic ordering can conceal non-confluence}
 

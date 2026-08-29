@@ -31,9 +31,10 @@ falsification and bounded evidence.
   3. a fail-closed replay-grade computation from retained evidence;
   4. exhaustive cut assessment over 5,540 public store runs plus 121 observed
      forks; and
-  5. a public post-oracle conformance fork with a hash-bound authenticated
-     receipt showing zero inherited external calls. A separate 24-run local
-     study remains illustrative.
+  5. a public post-oracle conformance fork whose generator observes no second
+     fixture-oracle call and whose verifier checks a hash-bound receipt plus a
+     fork-bound caller assertion. A separate 24-run local study remains
+     illustrative.
 
 ## 2. Executable runtime model
 
@@ -45,6 +46,11 @@ falsification and bounded evidence.
   activation-reverse, and both reversed.
 - ActiveGraph ProductionOrder is FIFO plus registration order: one schedule,
   not schedule independence.
+- State-read timing differs across the executable and production semantics:
+  the kernel snapshots state for one trigger's activations, while ActiveGraph
+  fixes the match set once but rebuilds each handler view after prior
+  synchronous projections. State this as a source-audited generalization
+  boundary.
 
 ## 3. Confluence and quiescence
 
@@ -146,10 +152,11 @@ oracle/effect boundaries.
   `8855d3a9e779362f713b08bceb58d7d5db671c7d`.
 - Report the parent, child, receipt, environment-attestation, manifest, prefix,
   and canonical-receipt hashes from `EVIDENCE.md`.
-- The child inherits a committed recorded offline oracle outcome, serves it
-  from the record, and records zero inherited external calls.
-- The HMAC-SHA256 attestation is verified under a configured fixture trust
-  root and is bound to the child, cut, and retained prefix.
+- The child inherits a committed recorded offline oracle outcome; the generator
+  observes that it is served from the record with no second fixture-oracle call.
+- The verifier checks receipt/log consistency and an HMAC-SHA256 caller
+  assertion bound to the child, cut, and retained prefix under a public fixture
+  trust root. It does not inspect the asserted environment contents.
 - Bound the claim: this validates the mechanism for a deterministic offline
   oracle. The published fixture key is not a production credential and does
   not establish provider identity, model quality, or production-environment
@@ -199,6 +206,8 @@ Algebra name collision.
 - No mechanized proof or minimal side condition.
 - No real-model inference in the bridge study.
 - No complete production read/write/trigger inventory.
+- The kernel does not model ActiveGraph's per-invocation same-trigger view
+  refresh; no production behavior inventory establishes its observed impact.
 - The 121 observed production forks do not cross an external-effect boundary;
   the public post-oracle fork is a deterministic offline conformance case.
 - The conformance trust root is deliberately published and therefore does not
