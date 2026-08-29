@@ -168,6 +168,37 @@ FROM per_run;
 -- 160076 | 617 | 5540
 ~~~
 
+The remaining aggregate verdicts have an independent structural audit in
+`scripts/audit_synthetic_cut_identities.sql`:
+
+~~~bash
+sqlite3 -header -column \
+  'file:/tmp/synthetic-players-engine.db?mode=ro&immutable=1' \
+  < scripts/audit_synthetic_cut_identities.sql
+~~~
+
+The query verifies 36,227 immediately linked request/response pairs, 24
+terminal unmatched requests, and zero other request shapes. It reproduces:
+
+| Identity | Result |
+|---|---:|
+| Total cuts | 317,296 |
+| ExternalContinuation Sound | 160,076 |
+| ExternalContinuation Unsound | 36,251 |
+| ExternalContinuation Conditional | 120,969 |
+| CounterfactualWorld Unsound, closed-response runs | 141,545 |
+| CounterfactualWorld Unsound, open runs | 1,349 |
+| CounterfactualWorld Unsound total | 142,894 |
+| Runs with at least one classified request | 4,923 |
+
+For a request-bearing run with event count `n`, first-request ordinal `q`, and
+request count `m`, the continuation-Conditional identity is
+`n + 1 - q - m`. For CounterfactualWorld, a run with all requests closed
+contributes the ordinal of its final response; a run ending open contributes all
+`n + 1` cuts. Of the 24 open runs, four contain no prior response and 20 are
+already among the 4,919 runs with at least one response, reconciling the 4,923
+affected-run union.
+
 Unclassified domain/runtime types are reported rather than guessed:
 `behavior.started`, `behavior.completed`, `decision.parsed`, `infra.*`,
 `object.created`, `patch.applied`, `round.played`, `round.requested`,
@@ -276,6 +307,10 @@ fidelity.
   missing receipt evidence fail closed within the declared adapter vocabulary.
 - Production behavior-set conformance remains open because no complete
   read/write/trigger inventory was available.
+- A cut verdict is relative to the exact log snapshot presented to the assessor.
+  Production continuation requires a source high-water mark plus an explicit
+  closure, quiescence, or freshness policy and a final recheck; a hazard appended
+  later can downgrade the evidence.
 
 ## Reproduction commands
 

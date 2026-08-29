@@ -1,0 +1,499 @@
+Replay Is a Family of Assertions: Fork-Safety
+in Event-Sourced Agent Runtimes
+Review Report
+
+August 29, 2026                                                       Share with
+explorescience.ai                                                     co-authors
+
+
+
+
+   Overall Score                                        Criterion Scores
+
+
+
+
+Explore Science is all about making your paper be the best it can possibly be. Our goal is to
+improve science, your science, and help all of us in finding academic truth. The feedback
+provided in this review is purely for educational purposes only and we accept no liability or
+responsibility for any suggestions made. We recommend evaluating each point of feedback
+critically before integrating it into your paper.AI is not perfect, and can make mistakes.
+                                                                     agent-runtime-laws-paper-draft
+
+
+
+
+Contents
+1. Manuscript Summary
+
+2. Scoring
+
+3. Summary of Notable Merits
+
+4. Review Synopsis
+
+
+5. Comments
+
+  Title
+  Abstract
+  Introduction       |   1 issue
+    #A1 Cross-Mapping Between Foundational Assertion Hierarchy and Operationalized Fork
+    Properties
+
+  Literature Review
+  Methods    |   5 issues
+    #B1 Asynchronous Hazard Latency in Cut-Level Fork Assessment
+    #B2 Notational Overloading of Variable L Across Fixed Log and Mutable Trace Roles
+    #B3 FsCheck Parameterization and Test Composition Reporting
+    #B4 Self-Containment of Formal Definition 5
+    #B5 Combinatorial Coverage of Language-Neutral Conformance Vectors
+
+  Results and Analysis             |   3 issues
+    #C1 Mechanistic Derivation of the CounterfactualWorld Unsound Cut Count
+    #C2 Structural Account of the EC Conditional Cut Count
+    #C3 Capitalization Consistency of Verdict Terminology
+
+  Discussion     |   1 issue · view online
+
+  Conclusion
+  Figures and Tables         |     1 issue
+    #E1 In-Text Anchoring and Labeling Consistency of Tabular Displays
+
+  References
+  Appendices
+  Supplementary
+
+6. References
+
+
+
+
+                                                                                            Page 2
+                                                                      agent-runtime-laws-paper-draft
+
+
+
+
+1. Manuscript Summary
+Untapped Capital researchers demonstrate that assertions of "deterministic replay" and
+"cheap forking" in event-sourced agents mask severe risks regarding external interactions
+and schedule confluence. By formalizing replay as a property-indexed family of
+assertions-validated via an executable contract against 5,540 runtime logs-they establish that
+trace sharing alone cannot ensure safe execution branching. This converts agent forking
+from a basic storage optimization into a precise semantic contract, preventing unintended
+external actions when recovering or diverging autonomous system states.
+
+2. Scoring
+This manuscript was scored across eight criteria, from research design to interpretive
+rigour. Both issues and merits contribute to the score. Each point is classified as major or
+minor based on its nature and potential impact on the research.
+
+  » Learn how scoring works at explorescience.ai/scoring
+
+
+
+
+    Relative Performance Metrics - Coming Soon
+    Field-specific percentile distributions are not yet available for your discipline. We can
+    let you know when they are - register your interest.
+
+
+
+
+                                                                                                Page 3
+                                                                  agent-runtime-laws-paper-draft
+
+
+
+
+3. Summary of Notable Merits
+This manuscript presents a body of technical work distinguished by the depth and
+consistency of its formal rigor, empirical transparency, and reporting discipline across
+nearly every dimension the review examined. Two patterns stand out: a systematic
+insistence on grounding every theoretical construct in directly auditable evidence, and a
+sustained commitment to calibrating claims precisely to what the evidence supports -
+neither inflating results nor discarding genuinely qualified prior insights. Together, these
+qualities exceed prevailing standards in agent runtime research, where formal properties
+are rarely bound to falsifiable empirical witnesses and claim boundaries are seldom
+explicitly maintained.
+
+The three most notable merits identified were:
+
+   •   A three-dimensional orthogonal effect taxonomy (External Footprint, Replay Source,
+       Lifecycle) that enables property-indexed safety obligations, resolving a conflation
+       embedded in flat categorizations used by deployed systems such as Temporal and
+       Restate.
+   •   A four-tier progressive fork safety property family (ProjectionReplay through
+       CounterfactualWorld) that converts forking from a storage mechanism into an
+       explicit semantic contract, far exceeding binary fork-capability treatments standard
+       in the field.
+   •   A zero-margin numerical reconciliation of lifecycle boundary unsoundness against
+       structural execution gaps, providing closed-form empirical proof where comparable
+       work typically relies on sampling or informal case studies.
+Collectively, these strengths substantially elevate the manuscript's inferential authority and
+position it as a methodological reference point for the field.
+
+       » View all merits online
+
+
+
+
+                                                                                         Page 4
+                                                                     agent-runtime-laws-paper-draft
+
+
+
+
+4. Review Synopsis
+The manuscript is in strong overall condition, with revision needs that are narrow in scope
+but meaningful for consolidating the formal contributions at its core. Two themes recur
+across the issues: gaps in how formal elements are connected to one another within the
+manuscript's own terms, and uneven derivational depth in the empirical reporting - the
+latter exemplified by asymmetric treatment of the conditional cut category. Together, these
+patterns modestly reduce the reader's ability to verify that the formal property family and
+the assessment results are as tightly integrated as claimed, which matters precisely because
+the manuscript's authority rests on the closed-form, auditable character of its evidence.
+The three highest-priority issues identified in the review were:
+
+  •   the missing explicit mapping between the seven-tier assertion hierarchy and the four
+      fork properties (#A1)
+  •   the unaddressed timing race in the synchronous log-fold assessment design (#B1)
+  •   the absent structural derivation for the largest single count in Table 5 (#C1)
+Prioritizing the formal integration gap in #A1 and the design boundary in #B1 would most
+directly strengthen confidence in the manuscript's central claims.
+
+      » The 10 most critical issues are detailed below. View all online.
+
+
+
+
+                                                                                            Page 5
+                                                                      agent-runtime-laws-paper-draft
+
+
+
+
+5. Comments
+  The 10 highest-priority issues are detailed below. View the complete list online ➔
+
+
+5.1 Introduction
+  #A1. Cross-Mapping Between Foundational Assertion Hierarchy and
+  Operationalized Fork Properties
+  Critique:
+  The paper's seven-tier assertion hierarchy in Figure 1 and the four formally
+  operationalized fork properties (Definitions 3–6) are never explicitly mapped to one
+  another, leaving the manuscript's central organizing claim structurally incomplete.
+  Justification & Consequence:
+  Assertions such as Path are absent from all subsequent formal treatment, and
+  CounterfactualWorld lacks an explicit Figure 1 counterpart, while Environment maps
+  ambiguously to both ExternalContinuation and CounterfactualWorld. The 3 artifact
+  equivalences, 5 replay grades, and 3 effect dimensions introduced across Sections 2.4, 4,
+  and 5 further compound this without cross-referencing. Readers cannot trace whether
+  empirical results validate the foundational promises of the introduction, undermining
+  the coherence of Contribution 1. Although Decision appears tangentially in Section 2.4
+  and Section 7.1, it is never formally situated within the fork property framework.
+  Relevant Section:
+      Figure 1 and its caption (p. 2); Definitions 3–6 (pp. 9–10); Section 2.4 observation
+      equivalences (p. 5); Section 5 replay grades (pp. 11–13); and the Introduction's
+      contributions list (pp. 2–3).
+
+  Framework for Addressing:
+  •   Add a concise mapping paragraph at the end of Section 1 (or a dedicated subsection of
+      Section 2 or 4) that explicitly aligns each of the seven Figure 1 assertions to the
+      corresponding fork property, equivalence relation, and/or replay grade-even if the
+      mapping is one-to-many or acknowledges that Path and Decision are subsumed
+      rather than independently formalized.
+  •   Where assertions from Figure 1 are deliberately not operationalized (e.g., Path), state
+      this explicitly with a one-sentence justification so readers understand the scope
+      boundary is intentional rather than an oversight.
+
+
+5.2 Methods
+  #B1. Asynchronous Hazard Latency in Cut-Level Fork Assessment
+  Critique:
+  The synchronous log-fold design means a fork assessed as Sound at cut k may precede an
+  asynchronous hazard event that is only appended at position k+1 after the assessment
+  completes, a timing race the current model does not address.
+
+
+
+
+                                                                                             Page 6
+                                                                    agent-runtime-laws-paper-draft
+
+
+
+
+Justification & Consequence:
+In deployed event-sourced systems, external effect failures-webhook timeouts,
+asynchronous compensations-are commonly recorded with non-trivial latency relative
+to the triggering operation . The paper's assessor folds a fixed log snapshot, so a
+`EvidenceRecorded(HazardDetected)` event arriving after assessment time is invisible to
+the verdict, producing a spurious Sound ruling for ExternalContinuation or
+CounterfactualWorld. As the authors note in their limitations, adapter-coverage
+assumptions can be invalidated by new event types, but the narrower race between
+assessment time and hazard-append time is not discussed.
+Relevant Section:
+    Counterexample 4 and grade-downgrade discussion (p. 12); Definitions 4–5 (pp. 9–10);
+    Section 10 limitations on adapter assumptions (pp. 22–23).
+
+Framework for Addressing:
+•   Add a brief paragraph in Section 10 (Limitations) explicitly naming the
+    assessment-time/hazard-append race as a boundary condition: the assessor's Sound
+    verdict is relative to the log snapshot at assessment time, and production use requires
+    a freshness window or quiescence guarantee before the assessment is trusted.
+•   In Definition 5 or its accompanying remark, note that ExternalContinuation verdicts
+    carry an implicit "log closed at assessment time" premise.
+
+#B2. Notational Overloading of Variable L Across Fixed Log and Mutable
+Trace Roles
+Critique:
+Variable L serves two distinct roles-a fixed input event log in projection and fork
+equations and a mutable retained-trace component within the configuration
+tuple-without distinguishing notation, which could be clarified for formal precision.
+Justification & Consequence:
+Equations 4, 6, and 7 treat L as a completed immutable sequence, while the
+PROCESS-EVENT rule in Figure 2 accumulates L via append during settlement. Under the
+non-confluent schedules of Section 3, the two can differ, so the propositions' scope
+depends on which reading applies. Introducing a lightweight notational distinction-e.g.,
+\(\hat{L}\) or \(L_{\text{ret}}\) for the configuration component-would remove this
+ambiguity without restructuring any proof.
+Relevant Section:
+    Log definition and projection equation (p. 3–4); configuration definition and
+    PROCESS-EVENT rule (pp. 4–5, Figure 2); fork and projection propositions (pp. 9–10).
+
+Framework for Addressing:
+•   Introduce a distinct symbol (e.g., \(L_{\text{ret}}\)) for the retained-trace field of the
+    configuration tuple at its first appearance in Section 2.3, and use it consistently in
+    Figure 2 and Section 2.3 prose, reserving plain L for the fixed input log throughout
+    Sections 2.1, 4, and 5.
+
+
+
+
+                                                                                             Page 7
+                                                                    agent-runtime-laws-paper-draft
+
+
+
+
+#B3. FsCheck Parameterization and Test Composition Reporting
+Critique:
+The artifact description reports "50 passing tests" without disclosing the MaxTest
+iteration count, random seed strategy, or the split between static named fixtures and
+FsCheck properties, leaving the combinatorial coverage of the property-based checks
+unquantifiable.
+Justification & Consequence:
+FsCheck's default MaxTest of 100 inputs per property means that across a
+60-combination effect-dimension space, roughly 8–9 combinations go unsampled per
+property run under birthday-problem expectations. Without knowing MaxTest and the
+fixture/property ratio, readers cannot assess whether the verdict-matrix completeness
+claims in Section 4.2 are supported by adequate generation depth. The artifact's
+reproducibility discipline in Section 6.5 covers revision pinning and hash attestation but
+does not extend to these generator parameters.
+Relevant Section:
+    Artifact structure listing 50 passing tests (p. 13, Section 6.1); property-based checks
+    description (pp. 13–14, Section 6.2); reproducibility discipline (p. 15, Section 6.5).
+
+Framework for Addressing:
+•   Add a short sentence in Section 6.2 reporting the FsCheck MaxTest setting used,
+    whether a fixed seed was applied for regression, and the count of static named
+    fixtures versus live FsCheck properties among the 50 tests.
+•   If MaxTest was left at the default 100, note this explicitly so readers can judge
+    combinatorial exposure against the effect-dimension space described in Section 4.1.
+
+#B4. Self-Containment of Formal Definition 5
+Critique:
+Definition 5 (ExternalContinuation) embeds implementation-specific scope limitations
+and a forward reference to Section 7 inside the definition body, mixing normative
+property content with artifact-specific hedges.
+Justification & Consequence:
+Formal definitions in this genre should be self-contained normative statements; notes
+about what the v0 assessor does or does not do are editorial and belong in a following
+Remark or paragraph (Pierce, 2002). As written, a reader cannot evaluate the property
+without also parsing Section 7, and the scope limitation (the bridge does not validate
+assertion contents) risks being misread as a constraint of the property rather than the
+implementation, weakening the definitional clarity the paper's abstract relies on.
+Relevant Section:
+    Definition 5 body (p. 9, Section 4.2).
+
+Framework for Addressing:
+•   Restructure Definition 5 to contain only the normative property statement, then
+    immediately follow it with a clearly labeled Remark that notes the v0 assessor's
+    target-environment premise, the bridge's scope limitation, and the Section 7 forward
+    reference.
+
+
+
+
+                                                                                              Page 8
+                                                                     agent-runtime-laws-paper-draft
+
+
+
+
+  •   Remove the phrase "The companion bridge implementation supplies a concrete
+      conformance path in Section 7" from the definition body entirely.
+
+  #B5. Combinatorial Coverage of Language-Neutral Conformance Vectors
+  Critique:
+  Seven language-neutral JSON conformance vectors provide a useful portability baseline
+  but are quantitatively insufficient to cover the full verdict cross-product across the four
+  fork properties and effect dimension space described in Sections 4–5.
+  Justification & Consequence:
+  The authors commendably provide vectors alongside a JSON Schema so that other
+  runtimes can challenge the semantics; however, four properties × three lifecycle states ×
+  two replay sources yields 24 boundary cases before accounting for the five distinct
+  Conditional obligation kinds (Equations 10–14) or CounterfactualWorld's Ω-dependent
+  variants. Seven vectors cannot cover this space, and no mapping from vectors to
+  boundary cases is provided, limiting the vectors' utility for comprehensive
+  cross-implementation conformance testing beyond the baseline case.
+  Relevant Section:
+      Artifact structure listing seven conformance vectors (p. 13, Section 6.1); operational
+      recommendations citing them for cross-implementation use (p. 22, Section 9.6).
+
+  Framework for Addressing:
+  •   Add a brief table or list in Section 6.1 enumerating which boundary case each of the
+      seven vectors is intended to exercise, making the coverage scope explicit.
+  •   Acknowledge in the Limitations section that the current seven vectors constitute an
+      initial baseline rather than exhaustive conformance coverage, and identify which
+      obligation types from Equations 10–14 lack a dedicated vector.
+
+
+5.3 Results and Analysis
+  #C1. Mechanistic Derivation of the CounterfactualWorld Unsound Cut Count
+  Critique:
+  The 142,894 CW Unsound count-the largest single result in Table 5-warrants a structural
+  derivation comparable to those provided for the ExternalContinuation Sound and
+  Unsound categories.
+  Justification & Consequence:
+  For a run with r completed oracle calls at positions p1 < … < pᵣ, every cut from 0 through
+  pᵣ − 1 falls in the CW Unsound region, producing a count governed by the cumulative
+  prefix length before each run's final oracle response. This mechanism explains why CW
+  Unsound (~4× EC Unsound) is geometrically determined by oracle-call position
+  distributions, not merely the 4,923 affected-run count the paper cites. The paper
+  provides explicit arithmetic derivations for both EC categories but offers none here,
+  creating an asymmetry in auditability for the methodology claimed in Section 6.4.
+  Relevant Section:
+      Table 5 and its surrounding discussion (pp. 16–17, Section 7.1.2), specifically the
+      sentence attributing 4,923 runs to CW Unsound cuts.
+
+
+
+
+                                                                                               Page 9
+                                                                   agent-runtime-laws-paper-draft
+
+
+
+
+Framework for Addressing:
+•   Add one to two sentences in Section 7.1.2 after the 4,923-run count explaining that the
+    142,894 figure equals the sum across affected runs of (cut of last oracle response) - i.e.,
+    all prefix positions before the final committed oracle event contribute a CW Unsound
+    cut - providing a structural cross-check analogous to the EC derivation already in the
+    text.
+•   If space is limited, a footnote with the per-run arithmetic identity is sufficient.
+
+#C2. Structural Account of the EC Conditional Cut Count
+Critique:
+The 120,969 EC Conditional count, representing 38% of all 317,296 cuts, receives no
+per-event structural derivation equivalent to those provided for the Sound and Unsound
+EC categories.
+Justification & Consequence:
+The text derives the 36,251 EC Unsound cuts event-by-event and confirms 160,076 EC
+Sound cuts via a direct ordinal query, creating an expectation that the 120,969 EC
+Conditional count-recoverable as a residual-would receive analogous treatment. No
+explanation is given for why 36,227 committed oracle responses generate approximately
+3.34 Conditional cuts each, nor which event positions within a typical run produce them.
+This ratio reflects how many prefix positions inherit a committed OneShot oracle result
+in their retained prefix, a mechanism the Section 4.3–4.4 cut analysis treats but the
+empirical section does not explicitly connect to the count.
+Relevant Section:
+    Table 5 and EC category discussion (pp. 16–17, Section 7.1.2); cut-through-effects
+    analysis (pp. 10–11, Section 4.4).
+
+Framework for Addressing:
+•   Extend the Section 7.1.2 derivation paragraph with one sentence explaining that EC
+    Conditional cuts are those prefix positions after a committed oracle response, making
+    the ~3.34 cuts-per-response ratio a function of the average number of events
+    following each oracle response within the same run.
+•   This connects the Section 4.4 post-committed-OneShot case explicitly to the Table 5
+    count, completing the structural audit trail for all three EC categories.
+
+#C3. Capitalization Consistency of Verdict Terminology
+Critique:
+Inconsistent capitalization of "Sound" as both a title-case verdict token and a lowercase
+general adjective throughout the manuscript could be refined for terminological
+precision.
+Justification & Consequence:
+Where "Sound" denotes the closed programmatic verdict enumeration returned by the
+assessor (alongside "Conditional" and "Unsound"), consistent title-casing distinguishes it
+from the ordinary-language adjective "sound" used in constructions such as "sound
+under the specified observation." While context reliably disambiguates the intended
+meaning, uniform typographic convention would prevent any potential conflation of a
+system-returned verdict with a universal correctness claim.
+
+
+
+                                                                                          Page 10
+                                                                        agent-runtime-laws-paper-draft
+
+
+
+
+  Relevant Section:
+      Table 3 verdict labels (p. 10); Table 5 column headers (p. 16); Section 7.1.2 body text (p.
+      16); Section 4.2 definitions (pp. 9–10).
+
+  Framework for Addressing:
+  •   Perform a manuscript-wide pass to apply title-case (Sound, Conditional, Unsound)
+      consistently whenever referring to the programmatic verdict token, and lowercase
+      (sound, conditional) exclusively in ordinary-language predicate constructions, adding
+      a brief terminological note at first use in Section 4.2.
+
+
+5.4 Figures and Tables
+  #E1. In-Text Anchoring and Labeling Consistency of Tabular Displays
+  Critique:
+  Figure 3 and Figure 4 lack explicit numerical citations in the preceding prose, and both
+  present row-and-column categorical data that is structurally more consistent with table
+  formatting conventions than figure conventions.
+  Justification & Consequence:
+  Standard practice in formal technical manuscripts requires every numbered display to
+  be explicitly anchored in the text before or at the point of appearance (Zobel, 2014).
+  Neither Figure 3 nor Figure 4 is introduced by a phrase such as "see Figure 3" in the body
+  text; readers must infer their relevance from proximity. Additionally, labeling
+  row-and-column categorical summaries as figures rather than tables departs from the
+  display-type distinction maintained for Figure 1, Figure 2, and Tables 1–5 elsewhere in
+  the manuscript.
+  Relevant Section:
+      Figure 3 caption and surrounding prose (p. 7, Section 3.2); Figure 4 caption and
+      surrounding prose (p. 11, Section 4.4).
+
+  Framework for Addressing:
+  •   Relabel Figure 3 and Figure 4 as Table 6 and Table 7 (or whichever numbers continue
+      the existing sequence) to reflect their tabular structure.
+  •   Insert explicit in-text citations (e.g., "(see Table 6)" and "(see Table 7)") in the
+      immediately preceding prose sentences in Sections 3.2 and 4.4 respectively.
+
+
+
+
+                                                                                              Page 11
+                                                                          agent-runtime-laws-paper-draft
+
+
+
+
+6. References
+Pierce, B.C. (2002). Types and Programming Languages. MIT Press.
+Zobel, J. (2014). Writing for Computer Science. Springer. https://doi.org/10.1007/978-1-4471-6639-9
+
+
+
+
+                                                                                                  Page 12
+

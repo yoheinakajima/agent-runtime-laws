@@ -23,6 +23,9 @@ falsification and bounded evidence.
   oracle results live and which external actions have already occurred.
 - Business event sourcing can reconstruct state but cannot un-send, un-charge,
   or un-publish.
+- Cross-map Byte, Trace, Projection, Path, Decision, Execution, and Environment
+  to the four fork properties, three equivalences, replay grades, and explicit
+  non-operationalized scope boundaries.
 - Contributions:
   1. explicit schedule semantics and counterexamples to termination and
      confluence;
@@ -124,6 +127,10 @@ Checked identities and findings:
 - Every-normalized-position enumeration plus source-event-boundary reporting
   when one source event expands to multiple normalized facts.
 - JSON conformance vectors and schema for independent implementations.
+- Report 15 live FsCheck properties and 35 facts, per-property MaxTest 100--250,
+  3,300 top-level generated trials, and the absence of a fixed global seed.
+- Treat the seven language-neutral vectors as a mapped portability baseline,
+  not an exhaustive verdict/obligation cross-product.
 - Threats: bounded generators, adapter classification, projection equivalence,
   and missing production behavior inventory.
 
@@ -144,6 +151,11 @@ Checked identities and findings:
 The observed forks all cut at `round.played` and retain no classified external
 request. They validate cheap trace branching for that cut family, not arbitrary
 oracle/effect boundaries.
+
+Arithmetic identities: continuation Conditional is the sum of
+`n + 1 - first_request_ordinal - request_count` over request-bearing runs.
+Counterfactual Unsound is 141,545 final-response-ordinal cuts over closed runs
+plus all 1,349 cuts in 24 open runs, totaling 142,894.
 
 ### activegraph-bridge public post-oracle conformance fork
 
@@ -195,6 +207,11 @@ Algebra name collision.
 - The conformance trust root is deliberately published and therefore does not
   authenticate a real provider, production attestor, or production
   environment.
+- Every verdict is snapshot-relative; delayed hazards require a bound source
+  high-water mark, an explicit closure/quiescence/freshness policy, and a final
+  pre-continuation recheck.
+- Seven language-neutral vectors are baseline coverage; four typed Conditional
+  obligations still lack dedicated portable vectors.
 - Future work: mechanize selected properties after the empirical contracts stabilize,
   add production behavior dependency extraction, and validate post-oracle forks
   against production provider and attestor identities.

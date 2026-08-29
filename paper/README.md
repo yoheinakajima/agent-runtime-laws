@@ -1,6 +1,6 @@
-# Paper draft
+# Submission manuscript
 
-`main.tex` is the working arXiv draft. It is deliberately downstream of
+`main.tex` is the submission manuscript. It is deliberately downstream of
 `../FINDINGS.md` and `../EVIDENCE.md`; if a number or claim differs, those two
 ledgers win until the discrepancy is resolved.
 
@@ -28,6 +28,14 @@ The owner approved this candidate for public freeze and submission on
    submission revision as `arxiv-v1`;
 4. **Completed:** rerun the capsule, all-cut tables, code gate, and PDF QA from
    the release candidate;
-5. **Completed:** preserve and resolve the independent technical review
-   dispositions and obtain owner approval; complete any author declarations
-   required by the submission service.
+5. **Completed for the repository:** preserve and resolve the independent
+   technical review dispositions and obtain owner approval. Submission-service
+   author declarations remain an owner action.
+
+## Post-freeze review
+
+The `arxiv-v1` tag is immutable. A second Explore Science review dated
+2026-08-29 found 11 minor and zero major issues. Its supplied PDF, online-only
+eleventh issue, and disposition ledger are preserved under
+`../reviews/2026-08-29/explore-science/`. Warranted changes are developed as a
+successor submission candidate rather than moving the v1 tag.

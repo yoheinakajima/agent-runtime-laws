@@ -114,7 +114,8 @@ Or run the complete local gate:
 - apps/AgentRuntimeLaws.Cli — demo, conformance, and validation commands
 - FINDINGS.md — the living record of failed properties and restoring conditions
 - docs/RELATED_WORK.md — explicit novelty boundary
-- reviews/2026-08-28 — preserved reviewer reports and disposition ledger
+- reviews/2026-08-28 — first multi-model and Explore Science review round
+- reviews/2026-08-29 — second Explore Science review and disposition ledger
 
 ## Evidence status
 
@@ -150,8 +151,11 @@ evidence over its generators and fixtures, not a universal proof.
 
 Research v0. Kernel contracts, 50 tests, conformance vectors, and deployed-trace
 validation are implemented. Claude, Gemini, Grok, and a later independent Codex
-review are archived with provenance and dispositions; the subsequent
-ExploreScience review is preserved separately. The public post-oracle
+review are archived with provenance and dispositions; two subsequent
+Explore Science rounds are preserved separately. The public post-oracle
 conformance mechanism test is complete under the bounded claim stated above.
 The owner excluded the unpublished local executive study from the submission
-and authorized the public release and submission workflow on 2026-08-28.
+and authorized the public release and submission workflow on 2026-08-28. The
+immutable `arxiv-v1` tag remains the first public freeze; the 2026-08-29 review
+round is incorporated and release-verified as a separate successor submission
+candidate.

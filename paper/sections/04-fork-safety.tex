@@ -74,15 +74,20 @@ the retained prefix, the child may continue after strict replay.  Inherited
 committed OneShot effects must be served from the record and never executed
 again.  A committed Recorded effect with Unknown footprint is Conditional: it
 may be served without a live call, but no stronger world-state claim is licensed
-until its footprint is resolved.  The v0 assessor takes the target-environment
-premise as an input assumption; it does not verify a snapshot or
-fresh-environment attestation.  The companion bridge implementation supplies a
-concrete conformance path in Section~\ref{sec:validation}: it authenticates and
-fork-binds a caller-issued environment assertion, but does not independently
-validate the assertion's contents.  The language-neutral assessor remains
-verifier-agnostic.  This property deliberately does not assert that a
+until its footprint is resolved.  This property deliberately does not assert that a
 retrospectively discarded source suffix left the original world unchanged.
 \end{definition}
+
+\paragraph{Remark (assessor scope).}
+The v0 assessor takes the target-environment premise as an input assumption; it
+does not verify a snapshot or fresh-environment attestation.  Its verdict is
+relative to the immutable log snapshot supplied at assessment time.  A
+production caller must bind the assessment to a source high-water mark and
+establish log closure, quiescence, or another explicit freshness policy before
+acting on it.  The companion bridge in Section~\ref{sec:validation}
+authenticates and fork-binds a caller-issued environment assertion, but does not
+independently validate the assertion's contents or rule out a later-arriving
+hazard.  The language-neutral assessor remains verifier-agnostic.
 
 \begin{definition}[CounterfactualWorld$(\Omega)$]
 Let $\Omega$ be a declared set of external observables, such as delivered
@@ -109,6 +114,8 @@ reported counts are not claims about such a narrower set.  Even a Sound verdict
 is a contract-relative license, not an empirical observation that two worlds
 are identical.
 
+Closed assessor return values are typeset as \code{Sound}, \code{Conditional},
+and \code{Unsound}; lowercase words retain their ordinary predicate meaning.
 These definitions make ``sound'' property-indexed.  The same cut may be Sound
 for ProjectionReplay, Conditional for ExternalContinuation, and Unsound for
 CounterfactualWorld.  Table~\ref{tab:forkconditions} summarizes the executable
@@ -170,9 +177,10 @@ the log never learned the result.
 
 For each log, the validator constructs every prefix state in one forward scan
 and every environmental suffix finding in one reverse scan.  It then assesses
-all $|L|+1$ cuts.  Three boundary cases are especially important.
+all $|L|+1$ cuts.  Table~\ref{tab:cut-through-request} separates the three
+boundary regions created by one request/outcome pair.
 
-\begin{figure}[ht]
+\begin{table}[ht]
 \centering
 \small
 \begin{tabularx}{0.96\textwidth}{@{}P{0.20\textwidth}P{0.28\textwidth}Y@{}}
@@ -186,8 +194,8 @@ $k_2$ after recorded commit & Request plus terminal recorded result & Strict rep
 \end{tabularx}
 \caption{A single request/outcome pair creates three semantically different
 fork regions.}
-\label{fig:cut-through-request}
-\end{figure}
+\label{tab:cut-through-request}
+\end{table}
 
 \paragraph{Before a request.}
 The retained prefix does not inherit the effect.  Projection replay is sound.
