@@ -209,7 +209,7 @@ one.
 |---|---|
 | Repository | https://github.com/yoheinakajima/activegraph-bridge |
 | Pull request | https://github.com/yoheinakajima/activegraph-bridge/pull/2 |
-| Revision | `8855d3a9e779362f713b08bceb58d7d5db671c7d` |
+| Revision | `42792a2005dbfbcb3db933246101ca0a21c70f95` |
 | Fixture | `evidence/post-oracle-fork-v1` |
 | Publication status | public review branch, immutable revision pinned |
 

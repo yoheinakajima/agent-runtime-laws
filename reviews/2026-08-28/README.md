@@ -17,7 +17,10 @@ independently authenticated model identity.
 The independently generated report has no source attachment. Its repository
 SHA-256 is
 `95af9e2942625a476e4f836d2e7f0dd40594c6a9f528c16db35bbafe6aed81b3`
-for `codex.md`.
+for `codex.md`. The same isolated reviewer subsequently verified the
+disposition delta at exact commit
+`59796ee00f0e4d2a71b9961208f61f818216282d`; `codex-closure.md` has SHA-256
+`7371dd6e92c2a5fbf47b26671e4560572b1877f9e3e42f93d0747ddfdf1ebe14`.
 
 The differing source/copy hashes are caused by terminal-newline normalization
 when the supplied text was archived; one Markdown trailing-space line break in

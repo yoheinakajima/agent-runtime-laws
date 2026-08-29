@@ -149,7 +149,7 @@ oracle/effect boundaries.
 ### activegraph-bridge public post-oracle conformance fork
 
 - Pin the fixture to bridge revision
-  `8855d3a9e779362f713b08bceb58d7d5db671c7d`.
+  `42792a2005dbfbcb3db933246101ca0a21c70f95`.
 - Report the parent, child, receipt, environment-attestation, manifest, prefix,
   and canonical-receipt hashes from `EVIDENCE.md`.
 - The child inherits a committed recorded offline oracle outcome; the generator

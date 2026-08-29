@@ -212,7 +212,7 @@ requests. The actual forks therefore satisfy the current external-continuation
 precondition, but only for this domain-only cut family.
 
 A separate public activegraph-bridge fixture at revision
-`8855d3a9e779362f713b08bceb58d7d5db671c7d` records an actual child fork after
+`42792a2005dbfbcb3db933246101ca0a21c70f95` records an actual child fork after
 one committed `one_shot + recorded` fixture-oracle effect. The generator
 directly observes one source call and no second fixture-oracle call in the
 child. Its hash-bound receipt records that inherited request `evt_008` was

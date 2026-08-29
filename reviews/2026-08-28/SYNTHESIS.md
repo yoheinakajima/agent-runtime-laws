@@ -101,4 +101,8 @@ public-corpus analysis, 121-fork SQL audit, 24-run local analysis, public bridge
 fixture verifier, and local release-bundle verifier all pass with unchanged
 reported counts. Tectonic emits no warnings, all fonts are embedded, and all 27
 PDF pages passed visual inspection. The resulting PDF SHA-256 is
-`4f0fe99130f9e78f7f499e6c9318d4711e8393c617fe039be5deae1f4185b084`.
+`4b6ac0f2e2e40f2dd1c5c3dcb4093de259c568652f40f0e19f88346888c75e8b`.
+The independent reviewer then checked the disposition delta at exact commit
+`59796ee00f0e4d2a71b9961208f61f818216282d` and found all five scoped technical
+findings closed with no residual technical blocker; that closure report is
+preserved as `codex-closure.md`.
